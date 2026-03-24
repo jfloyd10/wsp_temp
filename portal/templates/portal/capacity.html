@@ -4,112 +4,149 @@
 {% block title %}Capacity Factors - Wholesale Settlement Portal{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Capacity Factors</h1>
-        <p class="page-subtitle">Generation resource performance vs budget</p>
-    </div>
-</div>
+<!-- Hero Section -->
+<section class="bg-white border-b border-gray-100">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-8">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+                        <i data-feather="activity" class="w-5 h-5 text-brand-500"></i>
+                    </div>
+                    <span class="text-gray-400 text-sm font-medium uppercase tracking-wider">Performance</span>
+                </div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Capacity Factors</h1>
+                <p class="text-gray-500 text-lg">Generation resource performance vs budget</p>
+            </div>
+            <div class="mt-4 lg:mt-0">
+                <form method="get" class="flex items-center gap-2 flex-wrap">
+                    <select name="operating_company"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                        <option value="">All Companies</option>
+                        {% for oc in filter_options.operating_companies %}
+                        <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="resource_type"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                        <option value="">All Types</option>
+                        {% for rt in filter_options.resource_types %}
+                        <option value="{{ rt }}" {% if active_filters.resource_type == rt %}selected{% endif %}>{{ rt }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="year"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                        <option value="">All Years</option>
+                        {% for y in filter_options.years %}
+                        <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="month"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                        <option value="">All Months</option>
+                        {% for m in filter_options.months %}
+                        <option value="{{ m }}" {% if active_filters.month == m|stringformat:"d" %}selected{% endif %}>{{ m|month_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit"
+                            class="py-2 px-4 text-white rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md"
+                            style="background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);">
+                        Apply
+                    </button>
+                    {% if active_filters %}
+                    <a href="/capacity/" class="py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-600 transition-all">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
 
-<!-- Pill Filters -->
-<form method="get">
-    <div class="pill-filter-bar">
-        <select name="operating_company" class="filter-pill {% if active_filters.operating_company %}has-value{% endif %}">
-            <option value="">All Companies</option>
-            {% for oc in filter_options.operating_companies %}
-            <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
-            {% endfor %}
-        </select>
-        <select name="resource_type" class="filter-pill {% if active_filters.resource_type %}has-value{% endif %}">
-            <option value="">All Types</option>
-            {% for rt in filter_options.resource_types %}
-            <option value="{{ rt }}" {% if active_filters.resource_type == rt %}selected{% endif %}>{{ rt }}</option>
-            {% endfor %}
-        </select>
-        <select name="year" class="filter-pill {% if active_filters.year %}has-value{% endif %}">
-            <option value="">All Years</option>
-            {% for y in filter_options.years %}
-            <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
-            {% endfor %}
-        </select>
-        <select name="month" class="filter-pill {% if active_filters.month %}has-value{% endif %}">
-            <option value="">All Months</option>
-            {% for m in filter_options.months %}
-            <option value="{{ m }}" {% if active_filters.month == m|stringformat:"d" %}selected{% endif %}>{{ m|month_name }}</option>
-            {% endfor %}
-        </select>
-        <div class="filter-actions">
-            <button type="submit" class="btn-filter-apply">Apply</button>
-            {% if active_filters %}
-            <a href="/capacity/" class="btn-filter-clear"><i class="bi bi-x"></i> Clear</a>
-            {% endif %}
+        <!-- Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                        <i data-feather="zap" class="w-5 h-5 text-brand-500"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Actual</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ weighted_ac|capacity_pct }}</p>
+                <p class="text-sm text-gray-500 mt-1">Wtd Avg Actual CF</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i data-feather="target" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Budget</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ weighted_bu|capacity_pct }}</p>
+                <p class="text-sm text-gray-500 mt-1">Wtd Avg Budget CF</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl {% if weighted_variance >= 0 %}bg-emerald-100{% else %}bg-red-100{% endif %} flex items-center justify-center">
+                        <i data-feather="trending-{% if weighted_variance >= 0 %}up{% else %}down{% endif %}" class="w-5 h-5 {% if weighted_variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Variance</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold {% if weighted_variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                    {% if weighted_variance >= 0 %}+{% endif %}{{ weighted_variance|capacity_pct }}
+                </p>
+                <p class="text-sm text-gray-500 mt-1">Wtd Avg Variance</p>
+            </div>
         </div>
     </div>
-</form>
+</section>
 
-<!-- Summary Cards -->
-<div class="card-grid">
-    <div class="stat-card">
-        <div class="stat-card-icon blue"><i class="bi bi-speedometer"></i></div>
-        <div class="stat-card-value">{{ weighted_ac|capacity_pct }}</div>
-        <div class="stat-card-label">Wtd Avg Actual CF</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon purple"><i class="bi bi-bullseye"></i></div>
-        <div class="stat-card-value">{{ weighted_bu|capacity_pct }}</div>
-        <div class="stat-card-label">Wtd Avg Budget CF</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon {% if weighted_variance >= 0 %}green{% else %}orange{% endif %}">
-            <i class="bi bi-arrow-{% if weighted_variance >= 0 %}up{% else %}down{% endif %}-right"></i>
+<!-- Main Content -->
+<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {% if data %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold text-gray-900">Resource Performance</h2>
+                <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ data|length }} records</span>
+            </div>
         </div>
-        <div class="stat-card-value {% if weighted_variance >= 0 %}text-positive{% else %}text-negative{% endif %}">
-            {% if weighted_variance >= 0 %}+{% endif %}{{ weighted_variance|capacity_pct }}
-        </div>
-        <div class="stat-card-label">Wtd Avg Variance</div>
-    </div>
-</div>
-
-{% if data %}
-<div class="content-card">
-    <div class="content-card-header">
-        <h2 class="content-card-title">Resource Performance</h2>
-        <span class="content-card-meta">{{ data|length }} records</span>
-    </div>
-    <div class="content-card-body no-padding">
-        <div style="overflow-x: auto;">
-            <table class="modern-table">
+        <div class="overflow-x-auto">
+            <table class="w-full">
                 <thead>
-                    <tr>
-                        <th>Period</th>
-                        <th>Company</th>
-                        <th>Resource</th>
-                        <th>Type</th>
-                        <th class="text-end">Rating MW</th>
-                        <th class="text-end">Net Gen (MWh)</th>
-                        <th class="text-end">Budget Gen (MWh)</th>
-                        <th class="text-end">Actual CF</th>
-                        <th class="text-end">Budget CF</th>
-                        <th class="text-end">Variance</th>
+                    <tr class="bg-gray-50/50">
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Company</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Resource</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Rating MW</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Net Gen</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Budget Gen</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actual CF</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Budget CF</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Variance</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-100">
                     {% for r in data %}
-                    <tr>
-                        <td>{{ r.month|month_name }} {{ r.year }}</td>
-                        <td>{{ r.operating_company }}</td>
-                        <td><strong>{{ r.resource_name }}</strong></td>
-                        <td>
-                            <span class="chip chip-{% if r.resource_type == 'NUCLEAR' %}nuclear{% elif r.resource_type == 'GAS' %}gas{% elif r.resource_type == 'COAL' %}coal{% elif r.resource_type == 'SOLAR' %}solar{% else %}default{% endif %}">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ r.month|month_name }} {{ r.year }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">{{ r.operating_company }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ r.resource_name }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-medium
+                                {% if r.resource_type == 'NUCLEAR' %}bg-blue-100 text-blue-700
+                                {% elif r.resource_type == 'GAS' %}bg-amber-100 text-amber-700
+                                {% elif r.resource_type == 'COAL' %}bg-gray-200 text-gray-700
+                                {% elif r.resource_type == 'SOLAR' %}bg-emerald-100 text-emerald-700
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
                                 {{ r.resource_type }}
                             </span>
                         </td>
-                        <td class="text-end">{{ r.rating_mw_share|format_number }}</td>
-                        <td class="text-end">{{ r.net_generation|format_number }}</td>
-                        <td class="text-end">{{ r.budget_generation|format_number }}</td>
-                        <td class="text-end">{{ r.ac_capacity_factor|capacity_pct }}</td>
-                        <td class="text-end">{{ r.bu_capacity_factor|capacity_pct }}</td>
-                        <td class="text-end {% if r.capacity_factor_variance >= 0 %}text-positive{% else %}text-negative{% endif %}">
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-700 hidden xl:table-cell">{{ r.rating_mw_share|format_number }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-700 hidden xl:table-cell">{{ r.net_generation|format_number }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-700 hidden xl:table-cell">{{ r.budget_generation|format_number }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono font-semibold">{{ r.ac_capacity_factor|capacity_pct }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-500">{{ r.bu_capacity_factor|capacity_pct }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono font-bold
+                            {% if r.capacity_factor_variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
                             {% if r.capacity_factor_variance >= 0 %}+{% endif %}{{ r.capacity_factor_variance|capacity_pct }}
                         </td>
                     </tr>
@@ -118,13 +155,14 @@
             </table>
         </div>
     </div>
-</div>
-{% else %}
-<div class="content-card">
-    <div class="empty-state">
-        <i class="bi bi-lightning-charge"></i>
-        <p>No capacity data available for the selected filters.</p>
+    {% else %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 py-16 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <i data-feather="activity" class="w-8 h-8 text-gray-400"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No capacity data</h3>
+        <p class="text-gray-500 text-sm">No data available for the selected filters.</p>
     </div>
-</div>
-{% endif %}
+    {% endif %}
+</main>
 {% endblock %}

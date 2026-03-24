@@ -4,133 +4,159 @@
 {% block title %}{{ header.invoice_no }} - Wholesale Settlement Portal{% endblock %}
 
 {% block content %}
-<a href="javascript:history.back();" class="back-link">
-    <i class="bi bi-arrow-left"></i> Back to Invoices
-</a>
+<!-- Hero Section -->
+<section class="bg-white border-b border-gray-100">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <!-- Back link -->
+        <a href="javascript:history.back();" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors">
+            <i data-feather="arrow-left" class="w-4 h-4"></i> Back to Invoices
+        </a>
 
-<!-- Invoice Header -->
-<div class="detail-header">
-    <div class="detail-header-left">
-        <h1 class="detail-title">{{ header.invoice_no }}</h1>
-        <p class="detail-subtitle">{{ header.invoice_name }}</p>
-    </div>
-    <div>
-        <div class="detail-amount">{{ header.invoice_total|currency }}</div>
-        <div class="detail-amount-label">Invoice Total</div>
-    </div>
-</div>
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #EC1C24;">
+                        <i data-feather="file-text" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl lg:text-3xl font-bold text-gray-900">{{ header.invoice_no }}</h1>
+                        <p class="text-gray-500">{{ header.invoice_name }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 lg:mt-0 text-right">
+                <p class="text-3xl lg:text-4xl font-bold text-gray-900">{{ header.invoice_total|currency }}</p>
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mt-1">Invoice Total</p>
+            </div>
+        </div>
 
-<!-- Meta Grid -->
-<div class="detail-meta-grid">
-    <div class="detail-meta-item">
-        <div class="detail-meta-label">Operating Company</div>
-        <div class="detail-meta-value">{{ header.operating_company }}</div>
-    </div>
-    <div class="detail-meta-item">
-        <div class="detail-meta-label">Counterparty</div>
-        <div class="detail-meta-value">{{ header.counterparty_name }}</div>
-    </div>
-    <div class="detail-meta-item">
-        <div class="detail-meta-label">Invoice Date</div>
-        <div class="detail-meta-value">{{ header.invoice_date|format_date }}</div>
-    </div>
-    <div class="detail-meta-item">
-        <div class="detail-meta-label">Status</div>
-        <div class="detail-meta-value">
-            {% if header.invoice_status == 'FINAL' %}
-            <span class="chip chip-final">Final</span>
-            {% elif header.invoice_status == 'DRAFT' %}
-            <span class="chip chip-draft">Draft</span>
-            {% elif header.invoice_status == 'ADJUSTED' %}
-            <span class="chip chip-adjusted">Adjusted</span>
-            {% else %}
-            <span class="chip chip-default">{{ header.invoice_status }}</span>
-            {% endif %}
+        <!-- Meta Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Company</p>
+                <p class="text-sm font-semibold text-gray-900">{{ header.operating_company }}</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Counterparty</p>
+                <p class="text-sm font-semibold text-gray-900">{{ header.counterparty_name }}</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Date</p>
+                <p class="text-sm font-semibold text-gray-900">{{ header.invoice_date|format_date }}</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Status</p>
+                {% if header.invoice_status == 'FINAL' %}
+                <span class="status-badge status-final"><span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>Final</span>
+                {% elif header.invoice_status == 'DRAFT' %}
+                <span class="status-badge status-draft"><span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>Draft</span>
+                {% elif header.invoice_status == 'ADJUSTED' %}
+                <span class="status-badge status-adjusted"><span class="w-1.5 h-1.5 rounded-full bg-red-700"></span>Adjusted</span>
+                {% else %}
+                <span class="status-badge status-default">{{ header.invoice_status }}</span>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Source System</p>
+                <p class="text-sm font-semibold text-gray-900">{{ header.source_system }}</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Source Type</p>
+                <p class="text-sm font-semibold text-gray-900">{{ header.source_type }}</p>
+            </div>
         </div>
     </div>
-    <div class="detail-meta-item">
-        <div class="detail-meta-label">Source System</div>
-        <div class="detail-meta-value"><span class="chip chip-source">{{ header.source_system }}</span></div>
-    </div>
-    <div class="detail-meta-item">
-        <div class="detail-meta-label">Source Type</div>
-        <div class="detail-meta-value"><span class="chip chip-type">{{ header.source_type }}</span></div>
-    </div>
-</div>
+</section>
 
-<!-- Line Items -->
-<div class="content-card">
-    <div class="content-card-header">
-        <h2 class="content-card-title">Line Items</h2>
-        <span class="content-card-meta">{{ lines|length }} items</span>
-    </div>
-    <div class="content-card-body no-padding">
-        <div style="overflow-x: auto;">
-            <table class="modern-table">
+<!-- Main Content -->
+<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Line Items -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold text-gray-900">Line Items</h2>
+                <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ lines|length }} items</span>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
                 <thead>
-                    <tr>
-                        <th>Line ID</th>
-                        <th>Description</th>
-                        <th>UOM</th>
-                        <th class="text-end">Quantity</th>
-                        <th class="text-end">Rate</th>
-                        <th class="text-end">Amount</th>
+                    <tr class="bg-gray-50/50">
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Line ID</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">UOM</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Rate</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-100">
                     {% for line in lines %}
-                    <tr>
-                        <td>{{ line.line_id }}</td>
-                        <td>{{ line.line_name }}</td>
-                        <td><span class="chip chip-default">{{ line.uom }}</span></td>
-                        <td class="text-end">{{ line.quantity|format_number }}</td>
-                        <td class="text-end">{{ line.rate|format_number }}</td>
-                        <td class="text-end"><strong>{{ line.amount|currency }}</strong></td>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm text-gray-500 font-mono">{{ line.line_id }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ line.line_name }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ line.uom }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700 text-right font-mono">{{ line.quantity|format_number }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 text-right font-mono">{{ line.rate|format_number }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900 text-right font-semibold">{{ line.amount|currency }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
-                    <tr>
-                        <td colspan="5" class="text-end">Invoice Total</td>
-                        <td class="text-end">{{ header.invoice_total|currency }}</td>
+                    <tr class="bg-gray-50 border-t-2 border-gray-200">
+                        <td colspan="5" class="px-6 py-4 text-right text-sm font-bold text-gray-900 uppercase tracking-wide">Invoice Total</td>
+                        <td class="px-6 py-4 text-right text-lg font-bold text-gray-900">{{ header.invoice_total|currency }}</td>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
-</div>
 
-<!-- Attachments -->
-<div class="content-card">
-    <div class="content-card-header">
-        <h2 class="content-card-title">Attachments</h2>
-        <span class="content-card-meta">{{ attachments|length }} files</span>
-    </div>
-    <div class="content-card-body">
-        {% if attachments %}
-            {% for att in attachments %}
-            <a href="/invoices/{{ header.invoice_no }}/attachments/{{ att.file_name }}/" class="attachment-item">
-                <div class="attachment-info">
-                    <div class="attachment-icon {% if att.file_ext == '.pdf' %}pdf{% elif att.file_ext == '.xlsx' or att.file_ext == '.xls' %}excel{% else %}other{% endif %}">
+    <!-- Attachments -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold text-gray-900">Attachments</h2>
+                <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ attachments|length }} files</span>
+            </div>
+        </div>
+        <div class="p-6">
+            {% if attachments %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for att in attachments %}
+                <a href="/invoices/{{ header.invoice_no }}/attachments/{{ att.file_name }}/"
+                   class="attachment-card flex items-center gap-4 p-4 border border-gray-200 rounded-xl group">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
+                        {% if att.file_ext == '.pdf' %}bg-red-50 text-red-500{% elif att.file_ext == '.xlsx' or att.file_ext == '.xls' %}bg-emerald-50 text-emerald-500{% else %}bg-gray-50 text-gray-500{% endif %}">
                         {% if att.file_ext == '.pdf' %}
-                        <i class="bi bi-file-earmark-pdf"></i>
+                        <i data-feather="file" class="w-6 h-6"></i>
                         {% elif att.file_ext == '.xlsx' or att.file_ext == '.xls' %}
-                        <i class="bi bi-file-earmark-excel"></i>
+                        <i data-feather="grid" class="w-6 h-6"></i>
                         {% else %}
-                        <i class="bi bi-file-earmark"></i>
+                        <i data-feather="file" class="w-6 h-6"></i>
                         {% endif %}
                     </div>
-                    <div>
-                        <div class="attachment-name">{{ att.file_name }}</div>
-                        <div class="attachment-size">{{ att.file_size|format_filesize }}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ att.file_name }}</p>
+                        <p class="text-xs text-gray-500">{{ att.file_size|format_filesize }}</p>
                     </div>
+                    <div class="download-icon w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-500">
+                        <i data-feather="download" class="w-4 h-4"></i>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                    <i data-feather="paperclip" class="w-6 h-6 text-gray-400"></i>
                 </div>
-                <i class="bi bi-download" style="color: var(--text-hint);"></i>
-            </a>
-            {% endfor %}
-        {% else %}
-        <p style="color: var(--text-hint); margin: 0;">No attachments for this invoice.</p>
-        {% endif %}
+                <p class="text-sm text-gray-500">No attachments for this invoice</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
-</div>
+</main>
 {% endblock %}

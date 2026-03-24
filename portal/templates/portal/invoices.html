@@ -4,118 +4,244 @@
 {% block title %}Invoices - Wholesale Settlement Portal{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Invoices</h1>
-        <p class="page-subtitle">Browse and filter all wholesale settlement invoices</p>
-    </div>
-    <a href="/invoices/export/?{{ request.GET.urlencode }}" class="btn-action">
-        <i class="bi bi-download"></i> Export CSV
-    </a>
-</div>
+<!-- Hero Section with Stats -->
+<section class="bg-white border-b border-gray-100">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-8">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+                        <i data-feather="file-text" class="w-5 h-5 text-brand-500"></i>
+                    </div>
+                    <span class="text-gray-400 text-sm font-medium uppercase tracking-wider">Settlement</span>
+                </div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Invoices</h1>
+                <p class="text-gray-500 text-lg">Browse and manage all wholesale settlement invoices</p>
+            </div>
+            <div class="mt-4 lg:mt-0 flex gap-3">
+                <a href="/invoices/export/?{{ request.GET.urlencode }}"
+                   class="flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all">
+                    <i data-feather="download" class="w-4 h-4"></i>
+                    Export
+                </a>
+            </div>
+        </div>
 
-<!-- Pill Filters -->
-<form method="get">
-    <div class="pill-filter-bar">
-        <select name="operating_company" class="filter-pill {% if active_filters.operating_company %}has-value{% endif %}">
-            <option value="">All Companies</option>
-            {% for oc in filter_options.operating_companies %}
-            <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
-            {% endfor %}
-        </select>
-        <select name="counterparty_id" class="filter-pill {% if active_filters.counterparty_id %}has-value{% endif %}">
-            <option value="">All Counterparties</option>
-            {% for cp in filter_options.counterparties %}
-            <option value="{{ cp.id }}" {% if active_filters.counterparty_id == cp.id %}selected{% endif %}>{{ cp.name }}</option>
-            {% endfor %}
-        </select>
-        <select name="source_system" class="filter-pill {% if active_filters.source_system %}has-value{% endif %}">
-            <option value="">All Systems</option>
-            {% for ss in filter_options.source_systems %}
-            <option value="{{ ss }}" {% if active_filters.source_system == ss %}selected{% endif %}>{{ ss }}</option>
-            {% endfor %}
-        </select>
-        <select name="source_type" class="filter-pill {% if active_filters.source_type %}has-value{% endif %}">
-            <option value="">All Types</option>
-            {% for st in filter_options.source_types %}
-            <option value="{{ st }}" {% if active_filters.source_type == st %}selected{% endif %}>{{ st }}</option>
-            {% endfor %}
-        </select>
-        <select name="invoice_status" class="filter-pill {% if active_filters.invoice_status %}has-value{% endif %}">
-            <option value="">All Statuses</option>
-            {% for s in filter_options.statuses %}
-            <option value="{{ s }}" {% if active_filters.invoice_status == s %}selected{% endif %}>{{ s }}</option>
-            {% endfor %}
-        </select>
-        <input type="date" name="date_from" class="filter-pill-date {% if active_filters.date_from %}has-value{% endif %}" value="{{ active_filters.date_from|default:'' }}" placeholder="From">
-        <input type="date" name="date_to" class="filter-pill-date {% if active_filters.date_to %}has-value{% endif %}" value="{{ active_filters.date_to|default:'' }}" placeholder="To">
-        <div class="filter-actions">
-            <button type="submit" class="btn-filter-apply">Apply</button>
-            {% if active_filters %}
-            <a href="/invoices/" class="btn-filter-clear"><i class="bi bi-x"></i> Clear</a>
-            {% endif %}
+        <!-- Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                        <i data-feather="file-text" class="w-5 h-5 text-brand-500"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Total</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ invoices|length }}</p>
+                <p class="text-sm text-gray-500 mt-1">Invoices Found</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                        <i data-feather="dollar-sign" class="w-5 h-5 text-emerald-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Value</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_amount|currency }}</p>
+                <p class="text-sm text-gray-500 mt-1">Total Amount</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i data-feather="check-circle" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Filters</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ active_filters|length }}</p>
+                <p class="text-sm text-gray-500 mt-1">Active Filters</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                        <i data-feather="layers" class="w-5 h-5 text-amber-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Sources</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ filter_options.source_systems|length }}</p>
+                <p class="text-sm text-gray-500 mt-1">Source Systems</p>
+            </div>
         </div>
     </div>
-</form>
+</section>
 
-<!-- Results -->
-<div class="results-bar">
-    <span>Showing <strong>{{ invoices|length }}</strong> invoices &mdash; Total: <strong>{{ total_amount|currency }}</strong></span>
-</div>
+<!-- Main Content -->
+<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-4 relative z-20">
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+        <form method="get" class="p-5">
+            <div class="flex flex-col lg:flex-row gap-4">
+                <!-- Quick Status Filters -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <a href="/invoices/" class="filter-pill {% if not active_filters.invoice_status %}active{% endif %} px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium">
+                        All
+                    </a>
+                    {% for s in filter_options.statuses %}
+                    <a href="?invoice_status={{ s }}{% if active_filters.operating_company %}&operating_company={{ active_filters.operating_company }}{% endif %}"
+                       class="filter-pill {% if active_filters.invoice_status == s %}active{% endif %} px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium">
+                        <span class="w-2 h-2 rounded-full inline-block mr-2 {% if s == 'FINAL' %}bg-emerald-500{% elif s == 'DRAFT' %}bg-amber-500{% elif s == 'ADJUSTED' %}bg-red-500{% else %}bg-gray-400{% endif %}"></span>
+                        {{ s }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
 
-{% if invoices %}
-<div class="content-card">
-    <div class="content-card-body no-padding">
-        <div style="overflow-x: auto;">
-            <table class="modern-table">
+            <!-- Advanced Filters -->
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Operating Company</label>
+                    <select name="operating_company" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                        <option value="">All Companies</option>
+                        {% for oc in filter_options.operating_companies %}
+                        <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Counterparty</label>
+                    <select name="counterparty_id" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                        <option value="">All Counterparties</option>
+                        {% for cp in filter_options.counterparties %}
+                        <option value="{{ cp.id }}" {% if active_filters.counterparty_id == cp.id %}selected{% endif %}>{{ cp.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Source System</label>
+                    <select name="source_system" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                        <option value="">All Systems</option>
+                        {% for ss in filter_options.source_systems %}
+                        <option value="{{ ss }}" {% if active_filters.source_system == ss %}selected{% endif %}>{{ ss }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Source Type</label>
+                    <select name="source_type" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                        <option value="">All Types</option>
+                        {% for st in filter_options.source_types %}
+                        <option value="{{ st }}" {% if active_filters.source_type == st %}selected{% endif %}>{{ st }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date From</label>
+                    <input type="date" name="date_from" value="{{ active_filters.date_from|default:'' }}"
+                           class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:bg-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date To</label>
+                    <input type="date" name="date_to" value="{{ active_filters.date_to|default:'' }}"
+                           class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:bg-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select name="invoice_status" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                        <option value="">All Statuses</option>
+                        {% for s in filter_options.statuses %}
+                        <option value="{{ s }}" {% if active_filters.invoice_status == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex items-end gap-2">
+                    <button type="submit"
+                            class="flex-1 py-2.5 px-4 text-white rounded-xl text-sm font-medium transition-all"
+                            style="background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);">
+                        Apply Filters
+                    </button>
+                    {% if active_filters %}
+                    <a href="/invoices/" class="py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-all">
+                        Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Invoice Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold text-gray-900">Invoices</h2>
+                <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ invoices|length }} results</span>
+            </div>
+        </div>
+
+        {% if invoices %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
                 <thead>
-                    <tr>
-                        <th>Invoice No</th>
-                        <th>Invoice Name</th>
-                        <th>Company</th>
-                        <th>Counterparty</th>
-                        <th>Source</th>
-                        <th>Type</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th class="text-end">Total</th>
+                    <tr class="bg-gray-50/50">
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Invoice</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Company</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Counterparty</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Source</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"><span class="sr-only">Action</span></th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-100">
                     {% for inv in invoices %}
-                    <tr class="clickable" onclick="window.location='/invoices/{{ inv.invoice_no }}/';">
-                        <td><strong>{{ inv.invoice_no }}</strong></td>
-                        <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ inv.invoice_name }}</td>
-                        <td>{{ inv.operating_company }}</td>
-                        <td>{{ inv.counterparty_name }}</td>
-                        <td><span class="chip chip-source">{{ inv.source_system }}</span></td>
-                        <td><span class="chip chip-type">{{ inv.source_type }}</span></td>
-                        <td>{{ inv.invoice_date|format_date }}</td>
-                        <td>
+                    <tr class="invoice-row" onclick="window.location='/invoices/{{ inv.invoice_no }}/';">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #EC1C24;">
+                                    <i data-feather="file-text" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-sm text-gray-900">{{ inv.invoice_no }}</p>
+                                    <p class="text-xs text-gray-500 truncate max-w-[180px]">{{ inv.invoice_name }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">{{ inv.operating_company }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ inv.counterparty_name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 hidden xl:table-cell">
+                            <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium">{{ inv.source_type }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ inv.invoice_date|format_date }}</td>
+                        <td class="px-6 py-4 text-center">
                             {% if inv.invoice_status == 'FINAL' %}
-                            <span class="chip chip-final">Final</span>
+                            <span class="status-badge status-final"><span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>Final</span>
                             {% elif inv.invoice_status == 'DRAFT' %}
-                            <span class="chip chip-draft">Draft</span>
+                            <span class="status-badge status-draft"><span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>Draft</span>
                             {% elif inv.invoice_status == 'ADJUSTED' %}
-                            <span class="chip chip-adjusted">Adjusted</span>
+                            <span class="status-badge status-adjusted"><span class="w-1.5 h-1.5 rounded-full bg-red-700"></span>Adjusted</span>
                             {% else %}
-                            <span class="chip chip-default">{{ inv.invoice_status }}</span>
+                            <span class="status-badge status-default">{{ inv.invoice_status }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-end"><strong>{{ inv.invoice_total|currency }}</strong></td>
+                        <td class="px-6 py-4 text-right font-semibold text-sm text-gray-900">{{ inv.invoice_total|currency }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="row-action text-brand-500">
+                                <i data-feather="chevron-right" class="w-5 h-5"></i>
+                            </span>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <div class="py-16 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <i data-feather="search" class="w-8 h-8 text-gray-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No invoices found</h3>
+            <p class="text-gray-500 text-sm">Try adjusting your filters or <a href="/invoices/" class="text-brand-500 hover:underline">clear all filters</a>.</p>
+        </div>
+        {% endif %}
     </div>
-</div>
-{% else %}
-<div class="content-card">
-    <div class="empty-state">
-        <i class="bi bi-search"></i>
-        <p>No invoices match your filters.<br><a href="/invoices/">Clear all filters</a> to see everything.</p>
-    </div>
-</div>
-{% endif %}
+</main>
 {% endblock %}

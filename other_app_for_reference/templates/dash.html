@@ -1,0 +1,1910 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Southern Company - Wholsale Customer Service Platform</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<!-- Lucide Icons -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+
+<link  rel="stylesheet" href="{% static 'css/style.css' %}"></link>
+
+<style>
+
+</style>
+
+</head>
+<body class="bg-gray-50 text-gray-800 pattern-bg">
+<div id="loadingOverlay" class="loading-overlay"><div class="loader"></div></div>
+
+<div class="flex flex-col h-screen overflow-hidden">
+    
+    <!-- Header with enhanced nav styling -->
+    {% include 'core/navbar.html' %}
+
+        <!-- Mobile menu (enhanced animations) -->
+        <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm">
+            <div id="mobileMenu" class="fixed top-0 right-0 w-72 h-full bg-white transform translate-x-full transition-transform duration-300 ease-out shadow-2xl">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <img src="sclogo.png" alt="Southern Company" class="ml-3 h-6 object-contain sm:inline" style="height:25px;">
+                    </div>
+                    <button id="closeMobileMenu" class="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded-full hover:bg-gray-100">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+                
+                <div class="flex flex-col p-4 space-y-2">
+            // Mobile nav buttons
+                    <button 
+                        data-tab="dashboard" 
+                        class="mobile-nav-btn flex items-center p-3 rounded-lg transition-colors duration-200 bg-[#EC1C24] bg-opacity-10 text-[#EC1C24]">
+                        <i data-feather="home" class="mr-3"></i>
+                        <span>Dash</span>
+                    </button>
+                    
+                    <button 
+                        data-tab="usage"
+                        class="mobile-nav-btn flex items-center p-3 rounded-lg transition-colors duration-200 hover:bg-gray-100">
+                        <i data-feather="bar-chart-2" class="mr-3"></i>
+                        <span>Energy Analysis</span>
+                    </button>
+                    
+                  
+                    <button 
+                        data-tab="statements"
+                        class="mobile-nav-btn flex items-center p-3 rounded-lg transition-colors duration-200 hover:bg-gray-100">
+                        <i data-feather="file-text" class="mr-3"></i>
+                        <span>Statements</span>
+                    </button>
+
+                    <div class="pt-6 mt-6 border-t border-gray-200">
+                        <button class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                            <i data-feather="settings" class="mr-3"></i>
+                            <span>Settings</span>
+                        </button>
+                        
+                        <button class="flex items-center p-3 rounded-lg hover:bg-gray-100 text-[#EC1C24] transition-colors duration-200">
+                            <i data-feather="log-out" class="mr-3"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shadow-sm">
+                            <i data-feather="user"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-medium">Josh Johnson</p>
+                            <p class="text-xs text-gray-500">Account #SC-1234567</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-4 md:px-6 lg:px-12 py-6">
+            <div class="w-full">
+                <div class="flex flex-col">
+                    <div class="mb-8 flex justify-between items-start">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                            <p class="text-[#626262] mt-1">Welcome back, Josh. Here's your energy summary at a glance.</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <button 
+                                    id="datePickerBtn"
+                                    class="flex items-center space-x-2 py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all duration-200 filter-btn shadow-sm">
+                                    <i data-feather="calendar" class="w-4 h-4 text-gray-500"></i>
+                                    <span>Apr 01, 2025 - May 01, 2025</span>
+                                    <i data-feather="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                                </button>
+                                
+                                <div id="datePickerDropdown" class="dropdown-menu w-80">
+                                    <div class="p-4">
+                                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-medium">Select Date Range</h4>
+                            <button class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors" id="closeDatePicker">
+                                <i data-feather="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                                        
+                                        <div class="flex justify-between items-center mb-4">
+                                            <button class="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                                <i data-feather="chevron-left" class="w-4 h-4"></i>
+                                            </button>
+                                            <div class="font-medium">May 2025</div>
+                                            <button class="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                                <i data-feather="chevron-right" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-7 gap-1 mb-4 text-center text-xs font-medium text-gray-500">
+                                            <div>Su</div>
+                                            <div>Mo</div>
+                                            <div>Tu</div>
+                                            <div>We</div>
+                                            <div>Th</div>
+                                            <div>Fr</div>
+                                            <div>Sa</div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-7 gap-1 mb-4" id="calendarDays">
+                                            <!-- Calendar days will be inserted here via JavaScript -->
+                                        </div>
+                                        
+                                        <div class="flex space-x-2">
+                                            <button 
+                                                id="cancelDatePicker"
+                                                class="flex-1 py-2 px-3 bg-gray-100 rounded-lg font-medium text-sm hover:bg-gray-200 transition-colors">
+                                                Cancel
+                                            </button>
+                                            <button 
+                                                id="applyDatePicker"
+                                                class="flex-1 py-2 px-3 bg-[#EC1C24] text-white rounded-lg font-medium text-sm hover:bg-opacity-90 transition-colors btn-primary">
+                                                Apply
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative dropdown-toggle">
+                                <button 
+                                    id="mainTimeFilterBtn"
+                                    class="flex items-center space-x-2 py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all duration-200 filter-btn shadow-sm">
+                                    <i data-feather="filter" class="w-4 h-4 text-gray-500"></i>
+                                    <span>Monthly</span>
+                                    <i data-feather="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                                </button>
+                                
+                                <div id="mainTimeFilterDropdown" class="dropdown-menu w-40">
+                                    <button data-value="daily" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                                        1D
+                                    </button>
+                                    <button data-value="weekly" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                                        1W
+                                    </button>
+                                    <button data-value="monthly" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors text-[#EC1C24] font-medium filter-btn-active">
+                                        MTD
+                                    </button>
+                                    <button data-value="yearly" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                                        YTD
+                                    </button>
+                                    <button data-value="custom" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                                        Custom
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats cards with enhanced hover effects -->
+                    <div class="fade-in flex flex-row overflow-x-auto gap-4 mb-8" style="transition-delay: 100ms">
+                        <div class="dashboard-card bg-white rounded-lg p-5 min-w-[250px] flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-[#626262] text-sm mb-1">Current Invoice</p>
+                                    <p class="text-2xl font-bold">$12.3M</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-[#EC1C24] bg-opacity-10 flex items-center justify-center text-[#EC1C24] shadow-inner">
+                                    <i data-feather="dollar-sign"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs">
+                                <span class="text-green-500 flex items-center font-medium">
+                                    <i data-feather="trending-up" class="w-3.5 h-3.5 mr-1"></i>
+                                    5% lower than last year
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card bg-white rounded-lg p-5 min-w-[250px] flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-[#626262] text-sm mb-1">Energy Usage</p>
+                                    <p class="text-2xl font-bold">842 mwH</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-[#00BCF1] bg-opacity-10 flex items-center justify-center text-[#00BCF1] shadow-inner">
+                                    <i data-feather="zap"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs">
+                                <span class="text-green-500 flex items-center font-medium">
+                                    <i data-feather="trending-up" class="w-3.5 h-3.5 mr-1"></i>
+                                    2% lower than last year
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card bg-white rounded-lg p-5 min-w-[250px] flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-[#626262] text-sm mb-1">Due Date</p>
+                                    <p class="text-2xl font-bold">May 15</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-[#626262] bg-opacity-10 flex items-center justify-center text-[#626262] shadow-inner">
+                                    <i data-feather="calendar"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs">
+                                <span class="text-[#626262] flex items-center font-medium">
+                                    <i data-feather="clock" class="w-3.5 h-3.5 mr-1"></i>
+                                    14 days remaining
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card bg-white rounded-lg p-5 min-w-[250px] flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-[#626262] text-sm mb-1">Energy Generated</p>
+                                    <p class="text-2xl font-bold">60%</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-green-500 bg-opacity-10 flex items-center justify-center text-green-500 shadow-inner">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 3v5l2-2 2 4v4a3 3 0 0 1-6 0v-4l2-4 2 2V3h-2z"/>
+                                        <path d="M14 21c1.5 0 3-2 3-5.5S15.5 10 14 10"/>
+                                        <path d="M10 21c-1.5 0-3-2-3-5.5S8.5 10 10 10"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs">
+                                <span class="text-green-500 flex items-center font-medium">
+                                    <i data-feather="trending-up" class="w-3.5 h-3.5 mr-1"></i>
+                                    10% increase from last year
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Main charts with enhanced styling -->
+                    <div class="fade-in grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" style="transition-delay: 200ms">
+                        <div class="lg:col-span-2 dashboard-card bg-white rounded-lg p-5">
+                            <div class="flex justify-between items-center mb-5">
+                                <h2 class="font-bold text-lg">Monthly Energy Usage</h2>
+                                <div class="flex space-x-2">
+                                    <button 
+                                        data-chart-type="usage"
+                                        class="usage-chart-toggle px-3 py-1.5 text-xs font-medium rounded-full bg-[#EC1C24] text-white shadow-sm">
+                                        Usage
+                                    </button>
+                                    <button 
+                                        data-chart-type="cost"
+                                        class="usage-chart-toggle px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-[#626262] hover:bg-gray-200 transition-colors duration-200 shadow-sm">
+                                        Cost
+                                    </button>
+                                    <div class="relative dropdown-toggle ml-2">
+                                        <button 
+                                            id="monthlyDropdownBtn"
+                                            class="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-[#626262] hover:bg-gray-200 transition-all duration-200 flex items-center shadow-sm">
+                                            <span>1M</span>
+                                            <i data-feather="chevron-down" class="w-3 h-3 ml-1 text-gray-500"></i>
+                                        </button>
+                                        
+                                        <div id="monthlyDropdown" class="dropdown-menu w-32">
+                                            <button data-value="today" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Today
+                                            </button>
+                                            <button data-value="7d" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                7D
+                                            </button>
+                                            <button data-value="1m" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors text-[#EC1C24] font-medium filter-btn-active">
+                                                1M
+                                            </button>
+                                            <button data-value="3m" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                3M
+                                            </button>
+                                            <button data-value="6m" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                6M
+                                            </button>
+                                            <button data-value="1y" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                1Y
+                                            </button>
+                                            <button data-value="custom" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Custom
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h-72 chart-container">
+                                <canvas id="monthlyUsageChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card bg-white rounded-lg p-5">
+                            <div class="flex justify-between items-center mb-5">
+                                <h2 class="font-bold text-lg">Energy Mix</h2>
+                                <div class="flex items-center">
+                                    <div class="relative dropdown-toggle mr-2">
+                                        <button 
+                                            id="energySourcesDropdownBtn"
+                                            class="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-[#626262] hover:bg-gray-200 transition-all duration-200 flex items-center shadow-sm">
+                                            <span>1M</span>
+                                            <i data-feather="chevron-down" class="w-3 h-3 ml-1 text-gray-500"></i>
+                                        </button>
+                                        
+                                        <div id="energySourcesDropdown" class="dropdown-menu w-32">
+                                            <button data-value="today" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Today
+                                            </button>
+                                            <button data-value="7d" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                7D
+                                            </button>
+                                            <button data-value="1m" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors text-[#EC1C24] font-medium filter-btn-active">
+                                                1M
+                                            </button>
+                                            <button data-value="3m" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                3M
+                                            </button>
+                                            <button data-value="6m" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                6M
+                                            </button>
+                                            <button data-value="1y" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                1Y
+                                            </button>
+                                            <button data-value="custom" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Custom
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="relative dropdown-toggle">
+                                        <button 
+                                            id="optionsMenuBtn"
+                                            class="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="1" />
+                                                <circle cx="12" cy="5" r="1" />
+                                                <circle cx="12" cy="19" r="1" />
+                                            </svg>
+                                        </button>
+                                        
+                                        <div id="optionsMenu" class="dropdown-menu w-40">
+                                            <button class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                                </svg>
+                                                <span>Download</span>
+                                            </button>
+                                            <button class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                                    <circle cx="18" cy="5" r="3"></circle>
+                                                    <circle cx="6" cy="12" r="3"></circle>
+                                                    <circle cx="18" cy="19" r="3"></circle>
+                                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                                </svg>
+                                                <span>Share</span>
+                                            </button>
+                                            <button class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                                </svg>
+                                                <span>Print</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h-72 flex flex-col justify-center">
+                                <div class="chart-container h-[80%]">
+                                    <canvas id="energySourcesChart"></canvas>
+                                </div>
+                                <div class="flex flex-wrap justify-center gap-3 px-4 mt-2" id="energySourcesLegend">
+                                    <!-- Legend will be inserted here via JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Secondary charts row with enhanced styling -->
+                    <div class="fade-in grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" style="transition-delay: 300ms">
+                        <div class="dashboard-card bg-white rounded-lg p-5">
+                            <div class="flex justify-between items-center mb-5">
+                                <h2 class="font-bold text-lg">Hourly Usage Today</h2>
+                                <div class="flex items-center">
+                                    <div class="relative dropdown-toggle mr-3">
+                                        <button 
+                                            id="hourlyDropdownBtn"
+                                            class="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-[#626262] hover:bg-gray-200 transition-all duration-200 flex items-center shadow-sm">
+                                            <span>Today</span>
+                                            <i data-feather="chevron-down" class="w-3 h-3 ml-1 text-gray-500"></i>
+                                        </button>
+                                        
+                                        <div id="hourlyDropdown" class="dropdown-menu w-32">
+                                            <button data-value="today" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors text-[#EC1C24] font-medium filter-btn-active">
+                                                Today
+                                            </button>
+                                            <button data-value="yesterday" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Yesterday
+                                            </button>
+                                            <button data-value="last7days" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Last 7 Days
+                                            </button>
+                                            <button data-value="custom" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Custom
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button class="text-xs text-[#00BCF1] font-medium hover:underline transition-all duration-200 hover:text-[#009dca]">View Details</button>
+                                </div>
+                            </div>
+                            <div class="h-64 chart-container">
+                                <canvas id="hourlyUsageChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card bg-white rounded-lg p-5">
+                            <div class="flex justify-between items-center mb-5">
+                                <h2 class="font-bold text-lg">Bill Breakdown</h2>
+                                <div class="flex items-center">
+                                    <div class="relative dropdown-toggle mr-3">
+                                        <button 
+                                            id="billDropdownBtn"
+                                            class="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-[#626262] hover:bg-gray-200 transition-all duration-200 flex items-center shadow-sm">
+                                            <span>Current Bill</span>
+                                            <i data-feather="chevron-down" class="w-3 h-3 ml-1 text-gray-500"></i>
+                                        </button>
+                                        
+                                        <div id="billDropdown" class="dropdown-menu w-36">
+                                            <button data-value="current" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors text-[#EC1C24] font-medium filter-btn-active">
+                                                Current Bill
+                                            </button>
+                                            <button data-value="previous" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Previous Bill
+                                            </button>
+                                            <button data-value="yearly" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Yearly Average
+                                            </button>
+                                            <button data-value="custom" class="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors">
+                                                Custom Period
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button class="text-xs text-[#00BCF1] font-medium hover:underline transition-all duration-200 hover:text-[#009dca]">Payment History</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="h-64 chart-container">
+                                    <canvas id="billBreakdownChart"></canvas>
+                                </div>
+                                <div class="flex flex-col justify-center space-y-4" id="billBreakdownDetails">
+                                    <!-- Bill breakdown details will be inserted here via JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent activity and tips with enhanced styling -->
+                    <div class="fade-in grid grid-cols-1 lg:grid-cols-3 gap-6" style="transition-delay: 400ms">
+                        
+                        <div class="lg:col-span-2 dashboard-card bg-white rounded-lg p-5">
+                            <div class="flex justify-between items-center mb-5">
+                                <h2 class="font-bold text-lg">Invoice/Transaction History</h2>
+                                <div class="flex items-center space-x-2">
+                                    <button id="exportTransactions" class="text-xs text-[#00BCF1] font-medium hover:underline transition-all duration-200 hover:text-[#009dca]">
+                                        Export
+                                    </button>
+                                    <button id="viewAllTransactions" class="text-xs text-[#00BCF1] font-medium hover:underline transition-all duration-200 hover:text-[#009dca]">
+                                        View All
+                                    </button>
+                                    <button class="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="1" />
+                                            <circle cx="12" cy="5" r="1" />
+                                            <circle cx="12" cy="19" r="1" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Filter controls -->
+                            <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+                                <div class="relative">
+                                    <input id="transactionSearch" type="text" placeholder="Search transactions..." class="py-1.5 px-3 text-sm border border-gray-200 rounded-lg pr-8 focus:outline-none focus:ring-1 focus:ring-[#00BCF1] focus:border-[#00BCF1]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-2.5 top-2 text-gray-400">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <select id="transactionFilter" class="text-sm border border-gray-200 rounded-lg py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#00BCF1] focus:border-[#00BCF1]">
+                                        <option value="all">All Types</option>
+                                        <option value="invoice">Invoices</option>
+                                        <option value="payment">Payments</option>
+                                        <option value="adjustment">Adjustments</option>
+                                    </select>
+                                    
+                                    <select id="transactionSort" class="text-sm border border-gray-200 rounded-lg py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#00BCF1] focus:border-[#00BCF1]">
+                                        <option value="date-desc">Date (Newest)</option>
+                                        <option value="date-asc">Date (Oldest)</option>
+                                        <option value="amount-desc">Amount (High-Low)</option>
+                                        <option value="amount-asc">Amount (Low-High)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Transaction table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-[#00BCF1]" data-sort="date">
+                                                Date
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1">
+                                                    <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
+                                                </svg>
+                                            </th>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-[#00BCF1]" data-sort="id">
+                                                Invoice ID
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1">
+                                                    <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
+                                                </svg>
+                                            </th>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-[#00BCF1]" data-sort="type">
+                                                Type
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1">
+                                                    <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
+                                                </svg>
+                                            </th>
+                                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-[#00BCF1]" data-sort="amount">
+                                                Amount
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1">
+                                                    <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
+                                                </svg>
+                                            </th>
+                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-100" id="transactionTableBody">
+                                        <!-- Transaction rows will be inserted here via JavaScript -->
+                                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">Apr 30, 2025</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">INV-10253</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    Invoice
+                                                </span>
+                                            </td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-medium">$12,345.67</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    Pending
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">Apr 15, 2025</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">PMT-28756</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Payment
+                                                </span>
+                                            </td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-medium">$11,876.50</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Completed
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">Mar 31, 2025</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">INV-10185</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    Invoice
+                                                </span>
+                                            </td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-medium">$11,876.50</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Paid
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">Mar 15, 2025</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">ADJ-5026</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                    Adjustment
+                                                </span>
+                                            </td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-medium">-$853.42</td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Processed
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="text-sm text-gray-500">
+                                    Showing <span class="font-medium">1</span> to <span class="font-medium">4</span> of <span class="font-medium">24</span> transactions
+                                </div>
+                                
+                                <div class="flex items-center space-x-1">
+                                    <button class="px-2 py-1 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="15 18 9 12 15 6"></polyline>
+                                        </svg>
+                                    </button>
+                                    
+                                    <button class="px-2 py-1 border border-gray-200 rounded-lg text-sm bg-[#EC1C24] text-white font-medium">
+                                        1
+                                    </button>
+                                    
+                                    <button class="px-2 py-1 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
+                                        2
+                                    </button>
+                                    
+                                    <button class="px-2 py-1 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
+                                        3
+                                    </button>
+                                    
+                                    <span class="px-2 py-1 text-sm text-gray-500">...</span>
+                                    
+                                    <button class="px-2 py-1 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
+                                        6
+                                    </button>
+                                    
+                                    <button class="px-2 py-1 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card bg-white rounded-lg p-5">
+                            <div class="flex justify-between items-center mb-5">
+                                <h2 class="font-bold text-lg">Recent Activity</h2>
+                                <button class="text-xs text-[#00BCF1] font-medium hover:underline transition-all duration-200 hover:text-[#009dca]">View All</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="activity-item flex items-start p-3 rounded-lg">
+                                    <div class="w-12 h-12 rounded-full bg-[#EC1C24] bg-opacity-10 flex items-center justify-center text-[#EC1C24] mr-4 shadow-inner">
+                                        <i data-feather="credit-card"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between">
+                                            <p class="font-semibold">Payment Processed</p>
+                                            <p class="text-xs text-gray-500">Apr 15, 2025</p>
+                                        </div>
+                                        <p class="text-sm text-[#626262] mt-1">Your payment of $138.42 was successfully processed.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="activity-item flex items-start p-3 rounded-lg">
+                                    <div class="w-12 h-12 rounded-full bg-[#00BCF1] bg-opacity-10 flex items-center justify-center text-[#00BCF1] mr-4 shadow-inner">
+                                        <i data-feather="file-text"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between">
+                                            <p class="font-semibold">Bill Generated</p>
+                                            <p class="text-xs text-gray-500">Apr 1, 2025</p>
+                                        </div>
+                                        <p class="text-sm text-[#626262] mt-1">Your monthly bill of $142.35 has been generated.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="activity-item flex items-start p-3 rounded-lg">
+                                    <div class="w-12 h-12 rounded-full bg-green-500 bg-opacity-10 flex items-center justify-center text-green-500 mr-4 shadow-inner">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M6 3v12"></path>
+                                            <path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                                            <path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                                            <path d="M15 6a9 9 0 0 1 0 12"></path>
+                                            <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
+                                            <path d="M9 6a9 9 0 0 1 0 12"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between">
+                                            <p class="font-semibold">Usage Alert</p>
+                                            <p class="text-xs text-gray-500">Mar 28, 2025</p>
+                                        </div>
+                                        <p class="text-sm text-[#626262] mt-1">Your energy usage was 15% higher than usual yesterday.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mock data for charts
+        const powerUsageData = [
+            { name: 'Jan', usage: 320, cost: 240 },
+            { name: 'Feb', usage: 300, cost: 221 },
+            { name: 'Mar', usage: 340, cost: 250 },
+            { name: 'Apr', usage: 380, cost: 271 },
+            { name: 'May', usage: 420, cost: 309 },
+            { name: 'Jun', usage: 490, cost: 350 },
+            { name: 'Jul', usage: 520, cost: 379 },
+            { name: 'Aug', usage: 510, cost: 370 },
+            { name: 'Sep', usage: 440, cost: 320 },
+            { name: 'Oct', usage: 400, cost: 290 },
+            { name: 'Nov', usage: 360, cost: 265 },
+            { name: 'Dec', usage: 330, cost: 245 },
+        ];
+
+        const hourlyUsageData = [
+            { time: '12am', usage: 24 },
+            { time: '3am', usage: 18 },
+            { time: '6am', usage: 42 },
+            { time: '9am', usage: 84 },
+            { time: '12pm', usage: 93 },
+            { time: '3pm', usage: 102 },
+            { time: '6pm', usage: 116 },
+            { time: '9pm', usage: 78 },
+            { time: '11pm', usage: 50 },
+        ];
+
+        const energySourceData = [
+            { name: 'Solar', value: 35 },
+            { name: 'Wind', value: 25 },
+            { name: 'Natural Gas', value: 30 },
+            { name: 'Coal', value: 10 }
+        ];
+
+        const billBreakdownData = [
+            { name: 'Generation', value: 45 },
+            { name: 'Transmission', value: 20 },
+            { name: 'Distribution', value: 25 },
+            { name: 'Taxes & Fees', value: 10 }
+        ];
+
+        const COLORS = ['#EC1C24', '#00BCF1', '#626262', '#F7B32B'];
+
+
+// Transaction table functionality
+function initializeTransactionTable() {
+    // Mock transaction data
+    const transactionData = [
+        { date: 'Apr 30, 2025', id: 'INV-10253', type: 'invoice', amount: 12345.67, status: 'pending' },
+        { date: 'Apr 15, 2025', id: 'PMT-28756', type: 'payment', amount: 11876.50, status: 'completed' },
+        { date: 'Mar 31, 2025', id: 'INV-10185', type: 'invoice', amount: 11876.50, status: 'paid' },
+        { date: 'Mar 15, 2025', id: 'ADJ-5026', type: 'adjustment', amount: -853.42, status: 'processed' },
+        { date: 'Feb 28, 2025', id: 'INV-10152', type: 'invoice', amount: 10964.30, status: 'paid' },
+        { date: 'Feb 15, 2025', id: 'PMT-27531', type: 'payment', amount: 10964.30, status: 'completed' },
+        { date: 'Jan 31, 2025', id: 'INV-10118', type: 'invoice', amount: 12109.75, status: 'paid' },
+        { date: 'Jan 15, 2025', id: 'PMT-26345', type: 'payment', amount: 12109.75, status: 'completed' },
+    ];
+    
+    let filteredTransactions = [...transactionData];
+    let currentSort = { field: 'date', direction: 'desc' };
+    let currentFilter = 'all';
+    let searchTerm = '';
+    
+    // Reference elements
+    const tableBody = document.getElementById('transactionTableBody');
+    const searchInput = document.getElementById('transactionSearch');
+    const filterSelect = document.getElementById('transactionFilter');
+    const sortSelect = document.getElementById('transactionSort');
+    const tableHeaders = document.querySelectorAll('th[data-sort]');
+    const exportBtn = document.getElementById('exportTransactions');
+    const viewAllBtn = document.getElementById('viewAllTransactions');
+    
+    // Initialize table with data
+    renderTransactions();
+    
+    // Add event listeners
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            searchTerm = this.value.toLowerCase();
+            applyFiltersAndSort();
+        });
+    }
+    
+    if (filterSelect) {
+        filterSelect.addEventListener('change', function() {
+            currentFilter = this.value;
+            applyFiltersAndSort();
+        });
+    }
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const [field, direction] = this.value.split('-');
+            currentSort = { field, direction };
+            applyFiltersAndSort();
+        });
+    }
+    
+    // Add click handlers for table headers
+    tableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const field = this.getAttribute('data-sort');
+            
+            // Toggle direction if same field
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = { field, direction: 'asc' };
+            }
+            
+            // Update sort select to match
+            if (sortSelect) {
+                const value = `${currentSort.field}-${currentSort.direction}`;
+                if (sortSelect.querySelector(`option[value="${value}"]`)) {
+                    sortSelect.value = value;
+                }
+            }
+            
+            applyFiltersAndSort();
+        });
+    });
+    
+    // Export functionality
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            exportTransactions();
+        });
+    }
+    
+    // View All button
+    if (viewAllBtn) {
+        viewAllBtn.addEventListener('click', function() {
+            // This would navigate to a full transactions page in a real implementation
+            console.log('View all transactions clicked');
+        });
+    }
+    
+    // Apply filters and sort
+    function applyFiltersAndSort() {
+        // Filter transactions
+        filteredTransactions = transactionData.filter(transaction => {
+            // Apply search filter
+            if (searchTerm && !Object.values(transaction).some(value => 
+                String(value).toLowerCase().includes(searchTerm)
+            )) {
+                return false;
+            }
+            
+            // Apply type filter
+            if (currentFilter !== 'all' && transaction.type !== currentFilter) {
+                return false;
+            }
+            
+            return true;
+        });
+        
+        // Sort transactions
+        filteredTransactions.sort((a, b) => {
+            const aValue = a[currentSort.field];
+            const bValue = b[currentSort.field];
+            
+            // Handle date format specially
+            if (currentSort.field === 'date') {
+                const aDate = new Date(aValue);
+                const bDate = new Date(bValue);
+                return currentSort.direction === 'asc' 
+                    ? aDate - bDate 
+                    : bDate - aDate;
+            }
+            
+            // Handle numeric values
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+                return currentSort.direction === 'asc' 
+                    ? aValue - bValue 
+                    : bValue - aValue;
+            }
+            
+            // Handle string values
+            const aString = String(aValue).toLowerCase();
+            const bString = String(bValue).toLowerCase();
+            
+            return currentSort.direction === 'asc' 
+                ? aString.localeCompare(bString) 
+                : bString.localeCompare(aString);
+        });
+        
+        renderTransactions();
+    }
+    
+    // Render transactions to table
+    function renderTransactions() {
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = '';
+        
+        if (filteredTransactions.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+                <td colspan="5" class="px-3 py-4 text-center text-sm text-gray-500">
+                    No transactions found. Try adjusting your filters.
+                </td>
+            `;
+            tableBody.appendChild(emptyRow);
+            return;
+        }
+        
+        filteredTransactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50 transition-colors cursor-pointer';
+            
+            // Format amount
+            const formattedAmount = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(transaction.amount);
+            
+            // Determine type badge color
+            let typeBadgeClass = 'bg-gray-100 text-gray-800';
+            if (transaction.type === 'invoice') {
+                typeBadgeClass = 'bg-blue-100 text-blue-800';
+            } else if (transaction.type === 'payment') {
+                typeBadgeClass = 'bg-green-100 text-green-800';
+            } else if (transaction.type === 'adjustment') {
+                typeBadgeClass = 'bg-purple-100 text-purple-800';
+            }
+            
+            // Determine status badge color
+            let statusBadgeClass = 'bg-gray-100 text-gray-800';
+            if (transaction.status === 'pending') {
+                statusBadgeClass = 'bg-yellow-100 text-yellow-800';
+            } else if (['completed', 'paid', 'processed'].includes(transaction.status)) {
+                statusBadgeClass = 'bg-green-100 text-green-800';
+            }
+            
+            // Format type and status for display
+            const displayType = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+            const displayStatus = transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1);
+            
+            row.innerHTML = `
+                <td class="px-3 py-2 whitespace-nowrap text-sm">${transaction.date}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">${transaction.id}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${typeBadgeClass}">
+                        ${displayType}
+                    </span>
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-medium">${formattedAmount}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass}">
+                        ${displayStatus}
+                    </span>
+                </td>
+            `;
+            
+            // Add click event to view transaction details
+            row.addEventListener('click', () => {
+                // This would open transaction details in a real implementation
+                console.log('View transaction details:', transaction);
+            });
+            
+            tableBody.appendChild(row);
+        });
+        
+        // Update pagination info
+        const paginationInfo = document.querySelector('.text-sm.text-gray-500');
+        if (paginationInfo) {
+            paginationInfo.innerHTML = `
+                Showing <span class="font-medium">1</span> to <span class="font-medium">${Math.min(filteredTransactions.length, 4)}</span> of <span class="font-medium">${filteredTransactions.length}</span> transactions
+            `;
+        }
+    }
+    
+    // Export transactions to CSV
+    function exportTransactions() {
+        // Create CSV content
+        const headers = ['Date', 'ID', 'Type', 'Amount', 'Status'];
+        const rows = filteredTransactions.map(t => [
+            t.date,
+            t.id,
+            t.type.charAt(0).toUpperCase() + t.type.slice(1),
+            t.amount.toFixed(2),
+            t.status.charAt(0).toUpperCase() + t.status.slice(1)
+        ]);
+        
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+        
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `transactions_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+
+        // Global state
+        let state = {
+            isMobileMenuOpen: false,
+            activeTab: 'dashboard',
+            isLoading: true,
+            timePeriod: 'monthly',
+            showDatePicker: false,
+            dateRange: {
+                start: 'Apr 01, 2025',
+                end: 'May 01, 2025'
+            },
+            showMonthlyDropdown: false,
+            showEnergySourcesDropdown: false,
+            showHourlyDropdown: false,
+            showBillDropdown: false,
+            showOptionsMenu: false,
+            showMainTimeFilter: false,
+            showUserMenuDropdown: false,
+            selectedUsageChart: 'usage',
+            selectedChartPeriods: {
+                monthly: '1m',
+                energySources: '1m',
+                hourly: 'today',
+                bill: 'current'
+            }
+        };
+
+        // Chart instances
+        let monthlyUsageChart = null;
+        let energySourcesChart = null;
+        let hourlyUsageChart = null;
+        let billBreakdownChart = null;
+
+        // Initialize Feather icons
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Initialize UI components
+            initializeUI();
+            
+            // Initialize tab functionality
+            initializeTabs();
+            
+            // Initialize dropdowns
+            initializeDropdowns();
+            
+            // Simulate loading state
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.querySelectorAll('.fade-in').forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('visible');
+                    }, index * 100);
+                });
+                state.isLoading = false;
+            }, 1);
+            
+            // Generate calendar days
+            generateCalendarDays();
+
+            initializeTransactionTable();
+
+        });
+
+        // Initialize UI components
+        function initializeUI() {
+            // Add dashboard-card class to all cards
+            document.querySelectorAll('.bg-white.rounded-lg').forEach(card => {
+                if (!card.classList.contains('dashboard-card')) {
+                    card.classList.add('dashboard-card');
+                }
+            });
+            
+            // Add filter-btn class to filter buttons
+            document.querySelectorAll('[id$="DropdownBtn"]').forEach(btn => {
+                if (!btn.classList.contains('filter-btn')) {
+                    btn.classList.add('filter-btn');
+                }
+            });
+            
+            // Mobile menu toggle
+            document.getElementById('openMobileMenu').addEventListener('click', () => {
+                toggleMobileMenu(true);
+            });
+            
+            document.getElementById('closeMobileMenu').addEventListener('click', () => {
+                toggleMobileMenu(false);
+            });
+            
+            document.getElementById('mobileOverlay').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('mobileOverlay')) {
+                    toggleMobileMenu(false);
+                }
+            });
+            
+            // User menu dropdown
+            if (document.getElementById('userMenuBtn')) {
+                document.getElementById('userMenuBtn').addEventListener('click', () => {
+                    toggleDropdown('userMenuDropdown');
+                });
+            }
+            
+            // Date picker toggle
+            document.getElementById('datePickerBtn').addEventListener('click', () => {
+                toggleDropdown('datePickerDropdown');
+            });
+            
+            document.getElementById('closeDatePicker').addEventListener('click', () => {
+                toggleDropdown('datePickerDropdown', false);
+            });
+            
+            document.getElementById('cancelDatePicker').addEventListener('click', () => {
+                toggleDropdown('datePickerDropdown', false);
+            });
+            
+            document.getElementById('applyDatePicker').addEventListener('click', () => {
+                toggleDropdown('datePickerDropdown', false);
+                // Would normally update date range based on selection
+            });
+            
+            // Energy usage chart type toggle
+            document.querySelectorAll('.usage-chart-toggle').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const chartType = btn.getAttribute('data-chart-type');
+                    state.selectedUsageChart = chartType;
+                    
+                    // Update UI
+                    document.querySelectorAll('.usage-chart-toggle').forEach(b => {
+                        if (b.getAttribute('data-chart-type') === chartType) {
+                            b.classList.remove('bg-gray-100', 'text-[#626262]');
+                            b.classList.add('bg-[#EC1C24]', 'text-white');
+                        } else {
+                            b.classList.remove('bg-[#EC1C24]', 'text-white');
+                            b.classList.add('bg-gray-100', 'text-[#626262]');
+                        }
+                    });
+                    
+                    // Update chart
+                    updateMonthlyUsageChart();
+                });
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.dropdown-toggle') && !e.target.closest('.dropdown-menu')) {
+                    closeAllDropdowns();
+                }
+            });
+            
+            // Activity items
+            document.querySelectorAll('.flex.items-start.p-3.rounded-lg').forEach(item => {
+                item.classList.add('activity-item');
+            });
+            
+            // Tip cards - safer selector without square brackets
+            document.querySelectorAll('.rounded-lg').forEach(tip => {
+                // Only select elements that look like tip cards
+                if ((tip.classList.contains('bg-gray-50') || 
+                     tip.classList.contains('bg-[#00BCF1]') || 
+                     tip.classList.contains('active')) && 
+                    !tip.classList.contains('tip-card')) {
+                    tip.classList.add('tip-card');
+                }
+            });
+            
+            // Apply button pulse effect
+            document.getElementById('applyDatePicker').classList.add('btn-pulse');
+            
+            // Populate bill breakdown details
+            updateBillBreakdownDetails();
+            
+            // Populate energy sources legend
+            updateEnergySourcesLegend();
+        }
+
+        // Toggle mobile menu with enhanced animation
+        function toggleMobileMenu(isOpen) {
+            state.isMobileMenuOpen = isOpen;
+            
+            const overlay = document.getElementById('mobileOverlay');
+            const menu = document.getElementById('mobileMenu');
+            
+            if (isOpen) {
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                menu.classList.remove('translate-x-full');
+                menu.classList.add('translate-x-0');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                menu.classList.remove('translate-x-0');
+                menu.classList.add('translate-x-full');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        // Initialize tab functionality with enhanced active state but no transforms
+        function initializeTabs() {
+            // Desktop nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.getAttribute('data-tab');
+                    setActiveTab(tab);
+                });
+            });
+            
+            // Mobile nav buttons
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.getAttribute('data-tab');
+                    setActiveTab(tab);
+                    toggleMobileMenu(false);
+                });
+            });
+        }
+
+        // Set active tab with enhanced styling
+        function setActiveTab(tab) {
+            state.activeTab = tab;
+            
+            // Update desktop nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const btnTab = btn.getAttribute('data-tab');
+                if (btnTab === tab) {
+                    btn.classList.add('nav-active');
+                } else {
+                    btn.classList.remove('nav-active');
+                }
+            });
+            
+            // Update mobile nav buttons
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                const btnTab = btn.getAttribute('data-tab');
+                if (btnTab === tab) {
+                    btn.classList.add('bg-[#EC1C24]', 'bg-opacity-10', 'text-[#EC1C24]');
+                    btn.classList.remove('hover:bg-gray-100');
+                } else {
+                    btn.classList.remove('bg-[#EC1C24]', 'bg-opacity-10', 'text-[#EC1C24]');
+                    btn.classList.add('hover:bg-gray-100');
+                }
+            });
+        }
+
+        // Initialize dropdowns with enhanced animation
+        function initializeDropdowns() {
+            // Main time filter dropdown
+            document.getElementById('mainTimeFilterBtn').addEventListener('click', () => {
+                toggleDropdown('mainTimeFilterDropdown');
+            });
+            
+            document.querySelectorAll('#mainTimeFilterDropdown button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.getAttribute('data-value');
+                    state.timePeriod = value;
+                    
+                    // Update UI
+                    document.querySelector('#mainTimeFilterBtn span').textContent = btn.textContent.trim();
+                    
+                    // Update active state
+                    document.querySelectorAll('#mainTimeFilterDropdown button').forEach(b => {
+                        if (b.getAttribute('data-value') === value) {
+                            b.classList.add('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        } else {
+                            b.classList.remove('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        }
+                    });
+                    
+                    toggleDropdown('mainTimeFilterDropdown', false);
+                });
+            });
+            
+            // Monthly dropdown
+            document.getElementById('monthlyDropdownBtn').addEventListener('click', () => {
+                toggleDropdown('monthlyDropdown');
+            });
+            
+            document.querySelectorAll('#monthlyDropdown button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.getAttribute('data-value');
+                    state.selectedChartPeriods.monthly = value;
+                    
+                    // Update UI
+                    document.querySelector('#monthlyDropdownBtn span').textContent = btn.textContent.trim();
+                    
+                    // Update active state
+                    document.querySelectorAll('#monthlyDropdown button').forEach(b => {
+                        if (b.getAttribute('data-value') === value) {
+                            b.classList.add('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        } else {
+                            b.classList.remove('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        }
+                    });
+                    
+                    toggleDropdown('monthlyDropdown', false);
+                });
+            });
+            
+            // Energy sources dropdown
+            document.getElementById('energySourcesDropdownBtn').addEventListener('click', () => {
+                toggleDropdown('energySourcesDropdown');
+            });
+            
+            document.querySelectorAll('#energySourcesDropdown button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.getAttribute('data-value');
+                    state.selectedChartPeriods.energySources = value;
+                    
+                    // Update UI
+                    document.querySelector('#energySourcesDropdownBtn span').textContent = btn.textContent.trim();
+                    
+                    // Update active state
+                    document.querySelectorAll('#energySourcesDropdown button').forEach(b => {
+                        if (b.getAttribute('data-value') === value) {
+                            b.classList.add('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        } else {
+                            b.classList.remove('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        }
+                    });
+                    
+                    toggleDropdown('energySourcesDropdown', false);
+                });
+            });
+            
+            // Hourly dropdown
+            document.getElementById('hourlyDropdownBtn').addEventListener('click', () => {
+                toggleDropdown('hourlyDropdown');
+            });
+            
+            document.querySelectorAll('#hourlyDropdown button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.getAttribute('data-value');
+                    state.selectedChartPeriods.hourly = value;
+                    
+                    // Update UI
+                    document.querySelector('#hourlyDropdownBtn span').textContent = btn.textContent.trim();
+                    
+                    // Update active state
+                    document.querySelectorAll('#hourlyDropdown button').forEach(b => {
+                        if (b.getAttribute('data-value') === value) {
+                            b.classList.add('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        } else {
+                            b.classList.remove('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        }
+                    });
+                    
+                    toggleDropdown('hourlyDropdown', false);
+                });
+            });
+            
+            // Bill dropdown
+            document.getElementById('billDropdownBtn').addEventListener('click', () => {
+                toggleDropdown('billDropdown');
+            });
+            
+            document.querySelectorAll('#billDropdown button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.getAttribute('data-value');
+                    state.selectedChartPeriods.bill = value;
+                    
+                    // Update UI
+                    document.querySelector('#billDropdownBtn span').textContent = btn.textContent.trim();
+                    
+                    // Update active state
+                    document.querySelectorAll('#billDropdown button').forEach(b => {
+                        if (b.getAttribute('data-value') === value) {
+                            b.classList.add('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        } else {
+                            b.classList.remove('text-[#EC1C24]', 'font-medium', 'filter-btn-active');
+                        }
+                    });
+                    
+                    toggleDropdown('billDropdown', false);
+                });
+            });
+            
+            // Options menu
+            document.getElementById('optionsMenuBtn').addEventListener('click', () => {
+                toggleDropdown('optionsMenu');
+            });
+        }
+
+        // Toggle dropdown with enhanced animation
+        function toggleDropdown(dropdownId, show = null) {
+            const dropdown = document.getElementById(dropdownId);
+            
+            if (show === null) {
+                show = !dropdown.classList.contains('show');
+            }
+            
+            if (show) {
+                closeAllDropdowns();
+                dropdown.classList.add('show');
+            } else {
+                dropdown.classList.remove('show');
+            }
+        }
+
+        // Close all dropdowns
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+            state.showMonthlyDropdown = false;
+            state.showEnergySourcesDropdown = false;
+            state.showHourlyDropdown = false;
+            state.showBillDropdown = false;
+            state.showOptionsMenu = false;
+            state.showMainTimeFilter = false;
+            state.showUserMenuDropdown = false;
+        }
+
+        // Generate calendar days with enhanced styling
+        function generateCalendarDays() {
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+            
+            // Generate 30 days for demonstration
+            for (let i = 1; i <= 30; i++) {
+                const day = i;
+                const isStart = day === 1;
+                const isEnd = day === 30;
+                const isSelected = day >= 1 && day <= 30;
+                
+                const dayBtn = document.createElement('button');
+                dayBtn.className = `h-8 w-8 flex items-center justify-center rounded-full text-sm hover:bg-gray-100 transition-all duration-200 ${
+                    isStart || isEnd ? 'bg-[#EC1C24] text-white hover:bg-[#d01920]' : 
+                    isSelected ? 'bg-[#EC1C24] bg-opacity-10 text-[#EC1C24]' : ''
+                }`;
+                dayBtn.textContent = day;
+                
+                calendarDays.appendChild(dayBtn);
+            }
+        }
+
+        // Initialize charts with enhanced styling
+        function initializeCharts() {
+            // Create custom tooltip element
+            const tooltipEl = document.createElement('div');
+            tooltipEl.classList.add('custom-tooltip');
+            document.body.appendChild(tooltipEl);
+            
+            // Set Chart.js defaults
+            Chart.defaults.animation.duration = 800;
+            Chart.defaults.animation.easing = 'easeOutQuart';
+            Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
+            Chart.defaults.color = '#626262';
+            
+            initializeMonthlyUsageChart();
+            initializeEnergySourcesChart();
+            initializeHourlyUsageChart();
+            initializeBillBreakdownChart();
+        }
+
+        // Initialize monthly usage chart with enhanced styling
+        function initializeMonthlyUsageChart() {
+            const ctx = document.getElementById('monthlyUsageChart').getContext('2d');
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(236, 28, 36, 0.2)');
+            gradient.addColorStop(1, 'rgba(236, 28, 36, 0)');
+            
+            monthlyUsageChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: powerUsageData.map(d => d.name),
+                    datasets: [{
+                        label: 'Usage (kWh)',
+                        data: powerUsageData.map(d => d.usage),
+                        borderColor: '#EC1C24',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#EC1C24',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#EC1C24',
+                        pointHoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    grid: {
+                    left: '1%',
+                    right: '0%',
+                    top: '5%',
+                    bottom: '0%',
+                    containLabel: true
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#333',
+                            bodyColor: '#333',
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            boxPadding: 8,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.raw} kWh`;
+                                }
+                            },
+                            padding: 12,
+                            titleFont: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#626262',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                borderDash: [3, 3],
+                                color: '#f0f0f0'
+                            },
+                            ticks: {
+                                color: '#626262',
+                                font: {
+                                    size: 11
+                                },
+                                padding: 10
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Update monthly usage chart
+        function updateMonthlyUsageChart() {
+            if (!monthlyUsageChart) return;
+            
+            const chartType = state.selectedUsageChart;
+            const field = chartType === 'usage' ? 'usage' : 'cost';
+            const label = chartType === 'usage' ? 'Usage (kWh)' : 'Cost ($)';
+            const unit = chartType === 'usage' ? 'kWh' : '$';
+            
+            // Create gradient based on chart type
+            const ctx = document.getElementById('monthlyUsageChart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            
+            if (chartType === 'usage') {
+                gradient.addColorStop(0, 'rgba(236, 28, 36, 0.2)');
+                gradient.addColorStop(1, 'rgba(236, 28, 36, 0)');
+                monthlyUsageChart.data.datasets[0].borderColor = '#EC1C24';
+                monthlyUsageChart.data.datasets[0].pointBorderColor = '#EC1C24';
+                monthlyUsageChart.data.datasets[0].pointHoverBorderColor = '#EC1C24';
+            } else {
+                gradient.addColorStop(0, 'rgba(0, 188, 241, 0.2)');
+                gradient.addColorStop(1, 'rgba(0, 188, 241, 0)');
+                monthlyUsageChart.data.datasets[0].borderColor = '#00BCF1';
+                monthlyUsageChart.data.datasets[0].pointBorderColor = '#00BCF1';
+                monthlyUsageChart.data.datasets[0].pointHoverBorderColor = '#00BCF1';
+            }
+            
+            monthlyUsageChart.data.datasets[0].backgroundColor = gradient;
+            monthlyUsageChart.data.datasets[0].label = label;
+            monthlyUsageChart.data.datasets[0].data = powerUsageData.map(d => d[field]);
+            
+            monthlyUsageChart.options.plugins.tooltip.callbacks.label = function(context) {
+                return `${chartType === 'cost' ? unit : ''}${context.raw}${chartType === 'usage' ? ' ' + unit : ''}`;
+            };
+            
+            monthlyUsageChart.update();
+        }
+
+        // Initialize energy sources chart with enhanced styling
+        function initializeEnergySourcesChart() {
+            const ctx = document.getElementById('energySourcesChart').getContext('2d');
+            
+            energySourcesChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: energySourceData.map(d => d.name),
+                    datasets: [{
+                        data: energySourceData.map(d => d.value),
+                        backgroundColor: COLORS,
+                        borderWidth: 0,
+                        hoverOffset: 12,
+                        borderRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#333',
+                            bodyColor: '#333',
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            boxPadding: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}%`;
+                                }
+                            },
+                            padding: 12,
+                            titleFont: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Update energy sources legend with enhanced styling
+        function updateEnergySourcesLegend() {
+            const legendElement = document.getElementById('energySourcesLegend');
+            legendElement.innerHTML = '';
+            
+            energySourceData.forEach((entry, index) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'chart-legend-item';
+                legendItem.innerHTML = `
+                    <div class="w-3 h-3 rounded-full mr-2 shadow-sm" style="background-color: ${COLORS[index % COLORS.length]}"></div>
+                    <span class="text-xs font-medium">${entry.name} (${entry.value}%)</span>
+                `;
+                
+                legendElement.appendChild(legendItem);
+            });
+        }
+
+        // Initialize hourly usage chart with enhanced styling
+        function initializeHourlyUsageChart() {
+            const ctx = document.getElementById('hourlyUsageChart').getContext('2d');
+            
+            hourlyUsageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: hourlyUsageData.map(d => d.time),
+                    datasets: [{
+                        label: 'Usage (kWh)',
+                        data: hourlyUsageData.map(d => d.usage),
+                        backgroundColor: hourlyUsageData.map((d, i) => i === 6 ? '#EC1C24' : '#00BCF1'),
+                        borderRadius: 6,
+                        maxBarThickness: 30,
+                        borderWidth: 0,
+                        hoverBackgroundColor: hourlyUsageData.map((d, i) => i === 6 ? '#d01920' : '#00a6d7')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#333',
+                            bodyColor: '#333',
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            boxPadding: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.raw} kWh`;
+                                }
+                            },
+                            padding: 12,
+                            titleFont: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#626262',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                borderDash: [3, 3],
+                                color: '#f0f0f0'
+                            },
+                            ticks: {
+                                color: '#626262',
+                                font: {
+                                    size: 11
+                                },
+                                padding: 10
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart',
+                        delay: function(context) {
+                            return context.dataIndex * 50;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize bill breakdown chart with enhanced styling
+        function initializeBillBreakdownChart() {
+            const ctx = document.getElementById('billBreakdownChart').getContext('2d');
+            
+            billBreakdownChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: billBreakdownData.map(d => d.name),
+                    datasets: [{
+                        data: billBreakdownData.map(d => d.value),
+                        backgroundColor: COLORS,
+                        borderWidth: 0,
+                        hoverOffset: 10,
+                        borderRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#333',
+                            bodyColor: '#333',
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            boxPadding: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const amount = Math.round(142.35 * (value / 100));
+                                    return `${context.label}: ${value}% ($${amount})`;
+                                }
+                            },
+                            padding: 12,
+                            titleFont: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Update bill breakdown details with enhanced styling
+        function updateBillBreakdownDetails() {
+            const detailsElement = document.getElementById('billBreakdownDetails');
+            detailsElement.innerHTML = '';
+            
+            // Add each breakdown item
+            billBreakdownData.forEach((entry, index) => {
+                const amount = Math.round(142.35 * (entry.value / 100));
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'flex items-center hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200';
+                itemElement.innerHTML = `
+                    <div class="w-4 h-4 rounded mr-3 shadow-sm" style="background-color: ${COLORS[index % COLORS.length]}"></div>
+                    <div class="w-full">
+                        <div class="flex justify-between w-full">
+                            <span class="text-sm font-medium">${entry.name}</span>
+                            <span class="text-sm font-bold text-gray-800">${amount}</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2 mt-1.5 overflow-hidden shadow-inner">
+                            <div 
+                                class="h-2 rounded-full transition-all duration-500" 
+                                style="width: ${entry.value}%; background-color: ${COLORS[index % COLORS.length]}">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                detailsElement.appendChild(itemElement);
+            });
+            
+            // Add total with enhanced styling
+            const totalElement = document.createElement('div');
+            totalElement.className = 'pt-3 mt-3 border-t border-gray-200';
+            totalElement.innerHTML = `
+                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
+                    <span class="font-semibold">Total</span>
+                    <span class="font-bold text-lg">$142.35</span>
+                </div>
+            `;
+            
+            detailsElement.appendChild(totalElement);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+html{
+  scrollbar-gutter: stable both-edges;
+}
+
+@supports not (scrollbar-gutter: stable) {
+  body{ overflow-y: scroll; }
+}
+
+/* Primary button with pulse effect */
+.btn-primary {
+    background-color: #EC1C24;
+    color: white;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #d01920;
+    box-shadow: 0 5px 10px -3px rgba(236, 28, 36, 0.3);
+  }
+  
+  .btn-pulse {
+    animation: pulse 2s infinite;
+  }
+  
+  /* ---------- navbar customisations ---------- */
+  .nav-btn{
+    position: relative;
+    transition: color 0.2s ease-in-out;
+  }
+  
+  .nav-btn span{
+    display: inline-block;
+    transition: color 0.15s;
+    color: #363636;
+  }
+  
+  .nav-active { 
+    color: #EC1C24;
+    font-weight: 600;
+  }
+  
+  .nav-active span{ 
+    color: #EC1C24;
+    font-weight: 600;
+  }
+  
+  .nav-active::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.75rem;
+    height: 3px;
+    background: #EC1C24;
+    border-radius: 3px 3px 0 0;
+    transform: scaleX(0.8);
+    transition: transform 0.2s ease;
+  }
+  
+  .nav-active:hover::after {
+    transform: scaleX(1);
+  }
+  
+  /* Hover effect: darker text without transforms */
+  .nav-btn:not(.nav-active):hover{
+    color: #000000 !important;
+  }
+  
+  .nav-btn:not(.nav-active):hover span {
+    color: inherit;
+  }
+
+  /* ---------- shared helpers (unchanged) ---------- */
+.chart-container{position:relative;height:100%;width:100%}
+.fade-in{opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+.dropdown-menu{display:none;position:absolute;right:0;margin-top:8px;background:#fff;border-radius:.5rem;box-shadow:0 4px 12px -2px rgba(0,0,0,.12),0 4px 8px -2px rgba(0,0,0,.07);z-index:50;border:1px solid #e5e7eb;animation:fadeIn 0.2s ease-out;}
+.dropdown-menu.show{display:block}
+.loader{width:48px;height:48px;border:5px solid rgba(237, 28, 36, 0.1);border-radius:50%;border-top:5px solid #EC1C24;animation:spin 1s linear infinite;position:absolute;top:50%;left:50%;margin:-24px 0 0 -24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(236, 28, 36, 0.4)}70%{box-shadow:0 0 0 10px rgba(236, 28, 36, 0)}100%{box-shadow:0 0 0 0 rgba(236, 28, 36, 0)}}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.9);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+
+/* Background pattern for dashboard */
+.pattern-bg {
+  background-color: #f9fafb;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath fill='%23f3f4f6' fill-opacity='0.6' d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+/* Enhanced card styling */
+.dashboard-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(229, 231, 235, 0.7);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  will-change: box-shadow;
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.07);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+
+/* Filter buttons style */
+.filter-btn {
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn-active {
+  font-weight: 600;
+}
+
+/* Chart legend enhanced styling */
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.chart-legend-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Tooltip enhanced style */
+.custom-tooltip {
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 8px 12px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.custom-tooltip-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 4px;
+}
+
+.custom-tooltip-value {
+  font-weight: 700;
+  color: #EC1C24;
+}
+
+/* Activity item enhanced hover */
+.activity-item {
+  transition: all 0.25s ease;
+  border-radius: 8px;
+}
+
+.activity-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  transform: translateX(2px);
+}
+
+/* Energy saving tip style */
+.tip-card {
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.tip-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.tip-card.active {
+  border-color: rgba(0, 188, 241, 0.3);
+}
