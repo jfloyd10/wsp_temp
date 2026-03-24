@@ -4,137 +4,126 @@
 {% block title %}Capacity Factors - Wholesale Settlement Portal{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Generation Capacity Factors</h4>
-</div>
-
-<!-- Filters -->
-<div class="filter-bar mb-4">
-    <form method="get" class="row g-2 align-items-end">
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Operating Company</label>
-            <select name="operating_company" class="form-select form-select-sm">
-                <option value="">All Companies</option>
-                {% for oc in filter_options.operating_companies %}
-                <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Resource Type</label>
-            <select name="resource_type" class="form-select form-select-sm">
-                <option value="">All Types</option>
-                {% for rt in filter_options.resource_types %}
-                <option value="{{ rt }}" {% if active_filters.resource_type == rt %}selected{% endif %}>{{ rt }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Year</label>
-            <select name="year" class="form-select form-select-sm">
-                <option value="">All Years</option>
-                {% for y in filter_options.years %}
-                <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Month</label>
-            <select name="month" class="form-select form-select-sm">
-                <option value="">All Months</option>
-                {% for m in filter_options.months %}
-                <option value="{{ m }}" {% if active_filters.month == m|stringformat:"d" %}selected{% endif %}>{{ m|month_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-1">
-            <button type="submit" class="btn btn-brand btn-sm w-100">Apply</button>
-        </div>
-        <div class="col-md-1">
-            <a href="/capacity/" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
-        </div>
-    </form>
-</div>
-
-<!-- Summary -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card summary-card">
-            <div class="card-body text-center">
-                <div class="text-muted small">Wtd Avg Actual CF</div>
-                <div class="fs-4 fw-bold text-brand">{{ weighted_ac|capacity_pct }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card summary-card">
-            <div class="card-body text-center">
-                <div class="text-muted small">Wtd Avg Budget CF</div>
-                <div class="fs-4 fw-bold text-brand">{{ weighted_bu|capacity_pct }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card summary-card">
-            <div class="card-body text-center">
-                <div class="text-muted small">Wtd Avg Variance</div>
-                <div class="fs-4 fw-bold {% if weighted_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
-                    {{ weighted_variance|capacity_pct }}
-                </div>
-            </div>
-        </div>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Capacity Factors</h1>
+        <p class="page-subtitle">Generation resource performance vs budget</p>
     </div>
 </div>
 
-<!-- Data Table -->
+<!-- Pill Filters -->
+<form method="get">
+    <div class="pill-filter-bar">
+        <select name="operating_company" class="filter-pill {% if active_filters.operating_company %}has-value{% endif %}">
+            <option value="">All Companies</option>
+            {% for oc in filter_options.operating_companies %}
+            <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
+            {% endfor %}
+        </select>
+        <select name="resource_type" class="filter-pill {% if active_filters.resource_type %}has-value{% endif %}">
+            <option value="">All Types</option>
+            {% for rt in filter_options.resource_types %}
+            <option value="{{ rt }}" {% if active_filters.resource_type == rt %}selected{% endif %}>{{ rt }}</option>
+            {% endfor %}
+        </select>
+        <select name="year" class="filter-pill {% if active_filters.year %}has-value{% endif %}">
+            <option value="">All Years</option>
+            {% for y in filter_options.years %}
+            <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <select name="month" class="filter-pill {% if active_filters.month %}has-value{% endif %}">
+            <option value="">All Months</option>
+            {% for m in filter_options.months %}
+            <option value="{{ m }}" {% if active_filters.month == m|stringformat:"d" %}selected{% endif %}>{{ m|month_name }}</option>
+            {% endfor %}
+        </select>
+        <div class="filter-actions">
+            <button type="submit" class="btn-filter-apply">Apply</button>
+            {% if active_filters %}
+            <a href="/capacity/" class="btn-filter-clear"><i class="bi bi-x"></i> Clear</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-card-icon blue"><i class="bi bi-speedometer"></i></div>
+        <div class="stat-card-value">{{ weighted_ac|capacity_pct }}</div>
+        <div class="stat-card-label">Wtd Avg Actual CF</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon purple"><i class="bi bi-bullseye"></i></div>
+        <div class="stat-card-value">{{ weighted_bu|capacity_pct }}</div>
+        <div class="stat-card-label">Wtd Avg Budget CF</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon {% if weighted_variance >= 0 %}green{% else %}orange{% endif %}">
+            <i class="bi bi-arrow-{% if weighted_variance >= 0 %}up{% else %}down{% endif %}-right"></i>
+        </div>
+        <div class="stat-card-value {% if weighted_variance >= 0 %}text-positive{% else %}text-negative{% endif %}">
+            {% if weighted_variance >= 0 %}+{% endif %}{{ weighted_variance|capacity_pct }}
+        </div>
+        <div class="stat-card-label">Wtd Avg Variance</div>
+    </div>
+</div>
+
 {% if data %}
-<div class="card">
-    <div class="card-header d-flex justify-content-between">
-        <strong>Resource Performance</strong>
-        <span class="text-muted small">{{ data|length }} records</span>
+<div class="content-card">
+    <div class="content-card-header">
+        <h2 class="content-card-title">Resource Performance</h2>
+        <span class="content-card-meta">{{ data|length }} records</span>
     </div>
-    <div class="table-responsive">
-        <table class="table table-hover table-striped mb-0 table-sm">
-            <thead>
-                <tr>
-                    <th>Period</th>
-                    <th>Operating Company</th>
-                    <th>Resource</th>
-                    <th>Type</th>
-                    <th class="text-end">Rating MW</th>
-                    <th class="text-end">Net Gen (MWh)</th>
-                    <th class="text-end">Budget Gen (MWh)</th>
-                    <th class="text-end">Actual CF</th>
-                    <th class="text-end">Budget CF</th>
-                    <th class="text-end">Variance</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in data %}
-                <tr>
-                    <td>{{ r.month|month_name }} {{ r.year }}</td>
-                    <td>{{ r.operating_company }}</td>
-                    <td>{{ r.resource_name }}</td>
-                    <td><span class="badge {% if r.resource_type == 'NUCLEAR' %}bg-primary{% elif r.resource_type == 'GAS' %}bg-warning text-dark{% elif r.resource_type == 'COAL' %}bg-dark{% elif r.resource_type == 'SOLAR' %}bg-success{% else %}bg-secondary{% endif %}">{{ r.resource_type }}</span></td>
-                    <td class="text-end">{{ r.rating_mw_share|format_number }}</td>
-                    <td class="text-end">{{ r.net_generation|format_number }}</td>
-                    <td class="text-end">{{ r.budget_generation|format_number }}</td>
-                    <td class="text-end">{{ r.ac_capacity_factor|capacity_pct }}</td>
-                    <td class="text-end">{{ r.bu_capacity_factor|capacity_pct }}</td>
-                    <td class="text-end {% if r.capacity_factor_variance >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
-                        {% if r.capacity_factor_variance >= 0 %}+{% endif %}{{ r.capacity_factor_variance|capacity_pct }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="content-card-body no-padding">
+        <div style="overflow-x: auto;">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Company</th>
+                        <th>Resource</th>
+                        <th>Type</th>
+                        <th class="text-end">Rating MW</th>
+                        <th class="text-end">Net Gen (MWh)</th>
+                        <th class="text-end">Budget Gen (MWh)</th>
+                        <th class="text-end">Actual CF</th>
+                        <th class="text-end">Budget CF</th>
+                        <th class="text-end">Variance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in data %}
+                    <tr>
+                        <td>{{ r.month|month_name }} {{ r.year }}</td>
+                        <td>{{ r.operating_company }}</td>
+                        <td><strong>{{ r.resource_name }}</strong></td>
+                        <td>
+                            <span class="chip chip-{% if r.resource_type == 'NUCLEAR' %}nuclear{% elif r.resource_type == 'GAS' %}gas{% elif r.resource_type == 'COAL' %}coal{% elif r.resource_type == 'SOLAR' %}solar{% else %}default{% endif %}">
+                                {{ r.resource_type }}
+                            </span>
+                        </td>
+                        <td class="text-end">{{ r.rating_mw_share|format_number }}</td>
+                        <td class="text-end">{{ r.net_generation|format_number }}</td>
+                        <td class="text-end">{{ r.budget_generation|format_number }}</td>
+                        <td class="text-end">{{ r.ac_capacity_factor|capacity_pct }}</td>
+                        <td class="text-end">{{ r.bu_capacity_factor|capacity_pct }}</td>
+                        <td class="text-end {% if r.capacity_factor_variance >= 0 %}text-positive{% else %}text-negative{% endif %}">
+                            {% if r.capacity_factor_variance >= 0 %}+{% endif %}{{ r.capacity_factor_variance|capacity_pct }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% else %}
-<div class="card">
-    <div class="card-body text-center py-5">
-        <i class="bi bi-bar-chart-line fs-1 text-muted"></i>
-        <p class="text-muted mt-3">No capacity data available for the selected filters.</p>
+<div class="content-card">
+    <div class="empty-state">
+        <i class="bi bi-lightning-charge"></i>
+        <p>No capacity data available for the selected filters.</p>
     </div>
 </div>
 {% endif %}
