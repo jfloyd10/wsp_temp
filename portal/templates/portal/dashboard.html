@@ -4,106 +4,177 @@
 {% block title %}Dashboard - Wholesale Settlement Portal{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">Executive overview of wholesale settlement activity</p>
-    </div>
-</div>
-
-<!-- Pill Filters -->
-<form method="get">
-    <div class="pill-filter-bar">
-        <select name="operating_company" class="filter-pill {% if active_filters.operating_company %}has-value{% endif %}">
-            <option value="">All Companies</option>
-            {% for oc in filter_options.operating_companies %}
-            <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
-            {% endfor %}
-        </select>
-        <select name="counterparty_id" class="filter-pill {% if active_filters.counterparty_id %}has-value{% endif %}">
-            <option value="">All Counterparties</option>
-            {% for cp in filter_options.counterparties %}
-            <option value="{{ cp.id }}" {% if active_filters.counterparty_id == cp.id %}selected{% endif %}>{{ cp.name }}</option>
-            {% endfor %}
-        </select>
-        <div class="filter-actions">
-            <button type="submit" class="btn-filter-apply">Apply</button>
-            {% if active_filters %}
-            <a href="/dashboard/" class="btn-filter-clear"><i class="bi bi-x"></i> Clear</a>
-            {% endif %}
-        </div>
-    </div>
-</form>
-
-<!-- Stat Cards -->
-<div class="card-grid">
-    <div class="stat-card">
-        <div class="stat-card-icon blue"><i class="bi bi-receipt-cutoff"></i></div>
-        <div class="stat-card-value">{{ summary.total_invoices }}</div>
-        <div class="stat-card-label">Total Invoices</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon green"><i class="bi bi-currency-dollar"></i></div>
-        <div class="stat-card-value">{{ summary.total_amount|currency }}</div>
-        <div class="stat-card-label">Total Settled</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon purple"><i class="bi bi-clock-history"></i></div>
-        <div class="stat-card-value">{{ summary.recent_invoices }}</div>
-        <div class="stat-card-label">Recent Invoices (30d)</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon orange"><i class="bi bi-building"></i></div>
-        <div class="stat-card-value">{{ summary.operating_company_count }}</div>
-        <div class="stat-card-label">Operating Companies</div>
-    </div>
-</div>
-
-<!-- Operating Company Breakdown -->
-{% if summary.by_operating_company %}
-<div class="content-card">
-    <div class="content-card-header">
-        <h2 class="content-card-title">Settlement by Operating Company</h2>
-    </div>
-    <div class="content-card-body no-padding">
-        <div class="oc-card-grid" style="padding: 20px;">
-            {% for row in summary.by_operating_company %}
-            <div class="oc-card">
-                <div class="oc-card-name">{{ row.name }}</div>
-                <div class="oc-card-stats">
-                    <div>
-                        <div class="oc-card-stat-value">{{ row.count }}</div>
-                        <div class="oc-card-stat-label">Invoices</div>
+<main class="flex-1 overflow-y-auto bg-gray-50 p-4 md:px-6 lg:px-12 py-6 pattern-bg">
+    <div class="max-w-screen-2xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-start">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p class="text-gray-500 mt-1">Welcome back. Here's your wholesale settlement summary at a glance.</p>
+            </div>
+            <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                <form method="get" class="flex items-center space-x-2">
+                    <div class="relative">
+                        <select name="operating_company"
+                                class="flex items-center space-x-2 py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all duration-200 filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                            <option value="">All Companies</option>
+                            {% for oc in filter_options.operating_companies %}
+                            <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div style="text-align:right;">
-                        <div class="oc-card-stat-value">{{ row.total|currency }}</div>
-                        <div class="oc-card-stat-label">Total Amount</div>
+                    <div class="relative">
+                        <select name="counterparty_id"
+                                class="flex items-center space-x-2 py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all duration-200 filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                            <option value="">All Counterparties</option>
+                            {% for cp in filter_options.counterparties %}
+                            <option value="{{ cp.id }}" {% if active_filters.counterparty_id == cp.id %}selected{% endif %}>{{ cp.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit"
+                            class="py-2 px-4 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                            style="background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);">
+                        Apply
+                    </button>
+                    {% if active_filters %}
+                    <a href="/dashboard/"
+                       class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all duration-200 shadow-sm">
+                        Clear
+                    </a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="fade-in flex flex-row overflow-x-auto gap-4 mb-8 visible" style="transition-delay: 100ms">
+            <div class="dashboard-card bg-white rounded-lg p-5 min-w-[250px] flex-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Total Invoices</p>
+                        <p class="text-2xl font-bold">{{ summary.total_invoices }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-brand-500 bg-opacity-10 flex items-center justify-center text-brand-500 shadow-inner">
+                        <i data-feather="file-text"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center text-xs">
+                    <span class="text-gray-500 flex items-center font-medium">
+                        <i data-feather="layers" class="w-3.5 h-3.5 mr-1"></i>
+                        Across all operating companies
+                    </span>
+                </div>
+            </div>
+
+            <div class="dashboard-card bg-white rounded-lg p-5 min-w-[250px] flex-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Total Settled</p>
+                        <p class="text-2xl font-bold">{{ summary.total_amount|currency }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-emerald-500 bg-opacity-10 flex items-center justify-center text-emerald-500 shadow-inner">
+                        <i data-feather="dollar-sign"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center text-xs">
+                    <span class="text-emerald-500 flex items-center font-medium">
+                        <i data-feather="check-circle" class="w-3.5 h-3.5 mr-1"></i>
+                        Net settlement amount
+                    </span>
+                </div>
+            </div>
+
+            <div class="dashboard-card bg-white rounded-lg p-5 min-w-[250px] flex-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Recent Invoices</p>
+                        <p class="text-2xl font-bold">{{ summary.recent_invoices }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-blue-500 bg-opacity-10 flex items-center justify-center text-blue-500 shadow-inner">
+                        <i data-feather="clock"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center text-xs">
+                    <span class="text-gray-500 flex items-center font-medium">
+                        <i data-feather="calendar" class="w-3.5 h-3.5 mr-1"></i>
+                        Last 30 days
+                    </span>
+                </div>
+            </div>
+
+            <div class="dashboard-card bg-white rounded-lg p-5 min-w-[250px] flex-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Operating Companies</p>
+                        <p class="text-2xl font-bold">{{ summary.operating_company_count }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-amber-500 bg-opacity-10 flex items-center justify-center text-amber-500 shadow-inner">
+                        <i data-feather="briefcase"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center text-xs">
+                    <span class="text-gray-500 flex items-center font-medium">
+                        <i data-feather="map-pin" class="w-3.5 h-3.5 mr-1"></i>
+                        Active subsidiaries
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operating Company Breakdown -->
+        {% if summary.by_operating_company %}
+        <div class="fade-in grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 visible" style="transition-delay: 200ms">
+            {% for row in summary.by_operating_company %}
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-lg">{{ row.name }}</h2>
+                    <div class="w-10 h-10 rounded-full bg-brand-500 bg-opacity-10 flex items-center justify-center text-brand-500">
+                        <i data-feather="building" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="flex justify-between items-end">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wide font-medium mb-1">Invoices</p>
+                        <p class="text-xl font-bold">{{ row.count }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-500 text-xs uppercase tracking-wide font-medium mb-1">Total Amount</p>
+                        <p class="text-xl font-bold">{{ row.total|currency }}</p>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-    </div>
-</div>
-{% endif %}
+        {% endif %}
 
-<!-- Quick Links -->
-<div class="quick-link-grid">
-    <a href="/invoices/" class="quick-link-card">
-        <i class="bi bi-receipt-cutoff"></i>
-        <span>View All Invoices</span>
-    </a>
-    <a href="/metrics/" class="quick-link-card">
-        <i class="bi bi-graph-up-arrow"></i>
-        <span>FCS Metrics</span>
-    </a>
-    <a href="/capacity/" class="quick-link-card">
-        <i class="bi bi-lightning-charge"></i>
-        <span>Capacity Factors</span>
-    </a>
-    <a href="/invoices/export/" class="quick-link-card">
-        <i class="bi bi-download"></i>
-        <span>Export Invoices</span>
-    </a>
-</div>
+        <!-- Quick Links -->
+        <div class="fade-in grid grid-cols-2 lg:grid-cols-4 gap-4 visible" style="transition-delay: 300ms">
+            <a href="/invoices/" class="dashboard-card bg-white rounded-lg p-5 flex items-center gap-4 hover:border-brand-200 transition-all group">
+                <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-500 group-hover:bg-brand-100 transition-colors">
+                    <i data-feather="file-text" class="w-5 h-5"></i>
+                </div>
+                <span class="font-medium text-sm">View All Invoices</span>
+            </a>
+            <a href="/metrics/" class="dashboard-card bg-white rounded-lg p-5 flex items-center gap-4 hover:border-brand-200 transition-all group">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 group-hover:bg-blue-100 transition-colors">
+                    <i data-feather="bar-chart-2" class="w-5 h-5"></i>
+                </div>
+                <span class="font-medium text-sm">FCS Metrics</span>
+            </a>
+            <a href="/capacity/" class="dashboard-card bg-white rounded-lg p-5 flex items-center gap-4 hover:border-brand-200 transition-all group">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-100 transition-colors">
+                    <i data-feather="activity" class="w-5 h-5"></i>
+                </div>
+                <span class="font-medium text-sm">Capacity Factors</span>
+            </a>
+            <a href="/invoices/export/" class="dashboard-card bg-white rounded-lg p-5 flex items-center gap-4 hover:border-brand-200 transition-all group">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 group-hover:bg-amber-100 transition-colors">
+                    <i data-feather="download" class="w-5 h-5"></i>
+                </div>
+                <span class="font-medium text-sm">Export Invoices</span>
+            </a>
+        </div>
+    </div>
+</main>
 {% endblock %}
