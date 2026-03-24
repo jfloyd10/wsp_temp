@@ -1,0 +1,128 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+
+{% block title %}Dashboard - Wholesale Settlement Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Executive Dashboard</h4>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label form-label-sm">Operating Company</label>
+            <select name="operating_company" class="form-select form-select-sm">
+                <option value="">All Companies</option>
+                {% for oc in filter_options.operating_companies %}
+                <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label form-label-sm">Counterparty</label>
+            <select name="counterparty_id" class="form-select form-select-sm">
+                <option value="">All Counterparties</option>
+                {% for cp in filter_options.counterparties %}
+                <option value="{{ cp.id }}" {% if active_filters.counterparty_id == cp.id %}selected{% endif %}>{{ cp.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-brand btn-sm w-100">Apply Filters</button>
+        </div>
+        <div class="col-md-2">
+            <a href="/dashboard/" class="btn btn-outline-secondary btn-sm w-100">Clear Filters</a>
+        </div>
+    </form>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card summary-card">
+            <div class="card-body text-center">
+                <div class="text-muted small">Total Invoices</div>
+                <div class="fs-3 fw-bold text-brand">{{ summary.total_invoices }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card summary-card">
+            <div class="card-body text-center">
+                <div class="text-muted small">Total Settled</div>
+                <div class="fs-3 fw-bold text-brand">{{ summary.total_amount|currency }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card summary-card">
+            <div class="card-body text-center">
+                <div class="text-muted small">Recent Invoices (30d)</div>
+                <div class="fs-3 fw-bold text-brand">{{ summary.recent_invoices }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card summary-card">
+            <div class="card-body text-center">
+                <div class="text-muted small">Operating Companies</div>
+                <div class="fs-3 fw-bold text-brand">{{ summary.operating_company_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Breakdown by Operating Company -->
+<div class="card mb-4">
+    <div class="card-header">
+        <strong>Settlement Summary by Operating Company</strong>
+    </div>
+    <div class="card-body">
+        {% if summary.by_operating_company %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Operating Company</th>
+                        <th class="text-end">Invoice Count</th>
+                        <th class="text-end">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in summary.by_operating_company %}
+                    <tr>
+                        <td>{{ row.name }}</td>
+                        <td class="text-end">{{ row.count }}</td>
+                        <td class="text-end">{{ row.total|currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No data available for the selected filters.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row">
+    <div class="col-md-4">
+        <a href="/invoices/" class="btn btn-outline-brand w-100 py-3">
+            <i class="bi bi-receipt me-2"></i>View All Invoices
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="/metrics/" class="btn btn-outline-brand w-100 py-3">
+            <i class="bi bi-graph-up me-2"></i>View FCS Metrics
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="/capacity/" class="btn btn-outline-brand w-100 py-3">
+            <i class="bi bi-bar-chart-line me-2"></i>View Capacity Factors
+        </a>
+    </div>
+</div>
+{% endblock %}

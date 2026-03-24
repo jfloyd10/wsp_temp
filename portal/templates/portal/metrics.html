@@ -1,0 +1,211 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+
+{% block title %}FCS Metrics - Wholesale Settlement Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Financial & Contract Services Metrics</h4>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label form-label-sm">Source System</label>
+            <select name="source_system" class="form-select form-select-sm">
+                <option value="">All Systems</option>
+                {% for ss in filter_options.source_systems %}
+                <option value="{{ ss }}" {% if active_filters.source_system == ss %}selected{% endif %}>{{ ss }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label form-label-sm">Year</label>
+            <select name="year" class="form-select form-select-sm">
+                <option value="">All Years</option>
+                {% for y in filter_options.years %}
+                <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-brand btn-sm w-100">Apply</button>
+        </div>
+        <div class="col-md-2">
+            <a href="/metrics/" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Summary Stats -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card summary-card">
+            <div class="card-body text-center">
+                <div class="text-muted small">Period Total Settled</div>
+                <div class="fs-4 fw-bold text-brand">{{ ytd_total|currency }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card summary-card">
+            <div class="card-body text-center">
+                <div class="text-muted small">Period Total Adjustments</div>
+                <div class="fs-4 fw-bold text-brand">{{ ytd_adj|currency }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card summary-card">
+            <div class="card-body text-center">
+                <div class="text-muted small">Avg Adjustment %</div>
+                <div class="fs-4 fw-bold text-brand">{{ avg_adj_pct|percentage }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+{% if metrics %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Monthly Adjustments & Adjustment %</strong></div>
+            <div class="card-body">
+                <canvas id="adjustmentsChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Monthly Total Settled</strong></div>
+            <div class="card-body">
+                <canvas id="settledChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="card">
+    <div class="card-header"><strong>Monthly Detail</strong></div>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Source System</th>
+                    <th>Period</th>
+                    <th class="text-end">Adjustments</th>
+                    <th class="text-end">Total Settled</th>
+                    <th class="text-end">Adj %</th>
+                    <th class="text-end">Cumulative Adj</th>
+                    <th class="text-end">Cumulative Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in metrics %}
+                <tr>
+                    <td><span class="badge bg-secondary">{{ m.source_system }}</span></td>
+                    <td>{{ m.month|month_name }} {{ m.year }}</td>
+                    <td class="text-end">{{ m.adjustments|currency }}</td>
+                    <td class="text-end">{{ m.total_settled|currency }}</td>
+                    <td class="text-end">{{ m.adjustment_percent|percentage }}</td>
+                    <td class="text-end">{{ m.cumulative_adjustment|currency }}</td>
+                    <td class="text-end">{{ m.cumulative_total|currency }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-bar-chart fs-1 text-muted"></i>
+        <p class="text-muted mt-3">No metrics data available for the selected filters.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if metrics %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ chart_data|json_script:"chart-data" }}
+<script>
+    const data = JSON.parse(document.getElementById('chart-data').textContent);
+
+    // Adjustments chart (dual axis)
+    new Chart(document.getElementById('adjustmentsChart'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Adjustments ($)',
+                    data: data.adjustments,
+                    backgroundColor: 'rgba(0, 32, 91, 0.7)',
+                    borderColor: '#00205B',
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Adjustment %',
+                    data: data.adj_pct,
+                    type: 'line',
+                    borderColor: '#6CACE4',
+                    backgroundColor: 'rgba(108, 172, 228, 0.2)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    fill: false,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Dollars ($)' },
+                    ticks: { callback: v => '$' + (v/1000000).toFixed(1) + 'M' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Percentage (%)' },
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+
+    // Settled chart
+    new Chart(document.getElementById('settledChart'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Total Settled ($)',
+                data: data.total_settled,
+                backgroundColor: 'rgba(108, 172, 228, 0.7)',
+                borderColor: '#6CACE4',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    title: { display: true, text: 'Dollars ($)' },
+                    ticks: { callback: v => '$' + (v/1000000).toFixed(0) + 'M' }
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}
