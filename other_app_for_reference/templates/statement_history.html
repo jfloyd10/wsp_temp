@@ -1,0 +1,1536 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Statements | Southern Company</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+    <!-- Lucide Icons for additional icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Litepicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                50: '#fef2f2',
+                100: '#fee2e2',
+                200: '#fecaca',
+                300: '#fca5a5',
+                400: '#f87171',
+                500: '#EC1C24',
+                600: '#d01920',
+                700: '#b91c1c',
+                800: '#991b1b',
+                900: '#7f1d1d',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        font-family: 'Inter', system-ui, sans-serif;
+      }
+
+      /* Glassmorphism effects */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      /* Gradient backgrounds */
+      .gradient-hero {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .gradient-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(236, 28, 36, 0.15) 0%, transparent 70%);
+        animation: pulse-slow 8s ease-in-out infinite;
+      }
+
+      .gradient-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -30%;
+        width: 60%;
+        height: 60%;
+        background: radial-gradient(circle, rgba(0, 188, 241, 0.1) 0%, transparent 70%);
+        animation: pulse-slow 10s ease-in-out infinite reverse;
+      }
+
+      @keyframes pulse-slow {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+      }
+
+      /* Stat card animations */
+      .stat-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Quick filter pills */
+      .filter-pill {
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+
+      .filter-pill:hover {
+        transform: translateY(-1px);
+      }
+
+      .filter-pill.active {
+        background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);
+        color: white;
+        box-shadow: 0 4px 15px -3px rgba(236, 28, 36, 0.4);
+      }
+
+      /* Invoice row styling */
+      .invoice-row {
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+
+      .invoice-row:hover {
+        background: linear-gradient(90deg, rgba(236, 28, 36, 0.03) 0%, rgba(236, 28, 36, 0.08) 100%);
+        transform: translateX(4px);
+      }
+
+      .invoice-row:hover .row-action {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .row-action {
+        opacity: 0;
+        transform: translateX(-8px);
+        transition: all 0.2s ease;
+      }
+
+      /* Status badges */
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+      }
+
+      .status-completed {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #166534;
+      }
+
+      .status-approved {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+      }
+
+      .status-submitted {
+        background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%);
+        color: #854d0e;
+      }
+
+      .status-draft {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        color: #4b5563;
+      }
+
+      /* Slide-in drawer */
+      .drawer-overlay {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .drawer-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .drawer-panel {
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .drawer-overlay.show .drawer-panel {
+        transform: translateX(0);
+      }
+
+      /* Pagination styling */
+      .page-btn {
+        transition: all 0.2s ease;
+      }
+
+      .page-btn:hover:not(.active):not(:disabled) {
+        background: #f3f4f6;
+        transform: translateY(-1px);
+      }
+
+      .page-btn.active {
+        background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);
+        color: white;
+        box-shadow: 0 4px 10px -2px rgba(236, 28, 36, 0.4);
+      }
+
+      /* Search input styling */
+      .search-input {
+        transition: all 0.2s ease;
+      }
+
+      .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(236, 28, 36, 0.1);
+        border-color: #EC1C24;
+      }
+
+      /* Amount styling */
+      .amount-positive {
+        color: #16a34a;
+      }
+
+      .amount-negative {
+        color: #dc2626;
+      }
+
+      /* Skeleton loading */
+      .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: skeleton-loading 1.5s infinite;
+      }
+
+      @keyframes skeleton-loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* Attachment cards */
+      .attachment-card {
+        transition: all 0.2s ease;
+      }
+
+      .attachment-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.15);
+        border-color: #EC1C24;
+      }
+
+      .attachment-card:hover .download-icon {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .download-icon {
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.2s ease;
+      }
+
+      /* Timeline styling */
+      .timeline-item {
+        position: relative;
+        padding-left: 28px;
+      }
+
+      .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 28px;
+        bottom: -16px;
+        width: 2px;
+        background: #e5e7eb;
+      }
+
+      .timeline-item:last-child::before {
+        display: none;
+      }
+
+      /* Empty state */
+      .empty-state {
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+
+      /* Dropdown menu */
+      .dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        margin-top: 8px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        z-index: 50;
+        border: 1px solid #e5e7eb;
+        animation: slideDown 0.2s ease;
+      }
+
+      .dropdown-menu.show {
+        display: block;
+      }
+
+      @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Loading overlay */
+      .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.95);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(8px);
+      }
+
+      .loader {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(236, 28, 36, 0.1);
+        border-radius: 50%;
+        border-top-color: #EC1C24;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Mini loader */
+      .loader-mini {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(236, 28, 36, 0.1);
+        border-radius: 50%;
+        border-top-color: #EC1C24;
+        animation: spin 0.8s linear infinite;
+      }
+
+      /* Invoice type icon */
+      .invoice-type-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #EC1C24;
+      }
+
+      /* Scrollbar styling */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      /* Advanced filters panel */
+      .filters-panel {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+        opacity: 0;
+      }
+
+      .filters-panel.expanded {
+        max-height: 500px;
+        opacity: 1;
+      }
+
+      /* Error banner */
+      .error-banner {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+    </style>
+  </head>
+
+  <body class="bg-slate-50 text-gray-800 min-h-screen">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loader"></div>
+    </div>
+
+    <!-- Header/Navbar -->
+    {% include 'core/navbar.html' %}
+
+    <!-- Hero Section with Stats -->
+    <section class="bg-white border-b border-gray-100">
+      <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <!-- Page Title -->
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-8">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+                <i data-feather="file-text" class="w-5 h-5 text-brand-500"></i>
+              </div>
+              <span class="text-gray-400 text-sm font-medium uppercase tracking-wider">Billing</span>
+            </div>
+            <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Statements</h1>
+            <p class="text-gray-500 text-lg">Manage and track all your billing transactions</p>
+          </div>
+          <div class="mt-4 lg:mt-0 flex gap-3">
+            <button id="exportAllBtn" class="flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all">
+              <i data-feather="download" class="w-4 h-4"></i>
+              Export
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Total Invoices -->
+          <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                <i data-feather="file-text" class="w-5 h-5 text-brand-500"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Total</span>
+            </div>
+            <p id="statTotalCount" class="text-2xl lg:text-3xl font-bold text-gray-900">--</p>
+            <p class="text-sm text-gray-500 mt-1">Invoices</p>
+          </div>
+
+          <!-- Total Value -->
+          <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <i data-feather="dollar-sign" class="w-5 h-5 text-emerald-600"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Value</span>
+            </div>
+            <p id="statTotalValue" class="text-2xl lg:text-3xl font-bold text-gray-900">--</p>
+            <p class="text-sm text-gray-500 mt-1">Total Amount</p>
+          </div>
+
+          <!-- Completed -->
+          <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                <i data-feather="check-circle" class="w-5 h-5 text-blue-600"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Status</span>
+            </div>
+            <p id="statCompleted" class="text-2xl lg:text-3xl font-bold text-gray-900">--</p>
+            <p class="text-sm text-gray-500 mt-1">Completed</p>
+          </div>
+
+          <!-- Pending -->
+          <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                <i data-feather="clock" class="w-5 h-5 text-amber-600"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Pending</span>
+            </div>
+            <p id="statPending" class="text-2xl lg:text-3xl font-bold text-gray-900">--</p>
+            <p class="text-sm text-gray-500 mt-1">Awaiting Action</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-4 relative z-20">
+      <!-- Filters Section -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+        <!-- Search and Quick Filters -->
+        <div class="p-5">
+          <div class="flex flex-col lg:flex-row gap-4">
+            <!-- Search -->
+            <div class="flex-1 relative">
+              <i data-feather="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+              <input
+                id="quickSearchFilter"
+                type="text"
+                placeholder="Search invoices by ID, description, or contract..."
+                class="search-input w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white"
+              />
+            </div>
+
+            <!-- Quick Status Filters -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button class="filter-pill active px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium" data-status="all">
+                All
+              </button>
+              <button class="filter-pill px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium" data-status="Completed">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-2"></span>
+                Completed
+              </button>
+              <button class="filter-pill px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium" data-status="Approved">
+                <span class="w-2 h-2 rounded-full bg-blue-500 inline-block mr-2"></span>
+                Approved
+              </button>
+              <button class="filter-pill px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium" data-status="Submitted">
+                <span class="w-2 h-2 rounded-full bg-amber-500 inline-block mr-2"></span>
+                Submitted
+              </button>
+              <button class="filter-pill px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium" data-status="Draft">
+                <span class="w-2 h-2 rounded-full bg-gray-400 inline-block mr-2"></span>
+                Draft
+              </button>
+            </div>
+
+            <!-- Toggle Advanced Filters -->
+            <button id="toggleFiltersBtn" class="flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all">
+              <i data-feather="sliders" class="w-4 h-4"></i>
+              <span id="toggleFiltersText">Filters</span>
+              <i data-feather="chevron-down" class="w-4 h-4 transition-transform" id="toggleFiltersIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Advanced Filters Panel -->
+        <div id="advancedFilters" class="filters-panel border-t border-gray-100">
+          <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Date Range -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+              <div class="relative">
+                <i data-feather="calendar" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                <input
+                  id="dateRange"
+                  type="text"
+                  placeholder="Select dates..."
+                  class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <!-- Transaction Type -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Transaction Type</label>
+              <div class="relative">
+                <select id="transactionTypeFilter" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                  <option value="all">All Types</option>
+                  <option value="invoice">Invoice</option>
+                </select>
+                <i data-feather="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Min Amount -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Min Amount</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                <input
+                  id="minAmount"
+                  type="number"
+                  placeholder="0"
+                  class="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <!-- Max Amount -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Max Amount</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                <input
+                  id="maxAmount"
+                  type="number"
+                  placeholder="No limit"
+                  class="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:bg-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Actions -->
+          <div class="px-5 pb-5 flex justify-between items-center">
+            <button id="resetFiltersBtn" class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+              <i data-feather="refresh-cw" class="w-4 h-4"></i>
+              Reset all filters
+            </button>
+            <div class="flex items-center gap-2">
+              <span id="activeFilterCount" class="text-sm text-gray-500"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoices Table -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <!-- Table Header -->
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h2 class="text-lg font-semibold text-gray-900">Invoices</h2>
+            <span id="resultCount" class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">0 results</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <!-- Items per page -->
+            <select id="itemsPerPage" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none cursor-pointer">
+              <option value="10">10 per page</option>
+              <option value="15" selected>15 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-50/50">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider sort-column active" data-sort="date">
+                  <div class="flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
+                    <span>Date</span>
+                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider sort-column" data-sort="id">
+                  <div class="flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
+                    <span>Invoice</span>
+                    <i data-feather="chevrons-up-down" class="w-4 h-4 opacity-40"></i>
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider sort-column" data-sort="type">
+                  <div class="flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
+                    <span>Contract</span>
+                    <i data-feather="chevrons-up-down" class="w-4 h-4 opacity-40"></i>
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider sort-column hidden lg:table-cell" data-sort="description">
+                  <div class="flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
+                    <span>Description</span>
+                    <i data-feather="chevrons-up-down" class="w-4 h-4 opacity-40"></i>
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider sort-column" data-sort="amount">
+                  <div class="flex items-center gap-2 justify-end cursor-pointer hover:text-gray-900 transition-colors">
+                    <span>Amount</span>
+                    <i data-feather="chevrons-up-down" class="w-4 h-4 opacity-40"></i>
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider sort-column" data-sort="status">
+                  <div class="flex items-center gap-2 justify-center cursor-pointer hover:text-gray-900 transition-colors">
+                    <span>Status</span>
+                    <i data-feather="chevrons-up-down" class="w-4 h-4 opacity-40"></i>
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="transactionTableBody" class="divide-y divide-gray-100">
+              <!-- Rows rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden py-16 text-center">
+          <div class="empty-state inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gray-100 mb-4">
+            <i data-feather="inbox" class="w-10 h-10 text-gray-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">No invoices found</h3>
+          <p class="text-gray-500 mb-4">Try adjusting your filters or search terms</p>
+          <button id="emptyStateResetBtn" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 transition-colors">
+            <i data-feather="refresh-cw" class="w-4 h-4"></i>
+            Reset Filters
+          </button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p id="paginationInfo" class="text-sm text-gray-500"></p>
+          <div id="paginationControls" class="flex items-center gap-1"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Invoice Detail Drawer -->
+    <div id="invoiceDrawer" class="drawer-overlay fixed inset-0 z-50">
+      <div class="drawer-panel absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl flex flex-col">
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+          <div class="flex items-center gap-4">
+            <div class="invoice-type-icon">
+              <i data-feather="file-text" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 id="drawerInvoiceId" class="text-xl font-bold text-gray-900">INV-000</h2>
+              <p id="drawerInvoiceDesc" class="text-sm text-gray-500">Invoice Description</p>
+            </div>
+          </div>
+          <button id="closeDrawerBtn" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+            <i data-feather="x" class="w-5 h-5 text-gray-500"></i>
+          </button>
+        </div>
+
+        <!-- Drawer Content -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+          <!-- Error Banner Container -->
+          <div id="drawerErrorContainer"></div>
+
+          <!-- Invoice Overview -->
+          <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Invoice Date</p>
+              <p id="drawerDate" class="text-lg font-semibold text-gray-900">--</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Due Date</p>
+              <p id="drawerDueDate" class="text-lg font-semibold text-gray-900">--</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Amount</p>
+              <p id="drawerAmount" class="text-2xl font-bold text-brand-500">--</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Status</p>
+              <span id="drawerStatus" class="status-badge status-completed">--</span>
+            </div>
+          </div>
+
+          <!-- Attachments Section -->
+          <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Attachments</h3>
+              <span id="attachmentCount" class="text-xs text-gray-500">0 files</span>
+            </div>
+            <div id="attachmentsContainer" class="grid grid-cols-1 gap-3">
+              <!-- Attachments rendered by JS -->
+            </div>
+            <div id="noAttachmentsContainer" class="hidden text-center py-8">
+              <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gray-100 mb-3">
+                <i data-feather="paperclip" class="w-6 h-6 text-gray-400"></i>
+              </div>
+              <p class="text-sm text-gray-500">No attachments available</p>
+            </div>
+            <button id="btn_download_all_attachments" class="mt-4 w-full py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 flex items-center justify-center gap-2 transition-colors">
+              <i data-feather="download-cloud" class="w-4 h-4"></i>
+              Download All Attachments
+            </button>
+          </div>
+
+          <!-- Invoice Breakdown -->
+          <div class="mb-8">
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Invoice Breakdown</h3>
+            <div class="bg-gray-50 rounded-xl overflow-hidden">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-gray-100">
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Description</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Qty</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Rate</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="breakdownBody" class="divide-y divide-gray-200">
+                  <!-- Breakdown rows rendered by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Transaction History -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Activity Timeline</h3>
+            <div id="historyContainer" class="space-y-4">
+              <!-- History items rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="p-6 border-t border-gray-100 bg-gray-50">
+          <div class="flex gap-3">
+            <button onclick="closeDrawer()" class="flex-1 py-3 px-4 bg-white border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              Close
+            </button>
+            <button class="flex-1 py-3 px-4 bg-brand-500 rounded-xl font-medium text-white hover:bg-brand-600 transition-colors flex items-center justify-center gap-2">
+              <i data-feather="download" class="w-4 h-4"></i>
+              Download Invoice
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden status filter dropdown for compatibility -->
+    <select id="statusFilter" class="hidden">
+      <option value="all">All</option>
+      <option value="Completed">Completed</option>
+      <option value="Approved">Approved</option>
+      <option value="Submitted">Submitted</option>
+      <option value="Draft">Draft</option>
+    </select>
+
+    <!-- Scripts -->
+    <script>
+      /* ========================================
+         Data: Invoice headers from Django
+      ======================================== */
+      const mockTransactions = {{ inv_hdr_results | safe }};
+
+      /* ========================================
+         Helper Functions
+      ======================================== */
+      const parseLocalDate = (d) => {
+        if (d instanceof Date) return d;
+        if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+          const [y, m, day] = d.split("-").map(Number);
+          return new Date(y, m - 1, day);
+        }
+        return new Date(d);
+      };
+
+      const fmtDate = (d) =>
+        parseLocalDate(d).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        });
+
+      const fmtDateShort = (d) =>
+        parseLocalDate(d).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric"
+        });
+
+      const fmtMoney = (n) =>
+        n.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+      const fmtMoneyFull = (n) =>
+        n.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD"
+        });
+
+      const fmtNumber = (n) =>
+        Number(n).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+
+      const getStatusClass = (status) => {
+        const classes = {
+          Completed: "status-completed",
+          Approved: "status-approved",
+          Submitted: "status-submitted",
+          Draft: "status-draft"
+        };
+        return classes[status] || "status-draft";
+      };
+
+      const getStatusIcon = (status) => {
+        const icons = {
+          Completed: "check-circle",
+          Approved: "thumbs-up",
+          Submitted: "send",
+          Draft: "edit-3"
+        };
+        return icons[status] || "file-text";
+      };
+
+      /* ========================================
+         State Management
+      ======================================== */
+      const state = {
+        currentPage: 1,
+        itemsPerPage: 15,
+        sort: { field: "date", direction: "desc" },
+        filters: {
+          date: { start: null, end: null },
+          type: "all",
+          status: "all",
+          amountMin: null,
+          amountMax: null,
+          search: ""
+        }
+      };
+
+      const detailsCache = {};
+
+      /* ========================================
+         Statistics Calculation
+      ======================================== */
+      function updateStats() {
+        const total = mockTransactions.length;
+        const totalValue = mockTransactions.reduce((sum, t) => sum + t.amount, 0);
+        const completed = mockTransactions.filter(t => t.status === "Completed").length;
+        const pending = mockTransactions.filter(t => ["Submitted", "Draft", "Approved"].includes(t.status)).length;
+
+        document.getElementById("statTotalCount").textContent = total.toLocaleString();
+        document.getElementById("statTotalValue").textContent = fmtMoney(totalValue);
+        document.getElementById("statCompleted").textContent = completed.toLocaleString();
+        document.getElementById("statPending").textContent = pending.toLocaleString();
+      }
+
+      /* ========================================
+         Core: Filter, Sort, Paginate
+      ======================================== */
+      function filterSortPaginate() {
+        let data = [...mockTransactions];
+
+        // Apply filters
+        if (state.filters.type !== "all") {
+          data = data.filter(t => t.type === state.filters.type);
+        }
+
+        if (state.filters.status !== "all") {
+          data = data.filter(t => t.status === state.filters.status);
+        }
+
+        if (state.filters.amountMin != null) {
+          data = data.filter(t => t.amount >= state.filters.amountMin);
+        }
+
+        if (state.filters.amountMax != null) {
+          data = data.filter(t => t.amount <= state.filters.amountMax);
+        }
+
+        if (state.filters.search) {
+          const q = state.filters.search.toLowerCase();
+          data = data.filter(t => {
+            const idStr = String(t.id).toLowerCase();
+            const typeStr = String(t.type).toLowerCase();
+            const descStr = (t.description || "").toLowerCase();
+            return idStr.includes(q) || descStr.includes(q) || typeStr.includes(q);
+          });
+        }
+
+        if (state.filters.date.start && state.filters.date.end) {
+          const s = state.filters.date.start.getTime();
+          const e = state.filters.date.end.getTime();
+          data = data.filter(t => {
+            const ts = parseLocalDate(t.date).getTime();
+            return ts >= s && ts <= e;
+          });
+        }
+
+        // Apply sorting
+        data.sort((a, b) => {
+          const f = state.sort.field;
+          let r = 0;
+
+          if (f === "amount") {
+            r = a.amount - b.amount;
+          } else if (f === "date") {
+            r = parseLocalDate(a.date) - parseLocalDate(b.date);
+          } else {
+            r = (a[f] + "").localeCompare(b[f] + "");
+          }
+
+          return state.sort.direction === "asc" ? r : -r;
+        });
+
+        // Pagination
+        const total = data.length;
+        const pages = Math.max(1, Math.ceil(total / state.itemsPerPage));
+        state.currentPage = Math.min(state.currentPage, pages);
+
+        const start = (state.currentPage - 1) * state.itemsPerPage;
+        const end = start + state.itemsPerPage;
+
+        // Update result count
+        document.getElementById("resultCount").textContent = `${total} result${total !== 1 ? 's' : ''}`;
+
+        // Show/hide empty state
+        const emptyState = document.getElementById("emptyState");
+        const tbody = document.getElementById("transactionTableBody");
+
+        if (total === 0) {
+          emptyState.classList.remove("hidden");
+          tbody.parentElement.classList.add("hidden");
+        } else {
+          emptyState.classList.add("hidden");
+          tbody.parentElement.classList.remove("hidden");
+          renderTable(data.slice(start, end));
+        }
+
+        renderPagination(total, pages);
+        updateActiveFilterCount();
+      }
+
+      /* ========================================
+         Render: Table Rows
+      ======================================== */
+      function renderTable(rows) {
+        const tbody = document.getElementById("transactionTableBody");
+        tbody.innerHTML = rows.map(t => `
+          <tr class="invoice-row group" data-id="${t.id}">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="hidden sm:flex w-10 h-10 rounded-xl bg-gray-100 items-center justify-center text-gray-500">
+                  <i data-feather="calendar" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">${fmtDateShort(t.date)}</p>
+                  <p class="text-xs text-gray-500">${parseLocalDate(t.date).getFullYear()}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <p class="font-semibold text-gray-900">INV-${t.id}</p>
+            </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
+                <i data-feather="briefcase" class="w-3 h-3"></i>
+                ${t.type}
+              </span>
+            </td>
+            <td class="px-6 py-4 hidden lg:table-cell">
+              <p class="text-gray-600 truncate max-w-xs">${t.description}</p>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <p class="font-bold text-gray-900">${fmtMoneyFull(t.amount)}</p>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <span class="status-badge ${getStatusClass(t.status)}">
+                <i data-feather="${getStatusIcon(t.status)}" class="w-3.5 h-3.5"></i>
+                ${t.status}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <button class="row-action p-2 hover:bg-brand-50 rounded-lg text-gray-400 hover:text-brand-500 transition-all view-btn" data-id="${t.id}">
+                <i data-feather="arrow-right" class="w-5 h-5"></i>
+              </button>
+            </td>
+          </tr>
+        `).join("");
+
+        feather.replace();
+
+        // Add click handlers
+        document.querySelectorAll(".invoice-row").forEach(row => {
+          const id = row.dataset.id;
+          row.addEventListener("click", () => openDrawer(id));
+        });
+      }
+
+      /* ========================================
+         Render: Pagination
+      ======================================== */
+      function renderPagination(total, pages) {
+        const info = document.getElementById("paginationInfo");
+        const ctrl = document.getElementById("paginationControls");
+
+        if (total === 0) {
+          info.innerHTML = "No results";
+          ctrl.innerHTML = "";
+          return;
+        }
+
+        const s = (state.currentPage - 1) * state.itemsPerPage + 1;
+        const e = Math.min(state.currentPage * state.itemsPerPage, total);
+
+        info.innerHTML = `Showing <span class="font-semibold text-gray-900">${s}-${e}</span> of <span class="font-semibold text-gray-900">${total}</span>`;
+
+        ctrl.innerHTML = "";
+
+        const addBtn = (html, disabled, cb, isActive = false) => {
+          const btn = document.createElement("button");
+          btn.className = `page-btn w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium ${
+            disabled ? "text-gray-300 cursor-not-allowed" : isActive ? "active" : "text-gray-600 hover:bg-gray-100"
+          }`;
+          btn.innerHTML = html;
+          btn.disabled = disabled;
+          if (!disabled && cb) btn.addEventListener("click", cb);
+          ctrl.appendChild(btn);
+        };
+
+        // Previous
+        addBtn('<i data-feather="chevron-left" class="w-4 h-4"></i>', state.currentPage === 1, () => {
+          state.currentPage--;
+          filterSortPaginate();
+        });
+
+        // Page numbers (show max 5)
+        const maxVisible = 5;
+        let startPage = Math.max(1, state.currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(pages, startPage + maxVisible - 1);
+        if (endPage - startPage < maxVisible - 1) {
+          startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+          addBtn("1", false, () => { state.currentPage = 1; filterSortPaginate(); });
+          if (startPage > 2) {
+            ctrl.insertAdjacentHTML("beforeend", '<span class="w-9 h-9 flex items-center justify-center text-gray-400">...</span>');
+          }
+        }
+
+        for (let p = startPage; p <= endPage; p++) {
+          addBtn(p.toString(), false, () => { state.currentPage = p; filterSortPaginate(); }, state.currentPage === p);
+        }
+
+        if (endPage < pages) {
+          if (endPage < pages - 1) {
+            ctrl.insertAdjacentHTML("beforeend", '<span class="w-9 h-9 flex items-center justify-center text-gray-400">...</span>');
+          }
+          addBtn(pages.toString(), false, () => { state.currentPage = pages; filterSortPaginate(); });
+        }
+
+        // Next
+        addBtn('<i data-feather="chevron-right" class="w-4 h-4"></i>', state.currentPage === pages, () => {
+          state.currentPage++;
+          filterSortPaginate();
+        });
+
+        feather.replace();
+      }
+
+      /* ========================================
+         Active Filter Count
+      ======================================== */
+      function updateActiveFilterCount() {
+        let count = 0;
+        if (state.filters.status !== "all") count++;
+        if (state.filters.type !== "all") count++;
+        if (state.filters.amountMin != null) count++;
+        if (state.filters.amountMax != null) count++;
+        if (state.filters.search) count++;
+        if (state.filters.date.start && state.filters.date.end) count++;
+
+        const el = document.getElementById("activeFilterCount");
+        el.textContent = count > 0 ? `${count} active filter${count > 1 ? 's' : ''}` : "";
+      }
+
+      /* ========================================
+         Drawer: Render Helpers
+      ======================================== */
+      function renderAttachments(arr) {
+        const container = document.getElementById("attachmentsContainer");
+        const empty = document.getElementById("noAttachmentsContainer");
+        const downloadBtn = document.getElementById("btn_download_all_attachments");
+
+        document.getElementById("attachmentCount").textContent = `${arr.length} file${arr.length !== 1 ? "s" : ""}`;
+
+        if (arr.length) {
+          empty.classList.add("hidden");
+          container.classList.remove("hidden");
+          downloadBtn.classList.remove("hidden");
+
+          const getFileIcon = (ext) => {
+            ext = ext.toLowerCase();
+            if (ext === "pdf") return { icon: "file-text", color: "red" };
+            if (["xlsx", "xls", "csv"].includes(ext)) return { icon: "file-spreadsheet", color: "emerald" };
+            if (["doc", "docx"].includes(ext)) return { icon: "file-text", color: "blue" };
+            return { icon: "file", color: "gray" };
+          };
+
+          container.innerHTML = arr.map(a => {
+            const { icon, color } = getFileIcon(a.ext);
+            return `
+              <a href="${a.url || "#"}" class="attachment-card flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-brand-300 transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-${color}-50 flex items-center justify-center flex-shrink-0">
+                  <i data-feather="${icon}" class="w-6 h-6 text-${color}-500"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-gray-900 truncate">${a.name}</p>
+                  <p class="text-sm text-gray-500">${a.ext.toUpperCase()} &bull; ${a.size}</p>
+                </div>
+                <div class="download-icon w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+                  <i data-feather="download" class="w-5 h-5 text-brand-500"></i>
+                </div>
+              </a>
+            `;
+          }).join("");
+        } else {
+          container.classList.add("hidden");
+          empty.classList.remove("hidden");
+          downloadBtn.classList.add("hidden");
+        }
+
+        feather.replace();
+      }
+
+      function renderBreakdown(arr) {
+        const tbody = document.getElementById("breakdownBody");
+
+        if (!arr.length) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-500">
+                No breakdown available
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = arr.map(b => `
+          <tr class="bg-white">
+            <td class="px-4 py-3 text-sm text-gray-900">${b.desc}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">${fmtNumber(b.usage)}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">${fmtMoneyFull(b.rate)}</td>
+            <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">${fmtMoneyFull(b.amount)}</td>
+          </tr>
+        `).join("");
+
+        const subtotal = arr.reduce((s, b) => s + b.amount, 0);
+        tbody.insertAdjacentHTML("beforeend", `
+          <tr class="bg-gray-100">
+            <td colspan="3" class="px-4 py-3 text-sm font-bold text-gray-900 text-right">Subtotal</td>
+            <td class="px-4 py-3 text-sm font-bold text-gray-900 text-right">${fmtMoneyFull(subtotal)}</td>
+          </tr>
+        `);
+      }
+
+      function renderHistory(arr) {
+        const container = document.getElementById("historyContainer");
+
+        if (!arr.length) {
+          container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">No activity recorded</p>';
+          return;
+        }
+
+        container.innerHTML = arr.map(h => `
+          <div class="timeline-item">
+            <div class="absolute left-0 top-0 w-4 h-4 rounded-full bg-${h.color}-100 border-2 border-${h.color}-500 flex items-center justify-center">
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <p class="font-medium text-gray-900">${h.title}</p>
+                <span class="text-xs text-gray-500">${h.time}</span>
+              </div>
+              <p class="text-sm text-gray-600">${h.msg}</p>
+            </div>
+          </div>
+        `).join("");
+
+        feather.replace();
+      }
+
+      function showDrawerLoading() {
+        document.getElementById("attachmentsContainer").innerHTML = `
+          <div class="flex justify-center py-8">
+            <div class="loader-mini"></div>
+          </div>
+        `;
+        document.getElementById("breakdownBody").innerHTML = `
+          <tr>
+            <td colspan="4" class="px-4 py-8 text-center">
+              <div class="loader-mini mx-auto"></div>
+            </td>
+          </tr>
+        `;
+        document.getElementById("historyContainer").innerHTML = `
+          <div class="flex justify-center py-8">
+            <div class="loader-mini"></div>
+          </div>
+        `;
+      }
+
+      function displayDrawerError(msg) {
+        const container = document.getElementById("drawerErrorContainer");
+        container.innerHTML = `
+          <div class="error-banner">
+            <i data-feather="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span>${msg}</span>
+          </div>
+        `;
+        feather.replace();
+      }
+
+      /* ========================================
+         Drawer: Open/Close
+      ======================================== */
+      async function openDrawer(id) {
+        const header = mockTransactions.find(t => String(t.id) === String(id));
+        if (!header) return;
+
+        // Populate header info
+        document.getElementById("drawerInvoiceId").textContent = "INV-" + header.id;
+        document.getElementById("drawerInvoiceDesc").textContent = header.description;
+        document.getElementById("drawerDate").textContent = fmtDate(header.date);
+        document.getElementById("drawerDueDate").textContent = fmtDate(header.dueDate);
+        document.getElementById("drawerAmount").textContent = fmtMoneyFull(header.amount);
+
+        // Status badge
+        const statusEl = document.getElementById("drawerStatus");
+        statusEl.textContent = header.status;
+        statusEl.className = `status-badge ${getStatusClass(header.status)}`;
+
+        // Clear previous errors
+        document.getElementById("drawerErrorContainer").innerHTML = "";
+
+        // Show drawer
+        const drawer = document.getElementById("invoiceDrawer");
+        drawer.classList.add("show");
+        document.body.classList.add("overflow-hidden");
+
+        // Show loading
+        showDrawerLoading();
+
+        // Fetch details
+        try {
+          const resp = await fetch(`/api/invoices/${id}`, { credentials: "same-origin" });
+          if (!resp.ok) throw new Error(`Server responded with ${resp.status}`);
+
+          const detail = await resp.json();
+          detailsCache[id] = detail;
+
+          renderAttachments(detail.attachments || []);
+          renderBreakdown(detail.breakdown || []);
+          renderHistory(detail.history || []);
+        } catch (err) {
+          console.error(err);
+          renderAttachments([]);
+          renderBreakdown([]);
+          renderHistory([]);
+          displayDrawerError("Unable to load invoice details. Please try again later.");
+        }
+      }
+
+      function closeDrawer() {
+        const drawer = document.getElementById("invoiceDrawer");
+        drawer.classList.remove("show");
+        document.body.classList.remove("overflow-hidden");
+      }
+
+      // Alias for legacy compatibility
+      const openModal = openDrawer;
+      const closeModal = closeDrawer;
+
+      /* ========================================
+         Reset Filters
+      ======================================== */
+      function resetFilters() {
+        state.filters = {
+          date: { start: null, end: null },
+          type: "all",
+          status: "all",
+          amountMin: null,
+          amountMax: null,
+          search: ""
+        };
+
+        // Reset form controls
+        document.getElementById("transactionTypeFilter").value = "all";
+        document.getElementById("statusFilter").value = "all";
+        document.getElementById("minAmount").value = "";
+        document.getElementById("maxAmount").value = "";
+        document.getElementById("quickSearchFilter").value = "";
+        document.getElementById("dateRange").value = "";
+
+        // Reset quick filter pills
+        document.querySelectorAll(".filter-pill").forEach(pill => {
+          pill.classList.toggle("active", pill.dataset.status === "all");
+        });
+
+        state.currentPage = 1;
+        filterSortPaginate();
+      }
+
+      /* ========================================
+         Initialize
+      ======================================== */
+      window.addEventListener("DOMContentLoaded", () => {
+        feather.replace();
+        document.getElementById("loadingOverlay").style.display = "none";
+
+        updateStats();
+
+        // Litepicker
+        new Litepicker({
+          element: document.getElementById("dateRange"),
+          singleMode: false,
+          format: "MMM D, YYYY",
+          setup: (picker) => {
+            picker.on("selected", (d1, d2) => {
+              state.filters.date.start = d1 ? d1.toDate() : null;
+              state.filters.date.end = d2 ? d2.toDate() : null;
+              state.currentPage = 1;
+              filterSortPaginate();
+            });
+          }
+        });
+
+        // Quick filter pills
+        document.querySelectorAll(".filter-pill").forEach(pill => {
+          pill.addEventListener("click", () => {
+            document.querySelectorAll(".filter-pill").forEach(p => p.classList.remove("active"));
+            pill.classList.add("active");
+            state.filters.status = pill.dataset.status;
+            document.getElementById("statusFilter").value = pill.dataset.status;
+            state.currentPage = 1;
+            filterSortPaginate();
+          });
+        });
+
+        // Toggle advanced filters
+        const toggleBtn = document.getElementById("toggleFiltersBtn");
+        const filtersPanel = document.getElementById("advancedFilters");
+        const toggleIcon = document.getElementById("toggleFiltersIcon");
+
+        toggleBtn.addEventListener("click", () => {
+          filtersPanel.classList.toggle("expanded");
+          toggleIcon.style.transform = filtersPanel.classList.contains("expanded") ? "rotate(180deg)" : "";
+        });
+
+        // Filter inputs
+        document.getElementById("transactionTypeFilter").addEventListener("change", (e) => {
+          state.filters.type = e.target.value;
+          state.currentPage = 1;
+          filterSortPaginate();
+        });
+
+        document.getElementById("statusFilter").addEventListener("change", (e) => {
+          state.filters.status = e.target.value;
+          // Sync quick filter pills
+          document.querySelectorAll(".filter-pill").forEach(pill => {
+            pill.classList.toggle("active", pill.dataset.status === e.target.value);
+          });
+          state.currentPage = 1;
+          filterSortPaginate();
+        });
+
+        document.getElementById("minAmount").addEventListener("input", (e) => {
+          state.filters.amountMin = e.target.value ? +e.target.value : null;
+          state.currentPage = 1;
+          filterSortPaginate();
+        });
+
+        document.getElementById("maxAmount").addEventListener("input", (e) => {
+          state.filters.amountMax = e.target.value ? +e.target.value : null;
+          state.currentPage = 1;
+          filterSortPaginate();
+        });
+
+        document.getElementById("quickSearchFilter").addEventListener("input", (e) => {
+          state.filters.search = e.target.value.trim();
+          state.currentPage = 1;
+          filterSortPaginate();
+        });
+
+        document.getElementById("itemsPerPage").addEventListener("change", (e) => {
+          state.itemsPerPage = +e.target.value;
+          state.currentPage = 1;
+          filterSortPaginate();
+        });
+
+        // Sort columns
+        document.querySelectorAll(".sort-column").forEach(th => {
+          th.addEventListener("click", () => {
+            const f = th.dataset.sort;
+
+            if (state.sort.field === f) {
+              state.sort.direction = state.sort.direction === "asc" ? "desc" : "asc";
+            } else {
+              state.sort.field = f;
+              state.sort.direction = "asc";
+            }
+
+            document.querySelectorAll(".sort-column").forEach(h => {
+              h.classList.toggle("active", h === th);
+              const icon = h.querySelector("i");
+              icon.setAttribute(
+                "data-feather",
+                h === th
+                  ? state.sort.direction === "asc" ? "chevron-up" : "chevron-down"
+                  : "chevrons-up-down"
+              );
+              icon.classList.toggle("opacity-40", h !== th);
+            });
+
+            feather.replace();
+            filterSortPaginate();
+          });
+        });
+
+        // Reset filters buttons
+        document.getElementById("resetFiltersBtn").addEventListener("click", resetFilters);
+        document.getElementById("emptyStateResetBtn").addEventListener("click", resetFilters);
+
+        // Drawer events
+        document.getElementById("closeDrawerBtn").addEventListener("click", closeDrawer);
+        document.getElementById("invoiceDrawer").addEventListener("click", (e) => {
+          if (e.target.id === "invoiceDrawer") closeDrawer();
+        });
+
+        // Keyboard escape to close drawer
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") closeDrawer();
+        });
+
+        // Initial render
+        filterSortPaginate();
+      });
+    </script>
+  </body>
+</html>
