@@ -1,0 +1,147 @@
+/* Southern Company Brand Colors */
+:root {
+    --brand-primary: #00205B;
+    --brand-accent: #6CACE4;
+    --brand-light: #E8F0FE;
+    --sidebar-width: 220px;
+}
+
+/* Navbar */
+.navbar-brand-bar {
+    background-color: var(--brand-primary);
+    min-height: 56px;
+}
+
+.navbar-subtitle {
+    font-weight: 300;
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: calc(100vh - 56px);
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+
+.sidebar-link {
+    display: block;
+    padding: 10px 12px;
+    margin-bottom: 2px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background-color 0.15s;
+}
+
+.sidebar-link:hover {
+    background-color: #e9ecef;
+    color: var(--brand-primary);
+}
+
+.sidebar-link.active {
+    background-color: var(--brand-primary);
+    color: #fff;
+}
+
+.sidebar-link i {
+    width: 20px;
+    margin-right: 8px;
+}
+
+/* Main Content */
+.main-content {
+    min-height: calc(100vh - 56px);
+    background-color: #fff;
+}
+
+/* Filter Bar */
+.filter-bar {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+/* Summary Cards */
+.summary-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: box-shadow 0.15s;
+}
+
+.summary-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Brand Colors */
+.text-brand {
+    color: var(--brand-primary);
+}
+
+.btn-brand {
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: #fff;
+}
+
+.btn-brand:hover {
+    background-color: #001845;
+    border-color: #001845;
+    color: #fff;
+}
+
+.btn-outline-brand {
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+}
+
+.btn-outline-brand:hover {
+    background-color: var(--brand-primary);
+    color: #fff;
+}
+
+/* Login Page */
+.login-body {
+    background-color: #f0f2f5;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    border: none;
+    border-radius: 12px;
+}
+
+.login-header {
+    background-color: var(--brand-primary);
+    border-radius: 12px 12px 0 0;
+}
+
+/* Tables */
+.table th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--brand-light);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    .main-content {
+        width: 100%;
+    }
+}

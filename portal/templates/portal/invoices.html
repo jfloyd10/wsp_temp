@@ -1,0 +1,138 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+
+{% block title %}Invoices - Wholesale Settlement Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Invoices</h4>
+    <a href="/invoices/export/?{{ request.GET.urlencode }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-download me-1"></i>Export CSV
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label form-label-sm">Operating Company</label>
+            <select name="operating_company" class="form-select form-select-sm">
+                <option value="">All</option>
+                {% for oc in filter_options.operating_companies %}
+                <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label form-label-sm">Counterparty</label>
+            <select name="counterparty_id" class="form-select form-select-sm">
+                <option value="">All</option>
+                {% for cp in filter_options.counterparties %}
+                <option value="{{ cp.id }}" {% if active_filters.counterparty_id == cp.id %}selected{% endif %}>{{ cp.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label form-label-sm">Source System</label>
+            <select name="source_system" class="form-select form-select-sm">
+                <option value="">All</option>
+                {% for ss in filter_options.source_systems %}
+                <option value="{{ ss }}" {% if active_filters.source_system == ss %}selected{% endif %}>{{ ss }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label form-label-sm">Source Type</label>
+            <select name="source_type" class="form-select form-select-sm">
+                <option value="">All</option>
+                {% for st in filter_options.source_types %}
+                <option value="{{ st }}" {% if active_filters.source_type == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label form-label-sm">Status</label>
+            <select name="invoice_status" class="form-select form-select-sm">
+                <option value="">All</option>
+                {% for s in filter_options.statuses %}
+                <option value="{{ s }}" {% if active_filters.invoice_status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label form-label-sm">Date From</label>
+            <input type="date" name="date_from" class="form-control form-control-sm" value="{{ active_filters.date_from|default:'' }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label form-label-sm">Date To</label>
+            <input type="date" name="date_to" class="form-control form-control-sm" value="{{ active_filters.date_to|default:'' }}">
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-brand btn-sm w-100">Apply</button>
+        </div>
+        <div class="col-md-1">
+            <a href="/invoices/" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Results Summary -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted">Showing <strong>{{ invoices|length }}</strong> invoices &mdash; Total: <strong>{{ total_amount|currency }}</strong></span>
+</div>
+
+<!-- Invoice Table -->
+{% if invoices %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Invoice No</th>
+                    <th>Invoice Name</th>
+                    <th>Operating Company</th>
+                    <th>Counterparty</th>
+                    <th>Source</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr class="clickable-row" onclick="window.location='/invoices/{{ inv.invoice_no }}/';" style="cursor:pointer;">
+                    <td><strong>{{ inv.invoice_no }}</strong></td>
+                    <td class="text-truncate" style="max-width: 200px;">{{ inv.invoice_name }}</td>
+                    <td>{{ inv.operating_company }}</td>
+                    <td>{{ inv.counterparty_name }}</td>
+                    <td><span class="badge bg-secondary">{{ inv.source_system }}</span></td>
+                    <td><span class="badge bg-info text-dark">{{ inv.source_type }}</span></td>
+                    <td>{{ inv.invoice_date|format_date }}</td>
+                    <td>
+                        {% if inv.invoice_status == 'FINAL' %}
+                        <span class="badge bg-success">FINAL</span>
+                        {% elif inv.invoice_status == 'DRAFT' %}
+                        <span class="badge bg-warning text-dark">DRAFT</span>
+                        {% elif inv.invoice_status == 'ADJUSTED' %}
+                        <span class="badge bg-danger">ADJUSTED</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ inv.invoice_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">{{ inv.invoice_total|currency }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-search fs-1 text-muted"></i>
+        <p class="text-muted mt-3">No invoices match your filters. Try adjusting your criteria or <a href="/invoices/">clear all filters</a>.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
