@@ -4,126 +4,119 @@
 {% block title %}FCS Metrics - Wholesale Settlement Portal{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Financial & Contract Services Metrics</h4>
-</div>
-
-<!-- Filters -->
-<div class="filter-bar mb-4">
-    <form method="get" class="row g-2 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label form-label-sm">Source System</label>
-            <select name="source_system" class="form-select form-select-sm">
-                <option value="">All Systems</option>
-                {% for ss in filter_options.source_systems %}
-                <option value="{{ ss }}" {% if active_filters.source_system == ss %}selected{% endif %}>{{ ss }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Year</label>
-            <select name="year" class="form-select form-select-sm">
-                <option value="">All Years</option>
-                {% for y in filter_options.years %}
-                <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-brand btn-sm w-100">Apply</button>
-        </div>
-        <div class="col-md-2">
-            <a href="/metrics/" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
-        </div>
-    </form>
-</div>
-
-<!-- Summary Stats -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card summary-card">
-            <div class="card-body text-center">
-                <div class="text-muted small">Period Total Settled</div>
-                <div class="fs-4 fw-bold text-brand">{{ ytd_total|currency }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card summary-card">
-            <div class="card-body text-center">
-                <div class="text-muted small">Period Total Adjustments</div>
-                <div class="fs-4 fw-bold text-brand">{{ ytd_adj|currency }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card summary-card">
-            <div class="card-body text-center">
-                <div class="text-muted small">Avg Adjustment %</div>
-                <div class="fs-4 fw-bold text-brand">{{ avg_adj_pct|percentage }}</div>
-            </div>
-        </div>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">FCS Metrics</h1>
+        <p class="page-subtitle">Financial & Contract Services performance tracking</p>
     </div>
 </div>
 
-<!-- Charts -->
+<!-- Pill Filters -->
+<form method="get">
+    <div class="pill-filter-bar">
+        <select name="source_system" class="filter-pill {% if active_filters.source_system %}has-value{% endif %}">
+            <option value="">All Systems</option>
+            {% for ss in filter_options.source_systems %}
+            <option value="{{ ss }}" {% if active_filters.source_system == ss %}selected{% endif %}>{{ ss }}</option>
+            {% endfor %}
+        </select>
+        <select name="year" class="filter-pill {% if active_filters.year %}has-value{% endif %}">
+            <option value="">All Years</option>
+            {% for y in filter_options.years %}
+            <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <div class="filter-actions">
+            <button type="submit" class="btn-filter-apply">Apply</button>
+            {% if active_filters %}
+            <a href="/metrics/" class="btn-filter-clear"><i class="bi bi-x"></i> Clear</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-card-icon green"><i class="bi bi-currency-dollar"></i></div>
+        <div class="stat-card-value">{{ ytd_total|currency }}</div>
+        <div class="stat-card-label">Period Total Settled</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon blue"><i class="bi bi-arrow-left-right"></i></div>
+        <div class="stat-card-value">{{ ytd_adj|currency }}</div>
+        <div class="stat-card-label">Period Total Adjustments</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon purple"><i class="bi bi-percent"></i></div>
+        <div class="stat-card-value">{{ avg_adj_pct|percentage }}</div>
+        <div class="stat-card-label">Avg Adjustment %</div>
+    </div>
+</div>
+
 {% if metrics %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header"><strong>Monthly Adjustments & Adjustment %</strong></div>
-            <div class="card-body">
-                <canvas id="adjustmentsChart" height="250"></canvas>
-            </div>
+<!-- Charts -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+    <div class="content-card">
+        <div class="content-card-header">
+            <h2 class="content-card-title">Monthly Adjustments & Adjustment %</h2>
+        </div>
+        <div class="chart-container">
+            <canvas id="adjustmentsChart" height="260"></canvas>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header"><strong>Monthly Total Settled</strong></div>
-            <div class="card-body">
-                <canvas id="settledChart" height="250"></canvas>
-            </div>
+    <div class="content-card">
+        <div class="content-card-header">
+            <h2 class="content-card-title">Monthly Total Settled</h2>
+        </div>
+        <div class="chart-container">
+            <canvas id="settledChart" height="260"></canvas>
         </div>
     </div>
 </div>
 
 <!-- Data Table -->
-<div class="card">
-    <div class="card-header"><strong>Monthly Detail</strong></div>
-    <div class="table-responsive">
-        <table class="table table-hover table-striped mb-0">
-            <thead>
-                <tr>
-                    <th>Source System</th>
-                    <th>Period</th>
-                    <th class="text-end">Adjustments</th>
-                    <th class="text-end">Total Settled</th>
-                    <th class="text-end">Adj %</th>
-                    <th class="text-end">Cumulative Adj</th>
-                    <th class="text-end">Cumulative Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for m in metrics %}
-                <tr>
-                    <td><span class="badge bg-secondary">{{ m.source_system }}</span></td>
-                    <td>{{ m.month|month_name }} {{ m.year }}</td>
-                    <td class="text-end">{{ m.adjustments|currency }}</td>
-                    <td class="text-end">{{ m.total_settled|currency }}</td>
-                    <td class="text-end">{{ m.adjustment_percent|percentage }}</td>
-                    <td class="text-end">{{ m.cumulative_adjustment|currency }}</td>
-                    <td class="text-end">{{ m.cumulative_total|currency }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="content-card">
+    <div class="content-card-header">
+        <h2 class="content-card-title">Monthly Detail</h2>
+        <span class="content-card-meta">{{ metrics|length }} records</span>
+    </div>
+    <div class="content-card-body no-padding">
+        <div style="overflow-x: auto;">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Source System</th>
+                        <th>Period</th>
+                        <th class="text-end">Adjustments</th>
+                        <th class="text-end">Total Settled</th>
+                        <th class="text-end">Adj %</th>
+                        <th class="text-end">Cumulative Adj</th>
+                        <th class="text-end">Cumulative Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in metrics %}
+                    <tr>
+                        <td><span class="chip chip-source">{{ m.source_system }}</span></td>
+                        <td>{{ m.month|month_name }} {{ m.year }}</td>
+                        <td class="text-end">{{ m.adjustments|currency }}</td>
+                        <td class="text-end">{{ m.total_settled|currency }}</td>
+                        <td class="text-end">{{ m.adjustment_percent|percentage }}</td>
+                        <td class="text-end">{{ m.cumulative_adjustment|currency }}</td>
+                        <td class="text-end">{{ m.cumulative_total|currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% else %}
-<div class="card">
-    <div class="card-body text-center py-5">
-        <i class="bi bi-bar-chart fs-1 text-muted"></i>
-        <p class="text-muted mt-3">No metrics data available for the selected filters.</p>
+<div class="content-card">
+    <div class="empty-state">
+        <i class="bi bi-bar-chart"></i>
+        <p>No metrics data available for the selected filters.</p>
     </div>
 </div>
 {% endif %}
@@ -136,7 +129,14 @@
 <script>
     const data = JSON.parse(document.getElementById('chart-data').textContent);
 
-    // Adjustments chart (dual axis)
+    const gridColor = '#f0f0f0';
+    const fontColor = '#606060';
+    const fontFamily = "'Inter', sans-serif";
+
+    Chart.defaults.font.family = fontFamily;
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = fontColor;
+
     new Chart(document.getElementById('adjustmentsChart'), {
         type: 'bar',
         data: {
@@ -145,36 +145,41 @@
                 {
                     label: 'Adjustments ($)',
                     data: data.adjustments,
-                    backgroundColor: 'rgba(0, 32, 91, 0.7)',
-                    borderColor: '#00205B',
+                    backgroundColor: 'rgba(62, 166, 255, 0.6)',
+                    borderColor: '#3EA6FF',
                     borderWidth: 1,
+                    borderRadius: 4,
                     yAxisID: 'y'
                 },
                 {
                     label: 'Adjustment %',
                     data: data.adj_pct,
                     type: 'line',
-                    borderColor: '#6CACE4',
-                    backgroundColor: 'rgba(108, 172, 228, 0.2)',
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
                     borderWidth: 2,
                     pointRadius: 3,
-                    fill: false,
+                    pointBackgroundColor: '#8b5cf6',
+                    tension: 0.3,
+                    fill: true,
                     yAxisID: 'y1'
                 }
             ]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } } },
             scales: {
+                x: { grid: { display: false } },
                 y: {
-                    type: 'linear',
                     position: 'left',
                     title: { display: true, text: 'Dollars ($)' },
-                    ticks: { callback: v => '$' + (v/1000000).toFixed(1) + 'M' }
+                    ticks: { callback: v => '$' + (v/1000000).toFixed(1) + 'M' },
+                    grid: { color: gridColor }
                 },
                 y1: {
-                    type: 'linear',
                     position: 'right',
                     title: { display: true, text: 'Percentage (%)' },
                     grid: { drawOnChartArea: false }
@@ -183,7 +188,6 @@
         }
     });
 
-    // Settled chart
     new Chart(document.getElementById('settledChart'), {
         type: 'bar',
         data: {
@@ -191,17 +195,22 @@
             datasets: [{
                 label: 'Total Settled ($)',
                 data: data.total_settled,
-                backgroundColor: 'rgba(108, 172, 228, 0.7)',
-                borderColor: '#6CACE4',
-                borderWidth: 1
+                backgroundColor: 'rgba(43, 166, 64, 0.6)',
+                borderColor: '#2ba640',
+                borderWidth: 1,
+                borderRadius: 4
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } } },
             scales: {
+                x: { grid: { display: false } },
                 y: {
                     title: { display: true, text: 'Dollars ($)' },
-                    ticks: { callback: v => '$' + (v/1000000).toFixed(0) + 'M' }
+                    ticks: { callback: v => '$' + (v/1000000).toFixed(0) + 'M' },
+                    grid: { color: gridColor }
                 }
             }
         }
