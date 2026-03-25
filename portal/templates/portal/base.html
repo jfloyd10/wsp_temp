@@ -95,6 +95,11 @@
                     <i data-feather="users" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Customer Portal</span>
                 </a>
+                <a href="{% url 'contact_center' %}"
+                   class="sidebar-link {% if page == 'contact_center' %}sidebar-link-active{% endif %}">
+                    <i data-feather="headphones" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Contact Center</span>
+                </a>
                 <a href="{% url 'blank' %}"
                    class="sidebar-link {% if page == 'blank' %}sidebar-link-active{% endif %}">
                     <i data-feather="file" class="sidebar-link-icon"></i>
