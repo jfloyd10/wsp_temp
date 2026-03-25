@@ -8,3 +8,5 @@ venv/
 staticfiles/
 .duckdb
 data/wholesale.duckdb
+*.duckdb
+*.db
