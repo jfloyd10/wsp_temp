@@ -352,6 +352,93 @@ def profit_loss_view(request):
     })
 
 
+TRADING_ANALYTICS_FILTER_KEYS = [
+    'trading_group', 'employee_name', 'issue_category', 'year', 'month',
+]
+
+
+@login_required
+def trading_analytics_view(request):
+    filters = _get_filters(request, TRADING_ANALYTICS_FILTER_KEYS)
+    filter_options = duckdb_service.get_trading_analytics_filter_options()
+
+    # Raw issue list
+    issues = duckdb_service.get_trading_analytics(filters)
+
+    # Aggregations for BI charts
+    by_category = duckdb_service.get_trading_analytics_summary_by_category(filters)
+    by_employee = duckdb_service.get_trading_analytics_summary_by_employee(filters)
+    by_group = duckdb_service.get_trading_analytics_by_group(filters)
+    monthly_trend = duckdb_service.get_trading_analytics_monthly_trend(filters)
+    category_by_month = duckdb_service.get_trading_analytics_category_by_month(filters)
+
+    # Summary stats
+    total_issues = len(issues)
+    unique_traders = len(set(i['employee_name'] for i in issues)) if issues else 0
+    unique_deals = len(set(i['deal_no'] for i in issues)) if issues else 0
+    top_category = by_category[0]['issue_category'] if by_category else 'N/A'
+    top_category_count = by_category[0]['issue_count'] if by_category else 0
+
+    # Monthly trend chart data
+    month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    trend_labels = []
+    trend_counts = []
+    for row in monthly_trend:
+        trend_labels.append(f"{month_names[row['month']]} {row['year']}")
+        trend_counts.append(row['issue_count'])
+
+    # Category breakdown chart data
+    cat_labels = [r['issue_category'] for r in by_category]
+    cat_counts = [r['issue_count'] for r in by_category]
+
+    # Trading group chart data
+    group_labels = [r['trading_group'] for r in by_group]
+    group_counts = [r['issue_count'] for r in by_group]
+
+    # Stacked bar chart: categories by month
+    all_categories = sorted(set(r['issue_category'] for r in category_by_month))
+    stacked_labels = []
+    stacked_datasets = {cat: [] for cat in all_categories}
+
+    # Build ordered month keys
+    month_keys = sorted(set((r['year'], r['month']) for r in category_by_month))
+    for year, month in month_keys:
+        stacked_labels.append(f"{month_names[month]} {year}")
+        month_data = {r['issue_category']: r['issue_count']
+                      for r in category_by_month if r['year'] == year and r['month'] == month}
+        for cat in all_categories:
+            stacked_datasets[cat].append(month_data.get(cat, 0))
+
+    chart_data = {
+        'trend_labels': trend_labels,
+        'trend_counts': trend_counts,
+        'cat_labels': cat_labels,
+        'cat_counts': cat_counts,
+        'group_labels': group_labels,
+        'group_counts': group_counts,
+        'stacked_labels': stacked_labels,
+        'stacked_categories': all_categories,
+        'stacked_datasets': stacked_datasets,
+    }
+
+    return render(request, 'portal/trading_analytics.html', {
+        'issues': issues,
+        'by_category': by_category,
+        'by_employee': by_employee,
+        'by_group': by_group,
+        'filter_options': filter_options,
+        'active_filters': filters,
+        'total_issues': total_issues,
+        'unique_traders': unique_traders,
+        'unique_deals': unique_deals,
+        'top_category': top_category,
+        'top_category_count': top_category_count,
+        'chart_data': chart_data,
+        'page': 'trading_analytics',
+    })
+
+
 @login_required
 def export_invoices_csv(request):
     filters = _get_filters(request, INVOICE_FILTER_KEYS)

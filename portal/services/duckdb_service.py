@@ -329,6 +329,191 @@ def get_trading_analytics_filter_options() -> dict:
         return {'trading_groups': [], 'employees': [], 'issue_categories': [], 'years': []}
 
 
+def get_trading_analytics_summary_by_category(filters: dict) -> list[dict]:
+    """Return issue counts grouped by issue_category."""
+    try:
+        conn = get_connection()
+        conditions = []
+        params = []
+        if filters.get('trading_group'):
+            conditions.append("trading_group = ?")
+            params.append(filters['trading_group'])
+        if filters.get('employee_name'):
+            conditions.append("employee_name = ?")
+            params.append(filters['employee_name'])
+        if filters.get('issue_category'):
+            conditions.append("issue_category = ?")
+            params.append(filters['issue_category'])
+        if filters.get('year'):
+            conditions.append("YEAR(dt) = ?")
+            params.append(int(filters['year']))
+        if filters.get('month'):
+            conditions.append("MONTH(dt) = ?")
+            params.append(int(filters['month']))
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = conn.execute(f"""
+            SELECT issue_category, COUNT(*) AS issue_count
+            FROM trading_analytics
+            {where}
+            GROUP BY issue_category
+            ORDER BY issue_count DESC
+        """, params).fetchall()
+        conn.close()
+        return [dict(zip(['issue_category', 'issue_count'], r)) for r in rows]
+    except Exception:
+        logger.exception("Error fetching trading analytics summary by category")
+        return []
+
+
+def get_trading_analytics_summary_by_employee(filters: dict) -> list[dict]:
+    """Return issue counts grouped by employee and trading group."""
+    try:
+        conn = get_connection()
+        conditions = []
+        params = []
+        if filters.get('trading_group'):
+            conditions.append("trading_group = ?")
+            params.append(filters['trading_group'])
+        if filters.get('employee_name'):
+            conditions.append("employee_name = ?")
+            params.append(filters['employee_name'])
+        if filters.get('issue_category'):
+            conditions.append("issue_category = ?")
+            params.append(filters['issue_category'])
+        if filters.get('year'):
+            conditions.append("YEAR(dt) = ?")
+            params.append(int(filters['year']))
+        if filters.get('month'):
+            conditions.append("MONTH(dt) = ?")
+            params.append(int(filters['month']))
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = conn.execute(f"""
+            SELECT employee_name, trading_group, COUNT(*) AS issue_count
+            FROM trading_analytics
+            {where}
+            GROUP BY employee_name, trading_group
+            ORDER BY issue_count DESC
+        """, params).fetchall()
+        conn.close()
+        return [dict(zip(['employee_name', 'trading_group', 'issue_count'], r)) for r in rows]
+    except Exception:
+        logger.exception("Error fetching trading analytics summary by employee")
+        return []
+
+
+def get_trading_analytics_monthly_trend(filters: dict) -> list[dict]:
+    """Return monthly issue counts for trend chart."""
+    try:
+        conn = get_connection()
+        conditions = []
+        params = []
+        if filters.get('trading_group'):
+            conditions.append("trading_group = ?")
+            params.append(filters['trading_group'])
+        if filters.get('employee_name'):
+            conditions.append("employee_name = ?")
+            params.append(filters['employee_name'])
+        if filters.get('issue_category'):
+            conditions.append("issue_category = ?")
+            params.append(filters['issue_category'])
+        if filters.get('year'):
+            conditions.append("YEAR(dt) = ?")
+            params.append(int(filters['year']))
+        if filters.get('month'):
+            conditions.append("MONTH(dt) = ?")
+            params.append(int(filters['month']))
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = conn.execute(f"""
+            SELECT YEAR(dt) AS year, MONTH(dt) AS month, COUNT(*) AS issue_count
+            FROM trading_analytics
+            {where}
+            GROUP BY YEAR(dt), MONTH(dt)
+            ORDER BY year, month
+        """, params).fetchall()
+        conn.close()
+        return [dict(zip(['year', 'month', 'issue_count'], r)) for r in rows]
+    except Exception:
+        logger.exception("Error fetching trading analytics monthly trend")
+        return []
+
+
+def get_trading_analytics_by_group(filters: dict) -> list[dict]:
+    """Return issue counts grouped by trading group."""
+    try:
+        conn = get_connection()
+        conditions = []
+        params = []
+        if filters.get('trading_group'):
+            conditions.append("trading_group = ?")
+            params.append(filters['trading_group'])
+        if filters.get('employee_name'):
+            conditions.append("employee_name = ?")
+            params.append(filters['employee_name'])
+        if filters.get('issue_category'):
+            conditions.append("issue_category = ?")
+            params.append(filters['issue_category'])
+        if filters.get('year'):
+            conditions.append("YEAR(dt) = ?")
+            params.append(int(filters['year']))
+        if filters.get('month'):
+            conditions.append("MONTH(dt) = ?")
+            params.append(int(filters['month']))
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = conn.execute(f"""
+            SELECT trading_group, COUNT(*) AS issue_count
+            FROM trading_analytics
+            {where}
+            GROUP BY trading_group
+            ORDER BY issue_count DESC
+        """, params).fetchall()
+        conn.close()
+        return [dict(zip(['trading_group', 'issue_count'], r)) for r in rows]
+    except Exception:
+        logger.exception("Error fetching trading analytics by group")
+        return []
+
+
+def get_trading_analytics_category_by_month(filters: dict) -> list[dict]:
+    """Return issue counts grouped by month and category for stacked chart."""
+    try:
+        conn = get_connection()
+        conditions = []
+        params = []
+        if filters.get('trading_group'):
+            conditions.append("trading_group = ?")
+            params.append(filters['trading_group'])
+        if filters.get('employee_name'):
+            conditions.append("employee_name = ?")
+            params.append(filters['employee_name'])
+        if filters.get('issue_category'):
+            conditions.append("issue_category = ?")
+            params.append(filters['issue_category'])
+        if filters.get('year'):
+            conditions.append("YEAR(dt) = ?")
+            params.append(int(filters['year']))
+        if filters.get('month'):
+            conditions.append("MONTH(dt) = ?")
+            params.append(int(filters['month']))
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = conn.execute(f"""
+            SELECT YEAR(dt) AS year, MONTH(dt) AS month, issue_category, COUNT(*) AS issue_count
+            FROM trading_analytics
+            {where}
+            GROUP BY YEAR(dt), MONTH(dt), issue_category
+            ORDER BY year, month, issue_category
+        """, params).fetchall()
+        conn.close()
+        return [dict(zip(['year', 'month', 'issue_category', 'issue_count'], r)) for r in rows]
+    except Exception:
+        logger.exception("Error fetching trading analytics category by month")
+        return []
+
+
 def get_capacity_factors(filters: dict) -> list[dict]:
     """Return capacity_factors rows with optional filters."""
     try:

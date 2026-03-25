@@ -85,6 +85,11 @@
                     <i data-feather="activity" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Capacity</span>
                 </a>
+                <a href="{% url 'trading_analytics' %}"
+                   class="sidebar-link {% if page == 'trading_analytics' %}sidebar-link-active{% endif %}">
+                    <i data-feather="alert-triangle" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Trading Analytics</span>
+                </a>
             </div>
         </nav>
 
