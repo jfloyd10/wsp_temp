@@ -390,22 +390,22 @@ def get_trading_analytics_filter_options() -> dict:
         result = {}
         result['trading_groups'] = [
             r[0] for r in conn.execute(
-                "SELECT DISTINCT trading_group FROM trading_analytics ORDER BY trading_group"
+                "SELECT DISTINCT trading_group FROM trading_analytics WHERE trading_group IS NOT NULL ORDER BY trading_group"
             ).fetchall()
         ]
         result['employees'] = [
             r[0] for r in conn.execute(
-                "SELECT DISTINCT employee_name FROM trading_analytics ORDER BY employee_name"
+                "SELECT DISTINCT employee_name FROM trading_analytics WHERE employee_name IS NOT NULL ORDER BY employee_name"
             ).fetchall()
         ]
         result['issue_categories'] = [
             r[0] for r in conn.execute(
-                "SELECT DISTINCT issue_category FROM trading_analytics ORDER BY issue_category"
+                "SELECT DISTINCT issue_category FROM trading_analytics WHERE issue_category IS NOT NULL ORDER BY issue_category"
             ).fetchall()
         ]
         result['years'] = [
             r[0] for r in conn.execute(
-                "SELECT DISTINCT YEAR(dt) AS yr FROM trading_analytics ORDER BY yr DESC"
+                "SELECT DISTINCT YEAR(dt) AS yr FROM trading_analytics WHERE dt IS NOT NULL ORDER BY yr DESC"
             ).fetchall()
         ]
         conn.close()
