@@ -1,0 +1,746 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+
+{% block title %}Platform Overview - Wholesale Settlement Portal{% endblock %}
+
+{% block content %}
+<main class="flex-1 overflow-y-auto bg-gray-50 p-4 md:px-6 lg:px-12 py-6 pattern-bg">
+    <div class="max-w-screen-2xl mx-auto">
+
+        <!-- Page Header -->
+        <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-start">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Platform Overview</h1>
+                <p class="text-gray-500 mt-1">A comprehensive view of all data elements across the wholesale settlement platform.</p>
+            </div>
+            <div class="flex items-center space-x-2 mt-4 md:mt-0">
+                <form method="get" class="flex items-center space-x-2">
+                    <select name="year"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all duration-200 shadow-sm appearance-none pr-8 cursor-pointer">
+                        {% for yr in all_years %}
+                        <option value="{{ yr }}" {% if selected_year == yr|stringformat:"d" %}selected{% endif %}>{{ yr }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit"
+                            class="btn-brand py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md">
+                        Apply
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Data Source Summary Cards -->
+        <div class="fade-in grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8 visible" style="transition-delay: 50ms">
+            <!-- Invoices -->
+            <a href="{% url 'invoices' %}" class="dashboard-card bg-white rounded-lg p-4 hover:border-brand-200 transition-all group">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-500 group-hover:bg-brand-100 transition-colors">
+                        <i data-feather="file-text" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Invoices</span>
+                </div>
+                <p class="text-xl font-bold text-gray-900">{{ overview.invoices.count|format_number }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ overview.invoices.total|currency }} settled</p>
+            </a>
+
+            <!-- FCS Metrics -->
+            <a href="{% url 'metrics' %}" class="dashboard-card bg-white rounded-lg p-4 hover:border-blue-200 transition-all group">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 group-hover:bg-blue-100 transition-colors">
+                        <i data-feather="bar-chart-2" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">FCS</span>
+                </div>
+                <p class="text-xl font-bold text-gray-900">{{ overview.fcs.count }}</p>
+                <p class="text-xs text-gray-400 mt-1">Monthly records</p>
+            </a>
+
+            <!-- Capacity -->
+            <a href="{% url 'capacity' %}" class="dashboard-card bg-white rounded-lg p-4 hover:border-emerald-200 transition-all group">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-100 transition-colors">
+                        <i data-feather="activity" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Capacity</span>
+                </div>
+                <p class="text-xl font-bold text-gray-900">{{ overview.capacity.resources }}</p>
+                <p class="text-xs text-gray-400 mt-1">Resources tracked</p>
+            </a>
+
+            <!-- Weather -->
+            <div class="dashboard-card bg-white rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-500">
+                        <i data-feather="cloud" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Weather</span>
+                </div>
+                <p class="text-xl font-bold text-gray-900">{{ overview.weather.count|format_number }}</p>
+                <p class="text-xs text-gray-400 mt-1">Daily records</p>
+            </div>
+
+            <!-- Interchange Rates -->
+            <div class="dashboard-card bg-white rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center text-violet-500">
+                        <i data-feather="repeat" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Interchange</span>
+                </div>
+                <p class="text-xl font-bold text-gray-900">{{ overview.interchange.count }}</p>
+                <p class="text-xs text-gray-400 mt-1">Rate records</p>
+            </div>
+
+            <!-- P&L -->
+            <a href="{% url 'profit_loss' %}" class="dashboard-card bg-white rounded-lg p-4 hover:border-amber-200 transition-all group">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 group-hover:bg-amber-100 transition-colors">
+                        <i data-feather="trending-up" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">P&L</span>
+                </div>
+                <p class="text-xl font-bold text-gray-900">{{ overview.pnl.entities }}</p>
+                <p class="text-xs text-gray-400 mt-1">Entities</p>
+            </a>
+
+            <!-- Trading Analytics -->
+            <a href="{% url 'trading_analytics' %}" class="dashboard-card bg-white rounded-lg p-4 hover:border-rose-200 transition-all group">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500 group-hover:bg-rose-100 transition-colors">
+                        <i data-feather="alert-triangle" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Trading</span>
+                </div>
+                <p class="text-xl font-bold text-gray-900">{{ overview.trading.count }}</p>
+                <p class="text-xs text-gray-400 mt-1">Issues logged</p>
+            </a>
+        </div>
+
+        <!-- Row 1: Weather + Interchange Rate -->
+        <div class="fade-in grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 visible" style="transition-delay: 100ms">
+            <!-- Weather Temperature & Degree Days -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">Weather & Degree Days</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Monthly temperature and degree-day trends</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-lg bg-sky-50 flex items-center justify-center text-sky-500">
+                        <i data-feather="thermometer" class="w-4 h-4"></i>
+                    </div>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="weatherChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Avg Interchange Rate -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">Avg Interchange Rate</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Monthly wholesale interchange pricing trend</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center text-violet-500">
+                        <i data-feather="repeat" class="w-4 h-4"></i>
+                    </div>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="interchangeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Capacity Factors + FCS Metrics -->
+        <div class="fade-in grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 visible" style="transition-delay: 150ms">
+            <!-- Capacity Factor by Resource Type -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">Capacity Factor by Fuel Type</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Avg actual capacity factor by generation source</p>
+                    </div>
+                    <a href="{% url 'capacity' %}" class="text-xs text-brand-500 hover:text-brand-700 font-medium">View Details</a>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="capacityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- FCS Metrics: Total Settled & Adjustments -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">FCS Settlements & Adjustments</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Monthly settlement totals vs adjustments</p>
+                    </div>
+                    <a href="{% url 'metrics' %}" class="text-xs text-brand-500 hover:text-brand-700 font-medium">View Details</a>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="fcsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Invoices by OpCo + Invoices by Status + Trading Issues -->
+        <div class="fade-in grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 visible" style="transition-delay: 200ms">
+            <!-- Invoices by Operating Company -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">Invoices by Company</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Settlement amounts by operating company</p>
+                    </div>
+                    <a href="{% url 'invoices' %}" class="text-xs text-brand-500 hover:text-brand-700 font-medium">View All</a>
+                </div>
+                <div style="height: 250px;">
+                    <canvas id="invoicesByOpcoChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Invoices by Status -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">Invoice Status Mix</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Distribution by invoice status</p>
+                    </div>
+                </div>
+                <div style="height: 250px;">
+                    <canvas id="invoiceStatusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Trading Issues by Category -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">Trading Issues</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Issue breakdown by category</p>
+                    </div>
+                    <a href="{% url 'trading_analytics' %}" class="text-xs text-brand-500 hover:text-brand-700 font-medium">View Details</a>
+                </div>
+                <div style="height: 250px;">
+                    <canvas id="tradingChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 4: Degree Days Detail + Resource Type Mix -->
+        <div class="fade-in grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 visible" style="transition-delay: 250ms">
+            <!-- Degree Days Stacked -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">Heating vs Cooling Degree Days</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Seasonal energy demand drivers</p>
+                    </div>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="degreeDaysChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Resource Type Mix Donut -->
+            <div class="dashboard-card bg-white rounded-lg p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="font-bold text-gray-900">Generation Resource Mix</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Number of resources by fuel type</p>
+                    </div>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="resourceMixChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 5: Data Source Table -->
+        <div class="fade-in dashboard-card bg-white rounded-lg p-5 mb-6 visible" style="transition-delay: 300ms">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="font-bold text-gray-900">Data Source Inventory</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">All consolidated data sources available on the platform</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200 text-left">
+                            <th class="pb-3 pr-6 font-semibold text-gray-600 text-xs uppercase tracking-wide">Dataset</th>
+                            <th class="pb-3 pr-6 font-semibold text-gray-600 text-xs uppercase tracking-wide">Records</th>
+                            <th class="pb-3 pr-6 font-semibold text-gray-600 text-xs uppercase tracking-wide">Key Metrics</th>
+                            <th class="pb-3 pr-6 font-semibold text-gray-600 text-xs uppercase tracking-wide">Description</th>
+                            <th class="pb-3 font-semibold text-gray-600 text-xs uppercase tracking-wide"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 pr-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded bg-brand-50 flex items-center justify-center text-brand-500">
+                                        <i data-feather="file-text" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <span class="font-medium">Invoice Headers</span>
+                                </div>
+                            </td>
+                            <td class="py-3 pr-6 font-medium">{{ overview.invoices.count|format_number }}</td>
+                            <td class="py-3 pr-6 text-gray-500">{{ overview.invoices.opcos }} companies, {{ overview.invoices.counterparties }} counterparties</td>
+                            <td class="py-3 pr-6 text-gray-500">Master invoice records across all operating companies</td>
+                            <td class="py-3"><a href="{% url 'invoices' %}" class="text-brand-500 hover:text-brand-700 text-xs font-medium">View</a></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 pr-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded bg-blue-50 flex items-center justify-center text-blue-500">
+                                        <i data-feather="bar-chart-2" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <span class="font-medium">FCS Metrics</span>
+                                </div>
+                            </td>
+                            <td class="py-3 pr-6 font-medium">{{ overview.fcs.count }}</td>
+                            <td class="py-3 pr-6 text-gray-500">{{ overview.fcs.total_settled|currency }} total settled</td>
+                            <td class="py-3 pr-6 text-gray-500">Monthly departmental KPIs for Financial & Contract Services</td>
+                            <td class="py-3"><a href="{% url 'metrics' %}" class="text-brand-500 hover:text-brand-700 text-xs font-medium">View</a></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 pr-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded bg-emerald-50 flex items-center justify-center text-emerald-500">
+                                        <i data-feather="activity" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <span class="font-medium">Capacity Factors</span>
+                                </div>
+                            </td>
+                            <td class="py-3 pr-6 font-medium">{{ overview.capacity.count|format_number }}</td>
+                            <td class="py-3 pr-6 text-gray-500">{{ overview.capacity.resources }} resources, {{ overview.capacity.fuel_types }} fuel types</td>
+                            <td class="py-3 pr-6 text-gray-500">Generation resource performance data by operating company</td>
+                            <td class="py-3"><a href="{% url 'capacity' %}" class="text-brand-500 hover:text-brand-700 text-xs font-medium">View</a></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 pr-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded bg-sky-50 flex items-center justify-center text-sky-500">
+                                        <i data-feather="cloud" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <span class="font-medium">Weather</span>
+                                </div>
+                            </td>
+                            <td class="py-3 pr-6 font-medium">{{ overview.weather.count|format_number }}</td>
+                            <td class="py-3 pr-6 text-gray-500">{{ overview.weather.min_year }}–{{ overview.weather.max_year }} coverage</td>
+                            <td class="py-3 pr-6 text-gray-500">Daily temperature, cooling & heating degree days/hours</td>
+                            <td class="py-3 text-gray-400 text-xs">Dashboard only</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 pr-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded bg-violet-50 flex items-center justify-center text-violet-500">
+                                        <i data-feather="repeat" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <span class="font-medium">Interchange Rates</span>
+                                </div>
+                            </td>
+                            <td class="py-3 pr-6 font-medium">{{ overview.interchange.count }}</td>
+                            <td class="py-3 pr-6 text-gray-500">{{ overview.interchange.min_year }}–{{ overview.interchange.max_year }} coverage</td>
+                            <td class="py-3 pr-6 text-gray-500">Average associated interchange rates by month</td>
+                            <td class="py-3 text-gray-400 text-xs">Dashboard only</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 pr-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded bg-amber-50 flex items-center justify-center text-amber-500">
+                                        <i data-feather="trending-up" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <span class="font-medium">Profit & Loss</span>
+                                </div>
+                            </td>
+                            <td class="py-3 pr-6 font-medium">{{ overview.pnl.count|format_number }}</td>
+                            <td class="py-3 pr-6 text-gray-500">{{ overview.pnl.entities }} entities, {{ overview.pnl.categories }} categories</td>
+                            <td class="py-3 pr-6 text-gray-500">P&L statement data across entities, categories, and allocations</td>
+                            <td class="py-3"><a href="{% url 'profit_loss' %}" class="text-brand-500 hover:text-brand-700 text-xs font-medium">View</a></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 pr-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded bg-rose-50 flex items-center justify-center text-rose-500">
+                                        <i data-feather="alert-triangle" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <span class="font-medium">Trading Analytics</span>
+                                </div>
+                            </td>
+                            <td class="py-3 pr-6 font-medium">{{ overview.trading.count }}</td>
+                            <td class="py-3 pr-6 text-gray-500">{{ overview.trading.traders }} traders, {{ overview.trading.categories }} issue types</td>
+                            <td class="py-3 pr-6 text-gray-500">Trader issue monitoring and error classification</td>
+                            <td class="py-3"><a href="{% url 'trading_analytics' %}" class="text-brand-500 hover:text-brand-700 text-xs font-medium">View</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+<script>
+    // Shared options
+    const gridOpts = { display: true, color: 'rgba(0,0,0,0.04)' };
+    const tickOpts = { font: { size: 11 }, color: '#94a3b8' };
+    const legendOpts = { labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 11 } } };
+    const tooltipOpts = { backgroundColor: '#1e293b', titleFont: { size: 12 }, bodyFont: { size: 11 }, padding: 10, cornerRadius: 8 };
+
+    // Color palette
+    const COLORS = {
+        brand: '#EC1C24', brandLight: 'rgba(236,28,36,0.1)',
+        blue: '#3b82f6', blueLight: 'rgba(59,130,246,0.1)',
+        emerald: '#10b981', emeraldLight: 'rgba(16,185,129,0.1)',
+        amber: '#f59e0b', amberLight: 'rgba(245,158,11,0.1)',
+        violet: '#8b5cf6', violetLight: 'rgba(139,92,246,0.1)',
+        sky: '#0ea5e9', skyLight: 'rgba(14,165,233,0.1)',
+        rose: '#f43f5e', roseLight: 'rgba(244,63,94,0.1)',
+        orange: '#f97316',
+        indigo: '#6366f1',
+        teal: '#14b8a6',
+    };
+
+    // 1. Weather Chart (Temperature line + CDD/HDD bars)
+    const weatherCtx = document.getElementById('weatherChart');
+    if (weatherCtx) {
+        new Chart(weatherCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ weather_chart.labels|safe }},
+                datasets: [
+                    {
+                        label: 'Avg Temp (F)',
+                        type: 'line',
+                        data: {{ weather_chart.avg_temp|safe }},
+                        borderColor: COLORS.brand,
+                        backgroundColor: COLORS.brandLight,
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                        order: 0,
+                    },
+                    {
+                        label: 'Cooling DD',
+                        data: {{ weather_chart.cdd|safe }},
+                        backgroundColor: COLORS.skyLight,
+                        borderColor: COLORS.sky,
+                        borderWidth: 1,
+                        borderRadius: 3,
+                        yAxisID: 'y',
+                        order: 1,
+                    },
+                    {
+                        label: 'Heating DD',
+                        data: {{ weather_chart.hdd|safe }},
+                        backgroundColor: COLORS.amberLight,
+                        borderColor: COLORS.amber,
+                        borderWidth: 1,
+                        borderRadius: 3,
+                        yAxisID: 'y',
+                        order: 1,
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: legendOpts, tooltip: tooltipOpts },
+                scales: {
+                    x: { grid: { display: false }, ticks: tickOpts },
+                    y: { position: 'left', grid: gridOpts, ticks: tickOpts, title: { display: true, text: 'Degree Days', font: { size: 11 }, color: '#94a3b8' } },
+                    y1: { position: 'right', grid: { display: false }, ticks: tickOpts, title: { display: true, text: 'Temp (F)', font: { size: 11 }, color: '#94a3b8' } },
+                }
+            }
+        });
+    }
+
+    // 2. Interchange Rate Chart
+    const irCtx = document.getElementById('interchangeChart');
+    if (irCtx) {
+        new Chart(irCtx, {
+            type: 'line',
+            data: {
+                labels: {{ ir_chart.labels|safe }},
+                datasets: [{
+                    label: 'Avg Interchange Rate',
+                    data: {{ ir_chart.rates|safe }},
+                    borderColor: COLORS.violet,
+                    backgroundColor: COLORS.violetLight,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: COLORS.violet,
+                    borderWidth: 2.5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: legendOpts,
+                    tooltip: {
+                        ...tooltipOpts,
+                        callbacks: {
+                            label: function(ctx) { return `Rate: $${ctx.parsed.y.toFixed(4)}`; }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: tickOpts },
+                    y: { grid: gridOpts, ticks: { ...tickOpts, callback: v => '$' + v.toFixed(2) }, title: { display: true, text: '$/MWh', font: { size: 11 }, color: '#94a3b8' } },
+                }
+            }
+        });
+    }
+
+    // 3. Capacity Factor by Fuel Type
+    const capCtx = document.getElementById('capacityChart');
+    if (capCtx) {
+        new Chart(capCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ cap_chart.labels|safe }},
+                datasets: [{
+                    label: 'Avg Capacity Factor (%)',
+                    data: {{ cap_chart.avg_cf|safe }},
+                    backgroundColor: [COLORS.emerald, COLORS.blue, COLORS.amber, COLORS.violet, COLORS.sky, COLORS.rose, COLORS.orange, COLORS.indigo],
+                    borderColor: [COLORS.emerald, COLORS.blue, COLORS.amber, COLORS.violet, COLORS.sky, COLORS.rose, COLORS.orange, COLORS.indigo],
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        ...tooltipOpts,
+                        callbacks: { label: function(ctx) { return `Avg CF: ${ctx.parsed.x.toFixed(1)}%`; } }
+                    }
+                },
+                scales: {
+                    x: { grid: gridOpts, ticks: { ...tickOpts, callback: v => v + '%' }, max: 100 },
+                    y: { grid: { display: false }, ticks: tickOpts },
+                }
+            }
+        });
+    }
+
+    // 4. FCS Settlements & Adjustments
+    const fcsCtx = document.getElementById('fcsChart');
+    if (fcsCtx) {
+        new Chart(fcsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ fcs_chart.labels|safe }},
+                datasets: [
+                    {
+                        label: 'Total Settled',
+                        data: {{ fcs_chart.total_settled|safe }},
+                        backgroundColor: COLORS.blueLight,
+                        borderColor: COLORS.blue,
+                        borderWidth: 1,
+                        borderRadius: 3,
+                    },
+                    {
+                        label: 'Adjustments',
+                        type: 'line',
+                        data: {{ fcs_chart.adjustments|safe }},
+                        borderColor: COLORS.brand,
+                        backgroundColor: COLORS.brandLight,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        borderWidth: 2,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: legendOpts,
+                    tooltip: {
+                        ...tooltipOpts,
+                        callbacks: { label: function(ctx) { return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(); } }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: tickOpts },
+                    y: { position: 'left', grid: gridOpts, ticks: { ...tickOpts, callback: v => '$' + (v/1000000).toFixed(1) + 'M' } },
+                    y1: { position: 'right', grid: { display: false }, ticks: { ...tickOpts, callback: v => '$' + (v/1000).toFixed(0) + 'K' } },
+                }
+            }
+        });
+    }
+
+    // 5. Invoices by Operating Company (horizontal bar)
+    const opcoCtx = document.getElementById('invoicesByOpcoChart');
+    if (opcoCtx) {
+        const opcoData = {{ overview.inv_by_opco|safe }};
+        new Chart(opcoCtx, {
+            type: 'bar',
+            data: {
+                labels: opcoData.map(d => d.name),
+                datasets: [{
+                    label: 'Total Amount',
+                    data: opcoData.map(d => d.total),
+                    backgroundColor: [COLORS.brand, COLORS.blue, COLORS.emerald, COLORS.amber],
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        ...tooltipOpts,
+                        callbacks: { label: function(ctx) { return '$' + ctx.parsed.x.toLocaleString(undefined, {minimumFractionDigits: 2}); } }
+                    }
+                },
+                scales: {
+                    x: { grid: gridOpts, ticks: { ...tickOpts, callback: v => '$' + (v/1000000).toFixed(1) + 'M' } },
+                    y: { grid: { display: false }, ticks: tickOpts },
+                }
+            }
+        });
+    }
+
+    // 6. Invoice Status (doughnut)
+    const statusCtx = document.getElementById('invoiceStatusChart');
+    if (statusCtx) {
+        const statusData = {{ overview.inv_by_status|safe }};
+        const statusColors = { 'FINAL': COLORS.emerald, 'DRAFT': COLORS.amber, 'ADJUSTED': COLORS.brand };
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusData.map(d => d.status),
+                datasets: [{
+                    data: statusData.map(d => d.count),
+                    backgroundColor: statusData.map(d => statusColors[d.status] || '#94a3b8'),
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: { ...legendOpts, position: 'bottom' },
+                    tooltip: tooltipOpts,
+                }
+            }
+        });
+    }
+
+    // 7. Trading Issues by Category (horizontal bar)
+    const tradingCtx = document.getElementById('tradingChart');
+    if (tradingCtx) {
+        const taData = {{ overview.ta_by_category|safe }};
+        new Chart(tradingCtx, {
+            type: 'bar',
+            data: {
+                labels: taData.map(d => d.category),
+                datasets: [{
+                    label: 'Issues',
+                    data: taData.map(d => d.count),
+                    backgroundColor: [COLORS.rose, COLORS.amber, COLORS.blue, COLORS.violet, COLORS.emerald, COLORS.sky],
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: tooltipOpts,
+                },
+                scales: {
+                    x: { grid: gridOpts, ticks: tickOpts },
+                    y: { grid: { display: false }, ticks: tickOpts },
+                }
+            }
+        });
+    }
+
+    // 8. Degree Days Stacked Bar
+    const ddCtx = document.getElementById('degreeDaysChart');
+    if (ddCtx) {
+        new Chart(ddCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ weather_chart.labels|safe }},
+                datasets: [
+                    {
+                        label: 'Cooling Degree Days',
+                        data: {{ weather_chart.cdd|safe }},
+                        backgroundColor: COLORS.sky,
+                        borderRadius: 2,
+                        stack: 'dd',
+                    },
+                    {
+                        label: 'Heating Degree Days',
+                        data: {{ weather_chart.hdd|safe }},
+                        backgroundColor: COLORS.amber,
+                        borderRadius: 2,
+                        stack: 'dd',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: legendOpts, tooltip: tooltipOpts },
+                scales: {
+                    x: { stacked: true, grid: { display: false }, ticks: tickOpts },
+                    y: { stacked: true, grid: gridOpts, ticks: tickOpts, title: { display: true, text: 'Degree Days', font: { size: 11 }, color: '#94a3b8' } },
+                }
+            }
+        });
+    }
+
+    // 9. Resource Mix (doughnut)
+    const mixCtx = document.getElementById('resourceMixChart');
+    if (mixCtx) {
+        const mixData = {{ overview.cap_by_type|safe }};
+        const mixColors = [COLORS.emerald, COLORS.amber, COLORS.blue, COLORS.violet, COLORS.sky, COLORS.rose, COLORS.orange, COLORS.indigo, COLORS.teal];
+        new Chart(mixCtx, {
+            type: 'doughnut',
+            data: {
+                labels: mixData.map(d => d.type),
+                datasets: [{
+                    data: mixData.map(d => d.count),
+                    backgroundColor: mixColors.slice(0, mixData.length),
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: { ...legendOpts, position: 'right' },
+                    tooltip: tooltipOpts,
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}
