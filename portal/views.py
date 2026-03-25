@@ -57,11 +57,14 @@ def dashboard_view(request):
     filter_options = duckdb_service.get_filter_options()
 
     # Monthly settlement trend for chart
-    trend_data = duckdb_service.get_monthly_settlement_trend(filters)
+    trend_data = [
+        r for r in duckdb_service.get_monthly_settlement_trend(filters)
+        if r.get('month') is not None and r.get('year') is not None
+    ]
     month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     trend_chart = {
-        'labels': [f"{month_names[r['month']]} {r['year']}" for r in trend_data],
+        'labels': [f"{month_names[int(r['month'])]} {r['year']}" for r in trend_data],
         'amounts': [float(r['total_amount']) for r in trend_data],
         'counts': [int(r['invoice_count']) for r in trend_data],
     }
