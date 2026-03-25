@@ -1,7 +1,6 @@
 """Portal views — all function-based, all @login_required except login/logout."""
 
 import csv
-import json
 import mimetypes
 from datetime import datetime
 
@@ -30,7 +29,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('/login/')
+    return redirect('login')
 
 
 def _get_filters(request, keys):
@@ -140,7 +139,7 @@ def metrics_view(request):
 
     return render(request, 'portal/metrics.html', {
         'metrics': metrics,
-        'chart_data': json.dumps(chart_data),
+        'chart_data': chart_data,
         'filter_options': filter_options,
         'active_filters': filters,
         'ytd_total': ytd_total,
@@ -154,9 +153,7 @@ def metrics_view(request):
 def capacity_view(request):
     filters = _get_filters(request, ['operating_company', 'resource_type', 'year', 'month'])
     data = duckdb_service.get_capacity_factors(filters)
-    cap_filter_options = duckdb_service.get_capacity_filter_options()
     filter_options = duckdb_service.get_filter_options()
-    filter_options.update(cap_filter_options)
 
     # Weighted average capacity factor
     total_possible = sum(float(r.get('total_mwh_possible', 0) or 0) for r in data)

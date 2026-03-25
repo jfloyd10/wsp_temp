@@ -49,12 +49,11 @@
                         {% endfor %}
                     </select>
                     <button type="submit"
-                            class="py-2 px-4 text-white rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md"
-                            style="background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);">
+                            class="btn-brand py-2 px-4 rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md">
                         Apply
                     </button>
                     {% if active_filters %}
-                    <a href="/capacity/" class="py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-600 transition-all">Clear</a>
+                    <a href="{% url 'capacity' %}" class="py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-600 transition-all">Clear</a>
                     {% endif %}
                 </form>
             </div>

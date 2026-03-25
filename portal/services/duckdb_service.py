@@ -72,6 +72,11 @@ def get_filter_options() -> dict:
                 "SELECT DISTINCT resource_type FROM capacity_factors ORDER BY resource_type"
             ).fetchall()
         ]
+        result['months'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT month FROM capacity_factors ORDER BY month"
+            ).fetchall()
+        ]
         conn.close()
         return result
     except Exception:
@@ -79,6 +84,7 @@ def get_filter_options() -> dict:
         return {
             'operating_companies': [], 'counterparties': [], 'source_systems': [],
             'source_types': [], 'statuses': [], 'years': [], 'resource_types': [],
+            'months': [],
         }
 
 
@@ -294,35 +300,3 @@ def get_capacity_factors(filters: dict) -> list[dict]:
     except Exception:
         logger.exception("Error fetching capacity factors")
         return []
-
-
-def get_capacity_filter_options() -> dict:
-    """Return distinct filter values specific to capacity_factors table."""
-    try:
-        conn = get_connection()
-        result = {}
-        result['operating_companies'] = [
-            r[0] for r in conn.execute(
-                "SELECT DISTINCT operating_company FROM capacity_factors ORDER BY operating_company"
-            ).fetchall()
-        ]
-        result['resource_types'] = [
-            r[0] for r in conn.execute(
-                "SELECT DISTINCT resource_type FROM capacity_factors ORDER BY resource_type"
-            ).fetchall()
-        ]
-        result['years'] = [
-            r[0] for r in conn.execute(
-                "SELECT DISTINCT year FROM capacity_factors ORDER BY year DESC"
-            ).fetchall()
-        ]
-        result['months'] = [
-            r[0] for r in conn.execute(
-                "SELECT DISTINCT month FROM capacity_factors ORDER BY month"
-            ).fetchall()
-        ]
-        conn.close()
-        return result
-    except Exception:
-        logger.exception("Error fetching capacity filter options")
-        return {'operating_companies': [], 'resource_types': [], 'years': [], 'months': []}

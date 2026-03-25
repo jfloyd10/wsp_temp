@@ -48,7 +48,7 @@
     <aside class="sidebar">
         <!-- Logo -->
         <div class="sidebar-header">
-            <a href="/dashboard/" class="sidebar-logo-link">
+            <a href="{% url 'dashboard' %}" class="sidebar-logo-link">
                 <img src="{% static 'portal/img/logo.png' %}" alt="Southern Company"
                      class="sidebar-logo-img"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -60,22 +60,22 @@
         <nav class="sidebar-nav">
             <div class="sidebar-nav-group">
                 <span class="sidebar-nav-label">Main</span>
-                <a href="/dashboard/"
+                <a href="{% url 'dashboard' %}"
                    class="sidebar-link {% if page == 'dashboard' %}sidebar-link-active{% endif %}">
                     <i data-feather="home" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Dashboard</span>
                 </a>
-                <a href="/invoices/"
+                <a href="{% url 'invoices' %}"
                    class="sidebar-link {% if page == 'invoices' %}sidebar-link-active{% endif %}">
                     <i data-feather="file-text" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Invoices</span>
                 </a>
-                <a href="/metrics/"
+                <a href="{% url 'metrics' %}"
                    class="sidebar-link {% if page == 'metrics' %}sidebar-link-active{% endif %}">
                     <i data-feather="bar-chart-2" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">FCS Metrics</span>
                 </a>
-                <a href="/capacity/"
+                <a href="{% url 'capacity' %}"
                    class="sidebar-link {% if page == 'capacity' %}sidebar-link-active{% endif %}">
                     <i data-feather="activity" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Capacity</span>
@@ -95,7 +95,7 @@
                     <p class="sidebar-user-name">{{ user.get_full_name|default:user.username }}</p>
                     <p class="sidebar-user-role">Administrator</p>
                 </div>
-                <a href="/logout/" class="sidebar-logout-btn" title="Logout">
+                <a href="{% url 'logout' %}" class="sidebar-logout-btn" title="Logout">
                     <i data-feather="log-out" class="w-4 h-4"></i>
                 </a>
             </div>
@@ -145,7 +145,7 @@
                         <p class="dropdown-header-email">{{ user.email|default:"admin@southernco.com" }}</p>
                     </div>
                     <div class="dropdown-divider"></div>
-                    <a href="/logout/" class="dropdown-item dropdown-item-danger">
+                    <a href="{% url 'logout' %}" class="dropdown-item dropdown-item-danger">
                         <i data-feather="log-out" class="w-4 h-4"></i>
                         <span>Sign out</span>
                     </a>

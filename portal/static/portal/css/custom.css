@@ -182,14 +182,6 @@ html {
     border-radius: 50%;
 }
 
-.sidebar-avatar-initials {
-    font-size: 13px;
-    font-weight: 600;
-    color: #ffffff;
-    line-height: 1;
-    letter-spacing: 0.02em;
-}
-
 .sidebar-user-info {
     flex: 1;
     min-width: 0;
@@ -361,14 +353,6 @@ html {
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
-}
-
-.topbar-avatar-initials {
-    font-size: 12px;
-    font-weight: 600;
-    color: #ffffff;
-    line-height: 1;
-    letter-spacing: 0.02em;
 }
 
 .topbar-user-name {
@@ -651,6 +635,16 @@ html {
     color: #4b5563;
 }
 
+/* ========== Brand Button ========== */
+.btn-brand {
+    background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);
+    color: #ffffff;
+    transition: all 0.2s ease;
+}
+.btn-brand:hover {
+    box-shadow: 0 4px 12px -2px rgba(236, 28, 36, 0.4);
+}
+
 /* ========== Filter Button ========== */
 .filter-btn {
     transition: all 0.2s ease;
@@ -685,6 +679,3 @@ html {
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* ========== Variance Colors ========== */
-.text-positive { color: #16a34a; }
-.text-negative { color: #dc2626; }

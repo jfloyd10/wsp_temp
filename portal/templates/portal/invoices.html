@@ -19,7 +19,7 @@
                 <p class="text-gray-500 text-lg">Browse and manage all wholesale settlement invoices</p>
             </div>
             <div class="mt-4 lg:mt-0 flex gap-3">
-                <a href="/invoices/export/?{{ request.GET.urlencode }}"
+                <a href="{% url 'export_invoices' %}?{{ request.GET.urlencode }}"
                    class="flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all">
                     <i data-feather="download" class="w-4 h-4"></i>
                     Export
@@ -81,11 +81,11 @@
             <div class="flex flex-col lg:flex-row gap-4">
                 <!-- Quick Status Filters -->
                 <div class="flex items-center gap-2 flex-wrap">
-                    <a href="/invoices/" class="filter-pill {% if not active_filters.invoice_status %}active{% endif %} px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium">
+                    <a href="{% url 'invoices' %}" class="filter-pill {% if not active_filters.invoice_status %}active{% endif %} px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium">
                         All
                     </a>
                     {% for s in filter_options.statuses %}
-                    <a href="?invoice_status={{ s }}{% if active_filters.operating_company %}&operating_company={{ active_filters.operating_company }}{% endif %}"
+                    <a href="{% url 'invoices' %}?invoice_status={{ s }}{% if active_filters.operating_company %}&operating_company={{ active_filters.operating_company }}{% endif %}"
                        class="filter-pill {% if active_filters.invoice_status == s %}active{% endif %} px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium">
                         <span class="w-2 h-2 rounded-full inline-block mr-2 {% if s == 'FINAL' %}bg-emerald-500{% elif s == 'DRAFT' %}bg-amber-500{% elif s == 'ADJUSTED' %}bg-red-500{% else %}bg-gray-400{% endif %}"></span>
                         {{ s }}
@@ -153,12 +153,11 @@
                 </div>
                 <div class="flex items-end gap-2">
                     <button type="submit"
-                            class="flex-1 py-2.5 px-4 text-white rounded-xl text-sm font-medium transition-all"
-                            style="background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);">
+                            class="btn-brand flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all">
                         Apply Filters
                     </button>
                     {% if active_filters %}
-                    <a href="/invoices/" class="py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-all">
+                    <a href="{% url 'invoices' %}" class="py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-all">
                         Clear
                     </a>
                     {% endif %}
@@ -193,7 +192,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for inv in invoices %}
-                    <tr class="invoice-row" onclick="window.location='/invoices/{{ inv.invoice_no }}/';">
+                    <tr class="invoice-row" onclick="window.location='{% url 'invoice_detail' inv.invoice_no %}';">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #EC1C24;">
@@ -239,7 +238,7 @@
                 <i data-feather="search" class="w-8 h-8 text-gray-400"></i>
             </div>
             <h3 class="text-lg font-semibold text-gray-900 mb-2">No invoices found</h3>
-            <p class="text-gray-500 text-sm">Try adjusting your filters or <a href="/invoices/" class="text-brand-500 hover:underline">clear all filters</a>.</p>
+            <p class="text-gray-500 text-sm">Try adjusting your filters or <a href="{% url 'invoices' %}" class="text-brand-500 hover:underline">clear all filters</a>.</p>
         </div>
         {% endif %}
     </div>

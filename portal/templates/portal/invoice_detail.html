@@ -126,7 +126,7 @@
             {% if attachments %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {% for att in attachments %}
-                <a href="/invoices/{{ header.invoice_no }}/attachments/{{ att.file_name }}/"
+                <a href="{% url 'download_attachment' header.invoice_no att.file_name %}"
                    class="attachment-card flex items-center gap-4 p-4 border border-gray-200 rounded-xl group">
                     <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
                         {% if att.file_ext == '.pdf' %}bg-red-50 text-red-500{% elif att.file_ext == '.xlsx' or att.file_ext == '.xls' %}bg-emerald-50 text-emerald-500{% else %}bg-gray-50 text-gray-500{% endif %}">
