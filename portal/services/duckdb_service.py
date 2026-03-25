@@ -28,6 +28,10 @@ def _build_where(filters: dict, column_map: dict) -> tuple[str, list]:
     if filters.get('date_to'):
         conditions.append("invoice_date <= ?")
         params.append(filters['date_to'])
+    if filters.get('search'):
+        search_term = f"%{filters['search']}%"
+        conditions.append("(invoice_no ILIKE ? OR counterparty_name ILIKE ?)")
+        params.extend([search_term, search_term])
     where = " AND ".join(conditions)
     return (f"WHERE {where}" if where else ""), params
 

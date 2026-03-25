@@ -13,86 +13,6 @@ from urllib.parse import urlencode
 from portal.services import duckdb_service
 
 
-@login_required
-def platform_overview_view(request):
-    overview = duckdb_service.get_platform_overview()
-
-    # Get latest year for weather + interchange charts
-    weather_years = duckdb_service.get_weather_years()
-    ir_years = duckdb_service.get_interchange_rate_years()
-
-    selected_year = request.GET.get('year', '')
-    if not selected_year and weather_years:
-        selected_year = str(weather_years[0])
-
-    # Weather monthly data
-    weather_filters = {'year': selected_year} if selected_year else {}
-    weather_data = duckdb_service.get_weather_monthly_summary(weather_filters)
-
-    month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-    weather_chart = {
-        'labels': [f"{month_names[w['month']]}" for w in weather_data],
-        'avg_temp': [float(w['avg_temp']) for w in weather_data],
-        'cdd': [float(w['total_cdd']) for w in weather_data],
-        'hdd': [float(w['total_hdd']) for w in weather_data],
-    }
-
-    # Interchange rate data
-    ir_filters = {'year': selected_year} if selected_year else {}
-    ir_data = duckdb_service.get_avg_interchange_rates(ir_filters)
-
-    ir_chart = {
-        'labels': [f"{month_names[r['month']]}" for r in ir_data],
-        'rates': [float(r['avg_associated_interchange_rate']) for r in ir_data],
-    }
-
-    # Capacity summary for chart — get latest year's data by resource type
-    cap_filters = {'year': selected_year} if selected_year else {}
-    cap_data = duckdb_service.get_capacity_factors(cap_filters)
-
-    # Average capacity factor by resource type
-    cap_by_type = {}
-    for row in cap_data:
-        rtype = row['resource_type']
-        if rtype not in cap_by_type:
-            cap_by_type[rtype] = {'total_cf': 0, 'count': 0, 'total_gen': 0}
-        cap_by_type[rtype]['total_cf'] += float(row['ac_capacity_factor'])
-        cap_by_type[rtype]['count'] += 1
-        cap_by_type[rtype]['total_gen'] += float(row.get('net_generation', 0) or 0)
-
-    cap_chart = {
-        'labels': list(cap_by_type.keys()),
-        'avg_cf': [round(v['total_cf'] / v['count'] * 100, 1) if v['count'] else 0
-                   for v in cap_by_type.values()],
-        'total_gen': [round(v['total_gen'], 0) for v in cap_by_type.values()],
-    }
-
-    # FCS metrics for latest year
-    fcs_filters = {'year': selected_year} if selected_year else {}
-    fcs_data = duckdb_service.get_fcs_metrics(fcs_filters)
-    fcs_chart = {
-        'labels': [f"{month_names[m['month']]}" for m in fcs_data],
-        'total_settled': [float(m['total_settled']) for m in fcs_data],
-        'adjustments': [float(m['adjustments']) for m in fcs_data],
-    }
-
-    # Determine available years (union of all datasets)
-    all_years = sorted(set(weather_years + ir_years), reverse=True)
-
-    return render(request, 'portal/platform_overview.html', {
-        'overview': overview,
-        'weather_chart': weather_chart,
-        'ir_chart': ir_chart,
-        'cap_chart': cap_chart,
-        'fcs_chart': fcs_chart,
-        'all_years': all_years,
-        'selected_year': selected_year,
-        'page': 'platform_overview',
-    })
-
-
 def login_view(request):
     error = None
     if request.method == 'POST':
@@ -126,6 +46,7 @@ def _get_filters(request, keys):
 INVOICE_FILTER_KEYS = [
     'operating_company', 'counterparty_id', 'source_system',
     'source_type', 'invoice_status', 'date_from', 'date_to',
+    'search',
 ]
 
 

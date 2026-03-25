@@ -11,7 +11,6 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
-    path('platform-overview/', views.platform_overview_view, name='platform_overview'),
     path('invoices/', views.invoices_view, name='invoices'),
     path('invoices/export/', views.export_invoices_csv, name='export_invoices'),
     path('invoices/<str:invoice_no>/', views.invoice_detail_view, name='invoice_detail'),
