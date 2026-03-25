@@ -148,10 +148,84 @@
             <div class="topbar-right">
                 <h1 class="topbar-title">Wholesale Settlement Portal</h1>
                 <div class="topbar-divider"></div>
-                <button class="topbar-icon-btn" title="Notifications">
-                    <i data-feather="bell" class="w-[18px] h-[18px]"></i>
-                    <span class="topbar-notification-dot"></span>
-                </button>
+                <div class="relative">
+                    <button id="notificationBtn" class="topbar-icon-btn" title="Notifications">
+                        <i data-feather="bell" class="w-[18px] h-[18px]"></i>
+                        <span class="topbar-notification-dot"></span>
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div id="notificationDropdown" class="hidden absolute right-0 top-full mt-2 w-96 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <h3 class="font-semibold text-gray-900">Notifications</h3>
+                            <span class="px-2 py-0.5 bg-brand-100 text-brand-600 rounded-full text-xs font-semibold">5 new</span>
+                        </div>
+                        <div class="max-h-96 overflow-y-auto divide-y divide-gray-50">
+                            <div class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <i data-feather="file-text" class="w-4 h-4 text-emerald-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Your monthly statement is ready</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">The March 2026 wholesale settlement statement has been finalized and is available for review.</p>
+                                        <p class="text-xs text-brand-500 font-medium mt-1.5">2 hours ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <i data-feather="check-circle" class="w-4 h-4 text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Invoice #INV-2026-03-0472 approved</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">Georgia Power PPA invoice for $1,245,800.00 has been approved and marked as FINAL.</p>
+                                        <p class="text-xs text-brand-500 font-medium mt-1.5">5 hours ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <i data-feather="alert-circle" class="w-4 h-4 text-amber-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Adjustment required on Pool Bill</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">A $38,200 variance was detected on the February Pool Bill for Alabama Power. Review recommended.</p>
+                                        <p class="text-xs text-brand-500 font-medium mt-1.5">1 day ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <i data-feather="bar-chart-2" class="w-4 h-4 text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">FCS metrics updated for Q1 2026</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">First quarter settlement metrics are now available. Adjustment rate trending at 0.42%.</p>
+                                        <p class="text-xs text-brand-500 font-medium mt-1.5">2 days ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <i data-feather="upload" class="w-4 h-4 text-brand-500"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">New attachments uploaded</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">3 supporting documents have been attached to Mississippi Power short-term invoice #INV-2026-02-0318.</p>
+                                        <p class="text-xs text-brand-500 font-medium mt-1.5">3 days ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-5 py-3 border-t border-gray-100 text-center">
+                            <span class="text-sm font-medium text-brand-500 hover:text-brand-600 cursor-pointer">View all notifications</span>
+                        </div>
+                    </div>
+                </div>
                 <button class="topbar-icon-btn" title="Help">
                     <i data-feather="help-circle" class="w-[18px] h-[18px]"></i>
                 </button>
@@ -221,8 +295,25 @@
         topbarUserBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             topbarUserDropdown.classList.toggle('show');
+            notifDropdown.classList.add('hidden');
         });
         document.addEventListener('click', () => topbarUserDropdown.classList.remove('show'));
+    }
+
+    // Notification dropdown
+    const notifBtn = document.getElementById('notificationBtn');
+    const notifDropdown = document.getElementById('notificationDropdown');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notifDropdown.classList.toggle('hidden');
+            topbarUserDropdown.classList.remove('show');
+            // Re-render feather icons inside dropdown on first open
+            feather.replace();
+        });
+        document.addEventListener('click', (e) => {
+            if (!notifDropdown.contains(e.target)) notifDropdown.classList.add('hidden');
+        });
     }
 
     // Loading overlay
