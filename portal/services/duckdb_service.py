@@ -286,6 +286,12 @@ def get_monthly_settlement_trend(filters: dict) -> list[dict]:
     try:
         conn = get_connection()
         where, params = _build_where(filters, INVOICE_COLUMN_MAP)
+        # Ensure we exclude NULL invoice_date rows
+        null_guard = "invoice_date IS NOT NULL"
+        if where:
+            combined_where = f"WHERE {null_guard} AND {where[6:]}"
+        else:
+            combined_where = f"WHERE {null_guard}"
         sql = f"""
             SELECT
                 YEAR(invoice_date) AS year,
@@ -293,7 +299,7 @@ def get_monthly_settlement_trend(filters: dict) -> list[dict]:
                 COUNT(*) AS invoice_count,
                 COALESCE(SUM(invoice_total), 0) AS total_amount
             FROM invoice_header
-            {where}
+            {combined_where}
             GROUP BY YEAR(invoice_date), MONTH(invoice_date)
             ORDER BY year, month
         """
