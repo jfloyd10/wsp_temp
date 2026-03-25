@@ -19,6 +19,9 @@ class Command(BaseCommand):
         self._seed_invoice_data(conn)
         self._seed_fcs_metrics(conn)
         self._seed_capacity_factors(conn)
+        self._seed_avg_interchange_rate(conn)
+        self._seed_weather(conn)
+        self._seed_profit_and_loss(conn)
         conn.close()
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded DuckDB database.'))
@@ -95,9 +98,53 @@ class Command(BaseCommand):
                 capacity_factor_variance DECIMAL
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS avg_interchange_rate (
+                year INTEGER,
+                month INTEGER,
+                dt TIMESTAMP,
+                avg_associated_interchange_rate DECIMAL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS weather (
+                dt TIMESTAMP,
+                year INTEGER,
+                qtr INTEGER,
+                month INTEGER,
+                day INTEGER,
+                average_temp DECIMAL,
+                cooling_degree_days DECIMAL,
+                heating_degree_days DECIMAL,
+                cooling_degree_hours DECIMAL,
+                heating_degree_hours DECIMAL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS profit_and_loss_statement (
+                short_desc VARCHAR,
+                source VARCHAR,
+                year INTEGER,
+                month INTEGER,
+                dt TIMESTAMP,
+                entity_class VARCHAR,
+                entity_name VARCHAR,
+                covered_or_uncovered VARCHAR,
+                allocation_name VARCHAR,
+                category VARCHAR,
+                type VARCHAR,
+                subtype VARCHAR,
+                line_item VARCHAR,
+                legacy_subtype VARCHAR,
+                tag VARCHAR,
+                ledger VARCHAR,
+                amount DECIMAL
+            )
+        """)
         # Clear existing data
         for table in ['invoice_header', 'invoice_detail', 'invoice_file_attachments',
-                       'fcs_metrics', 'capacity_factors']:
+                       'fcs_metrics', 'capacity_factors', 'avg_interchange_rate',
+                       'weather', 'profit_and_loss_statement']:
             conn.execute(f"DELETE FROM {table}")
 
     def _seed_invoice_data(self, conn):
@@ -326,3 +373,96 @@ class Command(BaseCommand):
                               ac_cf, bu_cf, variance])
 
         self.stdout.write("  Created capacity factors data.")
+
+    def _seed_avg_interchange_rate(self, conn):
+        random.seed(55)
+        for year in [2024, 2025]:
+            end_month = 12 if year == 2024 else 3
+            for month in range(1, end_month + 1):
+                dt = datetime.datetime(year, month, 1)
+                rate = round(random.uniform(20.0, 65.0), 4)
+                conn.execute("""
+                    INSERT INTO avg_interchange_rate VALUES (?, ?, ?, ?)
+                """, [year, month, dt, rate])
+
+        self.stdout.write("  Created average interchange rate data.")
+
+    def _seed_weather(self, conn):
+        import calendar
+        random.seed(33)
+        base_temp_by_month = {
+            1: 42, 2: 46, 3: 54, 4: 63, 5: 72, 6: 80,
+            7: 83, 8: 82, 9: 76, 10: 65, 11: 54, 12: 44,
+        }
+        for year in [2024, 2025]:
+            end_month = 12 if year == 2024 else 3
+            for month in range(1, end_month + 1):
+                qtr = (month - 1) // 3 + 1
+                days_in_month = calendar.monthrange(year, month)[1]
+                base_temp = base_temp_by_month[month]
+                for day in range(1, days_in_month + 1):
+                    dt = datetime.datetime(year, month, day)
+                    avg_temp = round(base_temp + random.uniform(-8, 8), 1)
+                    cdd = round(max(0, avg_temp - 65), 1)
+                    hdd = round(max(0, 65 - avg_temp), 1)
+                    cdh = round(cdd * random.uniform(18, 24), 1)
+                    hdh = round(hdd * random.uniform(18, 24), 1)
+                    conn.execute("""
+                        INSERT INTO weather VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, [dt, year, qtr, month, day, avg_temp, cdd, hdd, cdh, hdh])
+
+        self.stdout.write("  Created weather data.")
+
+    def _seed_profit_and_loss(self, conn):
+        random.seed(88)
+        entities = [
+            ('OPCO', 'Georgia Power'),
+            ('OPCO', 'Alabama Power'),
+            ('OPCO', 'Mississippi Power'),
+        ]
+        categories_config = [
+            ('Revenue', 'Energy Sales', 'Wholesale', 'Wholesale Energy Revenue'),
+            ('Revenue', 'Energy Sales', 'Retail', 'Retail Energy Revenue'),
+            ('Revenue', 'Capacity', 'Capacity Payment', 'Capacity Revenue'),
+            ('Expense', 'Fuel', 'Gas', 'Natural Gas Fuel Cost'),
+            ('Expense', 'Fuel', 'Coal', 'Coal Fuel Cost'),
+            ('Expense', 'Fuel', 'Nuclear', 'Nuclear Fuel Cost'),
+            ('Expense', 'O&M', 'Fixed', 'Fixed O&M Expense'),
+            ('Expense', 'O&M', 'Variable', 'Variable O&M Expense'),
+            ('Expense', 'Purchased Power', 'PPA', 'PPA Expense'),
+            ('Expense', 'Purchased Power', 'Short Term', 'Short Term Purchase'),
+            ('Expense', 'Transmission', 'Network Service', 'Transmission Expense'),
+        ]
+        sources = ['WHOLESALE_SETTLEMENT', 'POOL_BILL', 'GAS_ACCOUNTING']
+        covered_options = ['Covered', 'Uncovered']
+        allocation_names = ['Direct', 'Allocated - Load Ratio', 'Allocated - Demand']
+        tags = ['Actual', 'Budget', 'Forecast']
+        ledgers = ['GL', 'FERC', 'Management']
+
+        for year in [2024, 2025]:
+            end_month = 12 if year == 2024 else 3
+            for month in range(1, end_month + 1):
+                dt = datetime.datetime(year, month, 15)
+                for entity_class, entity_name in entities:
+                    for category, pnl_type, subtype, line_item in categories_config:
+                        source = random.choice(sources)
+                        covered = random.choice(covered_options)
+                        alloc = random.choice(allocation_names)
+                        tag = random.choice(tags)
+                        ledger = random.choice(ledgers)
+                        if category == 'Revenue':
+                            amount = round(random.uniform(5_000_000, 80_000_000), 2)
+                        else:
+                            amount = round(-random.uniform(2_000_000, 50_000_000), 2)
+                        short_desc = f"{pnl_type} - {subtype}"
+                        legacy_subtype = subtype.upper().replace(' ', '_')
+
+                        conn.execute("""
+                            INSERT INTO profit_and_loss_statement VALUES
+                            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, [short_desc, source, year, month, dt,
+                              entity_class, entity_name, covered, alloc,
+                              category, pnl_type, subtype, line_item,
+                              legacy_subtype, tag, ledger, amount])
+
+        self.stdout.write("  Created profit and loss statement data.")
