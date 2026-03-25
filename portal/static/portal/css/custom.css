@@ -22,34 +22,46 @@ html {
     overflow: hidden;
 }
 
-/* Header */
+/* Header — centered logo */
 .sidebar-header {
     display: flex;
     align-items: center;
-    padding: 16px;
+    justify-content: center;
+    padding: 20px 16px;
     border-bottom: 1px solid #f3f4f6;
     min-height: 57px;
 }
 
-.sidebar-logo-area {
+.sidebar-logo-link {
     display: flex;
     align-items: center;
-    gap: 10px;
-    overflow: hidden;
-    white-space: nowrap;
+    justify-content: center;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+}
+
+.sidebar-logo-link:hover {
+    opacity: 0.8;
 }
 
 .sidebar-logo-img {
-    height: 32px;
+    height: 36px;
     width: auto;
     object-fit: contain;
-    flex-shrink: 0;
 }
 
-.sidebar-brand-text {
-    font-size: 14px;
+.sidebar-logo-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #EC1C24;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
     font-weight: 700;
-    color: #111827;
+    font-size: 15px;
+    letter-spacing: -0.02em;
 }
 
 /* Navigation */
@@ -57,7 +69,7 @@ html {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 12px 8px;
+    padding: 16px 10px;
 }
 
 .sidebar-nav-group {
@@ -70,9 +82,9 @@ html {
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     color: #9ca3af;
-    padding: 8px 12px 6px;
+    padding: 4px 12px 8px;
 }
 
 /* Nav links */
@@ -92,7 +104,7 @@ html {
 }
 
 .sidebar-link:hover {
-    background: #f9fafb;
+    background: #f3f4f6;
     color: #111827;
 }
 
@@ -134,7 +146,7 @@ html {
 /* Sidebar footer / user */
 .sidebar-footer {
     border-top: 1px solid #f3f4f6;
-    padding: 12px 8px;
+    padding: 12px 10px;
 }
 
 .sidebar-user {
@@ -142,25 +154,40 @@ html {
     align-items: center;
     gap: 10px;
     padding: 8px;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: background 0.15s ease;
     overflow: hidden;
 }
 
 .sidebar-user:hover {
-    background: #f9fafb;
+    background: #f3f4f6;
 }
 
 .sidebar-user-avatar {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #f3f4f6;
+    background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #6b7280;
+    overflow: hidden;
+}
+
+.sidebar-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.sidebar-avatar-initials {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: 0.02em;
 }
 
 .sidebar-user-info {
@@ -249,7 +276,8 @@ html {
 .topbar-right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    position: relative;
 }
 
 .topbar-title {
@@ -295,6 +323,12 @@ html {
     background: #EC1C24;
     border-radius: 50%;
     border: 2px solid #ffffff;
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 .topbar-user {
@@ -304,28 +338,122 @@ html {
     padding: 4px 8px 4px 4px;
     border-radius: 8px;
     transition: background 0.15s ease;
-    cursor: default;
 }
 
 .topbar-user:hover {
-    background: #f9fafb;
+    background: #f3f4f6;
 }
 
 .topbar-user-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #f3f4f6;
+    background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #6b7280;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.topbar-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.topbar-avatar-initials {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: 0.02em;
 }
 
 .topbar-user-name {
     font-size: 13px;
     font-weight: 500;
     color: #374151;
+}
+
+.topbar-user-chevron {
+    width: 14px;
+    height: 14px;
+    color: #9ca3af;
+    transition: transform 0.2s ease;
+}
+
+/* ========== Dropdown ========== */
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    margin-top: 8px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.12), 0 4px 8px -2px rgba(0, 0, 0, 0.06);
+    z-index: 50;
+    border: 1px solid #e5e7eb;
+    animation: fadeIn 0.15s ease-out;
+    overflow: hidden;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.topbar-user-dropdown {
+    top: 100%;
+    right: 0;
+    width: 240px;
+    margin-top: 4px;
+}
+
+.dropdown-header {
+    padding: 12px 16px;
+}
+
+.dropdown-header-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.dropdown-header-email {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: #f3f4f6;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    text-decoration: none;
+    transition: background 0.1s ease;
+}
+
+.dropdown-item:hover {
+    background: #f9fafb;
+}
+
+.dropdown-item-danger {
+    color: #EC1C24;
+}
+
+.dropdown-item-danger:hover {
+    background: #fef2f2;
 }
 
 /* ========== Mobile Sidebar Overlay ========== */
@@ -377,12 +505,17 @@ html {
         display: flex;
     }
 
-    .topbar-user-name {
+    .topbar-user-name,
+    .topbar-user-chevron {
         display: none;
     }
 }
 
 @media (max-width: 639px) {
+    .topbar {
+        padding: 0 16px;
+    }
+
     .topbar-title {
         display: none;
     }
@@ -404,21 +537,6 @@ html {
     opacity: 1;
     transform: translateY(0);
 }
-
-/* ========== Dropdown ========== */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    margin-top: 8px;
-    background: #fff;
-    border-radius: .75rem;
-    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15);
-    z-index: 50;
-    border: 1px solid #e5e7eb;
-    animation: fadeIn 0.2s ease-out;
-}
-.dropdown-menu.show { display: block; }
 
 /* ========== Loading ========== */
 .loading-overlay {

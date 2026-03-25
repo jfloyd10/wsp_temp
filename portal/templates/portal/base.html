@@ -48,19 +48,18 @@
     <aside class="sidebar">
         <!-- Logo -->
         <div class="sidebar-header">
-            <div class="sidebar-logo-area">
-                <img src="{% static 'portal/img/logo.svg' %}" alt="Company Logo"
+            <a href="/dashboard/" class="sidebar-logo-link">
+                <img src="{% static 'portal/img/logo.svg' %}" alt="Southern Company"
                      class="sidebar-logo-img"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div style="display:none;" class="w-9 h-9 rounded-lg bg-brand-500 items-center justify-center text-white font-bold text-sm flex-shrink-0">SC</div>
-                <span class="sidebar-brand-text">Settlement Portal</span>
-            </div>
+                <div style="display:none;" class="sidebar-logo-fallback">SC</div>
+            </a>
         </div>
 
         <!-- Navigation -->
         <nav class="sidebar-nav">
             <div class="sidebar-nav-group">
-                <span class="sidebar-nav-label">Menu</span>
+                <span class="sidebar-nav-label">Main</span>
                 <a href="/dashboard/"
                    class="sidebar-link {% if page == 'dashboard' %}sidebar-link-active{% endif %}">
                     <i data-feather="home" class="sidebar-link-icon"></i>
@@ -88,10 +87,14 @@
         <div class="sidebar-footer">
             <div class="sidebar-user">
                 <div class="sidebar-user-avatar">
-                    <i data-feather="user" class="w-4 h-4"></i>
+                    {% if user.profile_image_url %}
+                        <img src="{{ user.profile_image_url }}" alt="{{ user.get_full_name|default:user.username }}" class="sidebar-avatar-img">
+                    {% else %}
+                        <span class="sidebar-avatar-initials">{{ user.first_name|default:user.username|make_list|first|upper }}{{ user.last_name|make_list|first|upper|default:"" }}</span>
+                    {% endif %}
                 </div>
                 <div class="sidebar-user-info">
-                    <p class="sidebar-user-name">{{ user.username }}</p>
+                    <p class="sidebar-user-name">{{ user.get_full_name|default:user.username }}</p>
                     <p class="sidebar-user-role">Administrator</p>
                 </div>
                 <a href="/logout/" class="sidebar-logout-btn" title="Logout">
@@ -108,17 +111,17 @@
     <div class="main-content">
         <!-- Top Header Bar -->
         <header class="topbar">
-            <!-- Mobile hamburger (shown only on small screens) -->
+            <!-- Mobile hamburger -->
             <button id="mobileMenuBtn" class="topbar-mobile-btn">
                 <i data-feather="menu" class="w-5 h-5"></i>
             </button>
 
-            <!-- Left spacer on desktop to balance the layout -->
+            <!-- Left section -->
             <div class="topbar-left">
                 {% block topbar_left %}{% endblock %}
             </div>
 
-            <!-- Right section: title + icons -->
+            <!-- Right section -->
             <div class="topbar-right">
                 <h1 class="topbar-title">Wholesale Settlement Portal</h1>
                 <div class="topbar-divider"></div>
@@ -126,15 +129,32 @@
                     <i data-feather="bell" class="w-[18px] h-[18px]"></i>
                     <span class="topbar-notification-dot"></span>
                 </button>
-                <button class="topbar-icon-btn" title="Settings">
-                    <i data-feather="settings" class="w-[18px] h-[18px]"></i>
+                <button class="topbar-icon-btn" title="Help">
+                    <i data-feather="help-circle" class="w-[18px] h-[18px]"></i>
                 </button>
                 <div class="topbar-divider"></div>
-                <div class="topbar-user">
+                <div class="topbar-user" id="topbarUserBtn">
                     <div class="topbar-user-avatar">
-                        <i data-feather="user" class="w-4 h-4"></i>
+                        {% if user.profile_image_url %}
+                            <img src="{{ user.profile_image_url }}" alt="{{ user.get_full_name|default:user.username }}" class="topbar-avatar-img">
+                        {% else %}
+                            <span class="topbar-avatar-initials">{{ user.first_name|default:user.username|make_list|first|upper }}{{ user.last_name|make_list|first|upper|default:"" }}</span>
+                        {% endif %}
                     </div>
-                    <span class="topbar-user-name">{{ user.username }}</span>
+                    <span class="topbar-user-name">{{ user.get_full_name|default:user.username }}</span>
+                    <i data-feather="chevron-down" class="topbar-user-chevron"></i>
+                </div>
+                <!-- User dropdown -->
+                <div id="topbarUserDropdown" class="dropdown-menu topbar-user-dropdown">
+                    <div class="dropdown-header">
+                        <p class="dropdown-header-name">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="dropdown-header-email">{{ user.email|default:"admin@southernco.com" }}</p>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="/logout/" class="dropdown-item dropdown-item-danger">
+                        <i data-feather="log-out" class="w-4 h-4"></i>
+                        <span>Sign out</span>
+                    </a>
                 </div>
             </div>
         </header>
@@ -173,6 +193,18 @@
             if (window.innerWidth < 1024) closeMobileSidebar();
         });
     });
+
+    // Topbar user dropdown
+    const topbarUserBtn = document.getElementById('topbarUserBtn');
+    const topbarUserDropdown = document.getElementById('topbarUserDropdown');
+    if (topbarUserBtn) {
+        topbarUserBtn.style.cursor = 'pointer';
+        topbarUserBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            topbarUserDropdown.classList.toggle('show');
+        });
+        document.addEventListener('click', () => topbarUserDropdown.classList.remove('show'));
+    }
 
     // Loading overlay
     window.addEventListener('load', () => {
