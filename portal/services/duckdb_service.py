@@ -256,6 +256,7 @@ def get_fcs_metrics(filters: dict) -> list[dict]:
         return []
 
 
+<<<<<<< HEAD
 def get_pnl_filter_options() -> dict:
     """Return distinct values for P&L filter dimensions."""
     try:
@@ -302,10 +303,15 @@ def get_pnl_income_statement(filters: dict) -> list[dict]:
     Returns rows grouped by category -> type -> subtype -> line_item
     with the total amount for the selected period.
     """
+=======
+def get_trading_analytics(filters: dict) -> list[dict]:
+    """Return trading_analytics rows with optional filters."""
+>>>>>>> 018af786d4d381fc1368f76eb86efd80cf186ba9
     try:
         conn = get_connection()
         conditions = []
         params = []
+<<<<<<< HEAD
         col_map = {
             'entity_name': 'entity_name',
             'entity_class': 'entity_class',
@@ -321,11 +327,28 @@ def get_pnl_income_statement(filters: dict) -> list[dict]:
             params.append(int(filters['year']))
         if filters.get('month'):
             conditions.append("month = ?")
+=======
+        if filters.get('trading_group'):
+            conditions.append("trading_group = ?")
+            params.append(filters['trading_group'])
+        if filters.get('employee_name'):
+            conditions.append("employee_name = ?")
+            params.append(filters['employee_name'])
+        if filters.get('issue_category'):
+            conditions.append("issue_category = ?")
+            params.append(filters['issue_category'])
+        if filters.get('year'):
+            conditions.append("YEAR(dt) = ?")
+            params.append(int(filters['year']))
+        if filters.get('month'):
+            conditions.append("MONTH(dt) = ?")
+>>>>>>> 018af786d4d381fc1368f76eb86efd80cf186ba9
             params.append(int(filters['month']))
 
         where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 
         rows = conn.execute(f"""
+<<<<<<< HEAD
             SELECT category, type, subtype, line_item,
                    SUM(amount) AS total_amount,
                    COUNT(*) AS row_count
@@ -471,6 +494,54 @@ def get_pnl_entity_comparison(filters: dict) -> list[dict]:
     except Exception:
         logger.exception("Error fetching P&L entity comparison")
         return []
+=======
+            SELECT dt, deal_no, trading_group, employee_name,
+                   issue_description, issue_category, issue_reason
+            FROM trading_analytics
+            {where}
+            ORDER BY dt DESC, deal_no
+        """, params).fetchall()
+
+        columns = ['dt', 'deal_no', 'trading_group', 'employee_name',
+                    'issue_description', 'issue_category', 'issue_reason']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching trading analytics")
+        return []
+
+
+def get_trading_analytics_filter_options() -> dict:
+    """Return distinct values for trading analytics filter dimensions."""
+    try:
+        conn = get_connection()
+        result = {}
+        result['trading_groups'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT trading_group FROM trading_analytics ORDER BY trading_group"
+            ).fetchall()
+        ]
+        result['employees'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT employee_name FROM trading_analytics ORDER BY employee_name"
+            ).fetchall()
+        ]
+        result['issue_categories'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT issue_category FROM trading_analytics ORDER BY issue_category"
+            ).fetchall()
+        ]
+        result['years'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT YEAR(dt) AS yr FROM trading_analytics ORDER BY yr DESC"
+            ).fetchall()
+        ]
+        conn.close()
+        return result
+    except Exception:
+        logger.exception("Error fetching trading analytics filter options")
+        return {'trading_groups': [], 'employees': [], 'issue_categories': [], 'years': []}
+>>>>>>> 018af786d4d381fc1368f76eb86efd80cf186ba9
 
 
 def get_capacity_factors(filters: dict) -> list[dict]:

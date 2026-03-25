@@ -6,3 +6,5 @@ db.sqlite3
 venv/
 .env
 staticfiles/
+.duckdb
+data/wholesale.duckdb

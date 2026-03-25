@@ -22,6 +22,7 @@ class Command(BaseCommand):
         self._seed_avg_interchange_rate(conn)
         self._seed_weather(conn)
         self._seed_profit_and_loss(conn)
+        self._seed_trading_analytics(conn)
         conn.close()
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded DuckDB database.'))
@@ -141,10 +142,21 @@ class Command(BaseCommand):
                 amount DECIMAL
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS trading_analytics (
+                dt TIMESTAMP,
+                deal_no VARCHAR,
+                trading_group VARCHAR,
+                employee_name VARCHAR,
+                issue_description VARCHAR,
+                issue_category VARCHAR,
+                issue_reason VARCHAR
+            )
+        """)
         # Clear existing data
         for table in ['invoice_header', 'invoice_detail', 'invoice_file_attachments',
                        'fcs_metrics', 'capacity_factors', 'avg_interchange_rate',
-                       'weather', 'profit_and_loss_statement']:
+                       'weather', 'profit_and_loss_statement', 'trading_analytics']:
             conn.execute(f"DELETE FROM {table}")
 
     def _seed_invoice_data(self, conn):
@@ -466,3 +478,77 @@ class Command(BaseCommand):
                               legacy_subtype, tag, ledger, amount])
 
         self.stdout.write("  Created profit and loss statement data.")
+
+    def _seed_trading_analytics(self, conn):
+        random.seed(66)
+        trading_groups = ['East Desk', 'West Desk', 'Gas Desk', 'Renewables Desk']
+        employees = [
+            'James Mitchell', 'Sarah Thompson', 'Robert Chen', 'Maria Garcia',
+            'David Williams', 'Jennifer Lee', 'Michael Brown', 'Amanda Johnson',
+        ]
+        issue_categories = [
+            'Misclassification', 'Tagging Error', 'Counterparty Mismatch',
+            'Volume Discrepancy', 'Price Entry Error', 'Wrong Product Type',
+        ]
+        issue_reasons = {
+            'Misclassification': [
+                'Deal booked as wholesale instead of retail',
+                'Incorrect source type assignment',
+                'Wrong operating company selected',
+            ],
+            'Tagging Error': [
+                'Missing settlement tag',
+                'Duplicate tag applied',
+                'Incorrect FERC account tag',
+            ],
+            'Counterparty Mismatch': [
+                'Wrong counterparty ID linked',
+                'Parent/subsidiary confusion',
+                'Outdated counterparty reference',
+            ],
+            'Volume Discrepancy': [
+                'MWh entered instead of MW',
+                'Decimal point error in quantity',
+                'Incorrect unit of measure selected',
+            ],
+            'Price Entry Error': [
+                'Rate entered per MWh instead of per MW',
+                'Stale price used from prior period',
+                'Currency conversion not applied',
+            ],
+            'Wrong Product Type': [
+                'PPA tagged as short-term deal',
+                'Capacity deal entered as energy',
+                'Transport deal classified as supply',
+            ],
+        }
+        issue_descriptions = [
+            'Deal classification does not match contract terms',
+            'Settlement tag missing or incorrect for regulatory reporting',
+            'Counterparty linkage error causing reconciliation failure',
+            'Volume or rate entry error identified during review',
+            'Product type mismatch flagged by validation check',
+            'Tagging inconsistency detected in monthly close process',
+        ]
+
+        deal_counter = 0
+        for year in [2024, 2025]:
+            end_month = 12 if year == 2024 else 3
+            for month in range(1, end_month + 1):
+                num_issues = random.randint(2, 8)
+                for _ in range(num_issues):
+                    deal_counter += 1
+                    day = random.randint(1, 28)
+                    dt = datetime.datetime(year, month, day)
+                    deal_no = f"DL-{year}{month:02d}-{deal_counter:04d}"
+                    group = random.choice(trading_groups)
+                    employee = random.choice(employees)
+                    category = random.choice(issue_categories)
+                    reason = random.choice(issue_reasons[category])
+                    description = random.choice(issue_descriptions)
+
+                    conn.execute("""
+                        INSERT INTO trading_analytics VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, [dt, deal_no, group, employee, description, category, reason])
+
+        self.stdout.write("  Created trading analytics data.")
