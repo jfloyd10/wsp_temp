@@ -3,6 +3,8 @@
 from django.urls import path
 from portal import views
 
+
+
 urlpatterns = [
     path('', lambda r: __import__('django.shortcuts', fromlist=['redirect']).redirect('/dashboard/')),
     path('login/', views.login_view, name='login'),
@@ -15,3 +17,4 @@ urlpatterns = [
     path('metrics/', views.metrics_view, name='metrics'),
     path('capacity/', views.capacity_view, name='capacity'),
 ]
+

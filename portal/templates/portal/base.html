@@ -49,7 +49,7 @@
         <!-- Logo -->
         <div class="sidebar-header">
             <a href="/dashboard/" class="sidebar-logo-link">
-                <img src="{% static 'portal/img/logo.svg' %}" alt="Southern Company"
+                <img src="{% static 'portal/img/logo.png' %}" alt="Southern Company"
                      class="sidebar-logo-img"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div style="display:none;" class="sidebar-logo-fallback">SC</div>
@@ -87,11 +87,9 @@
         <div class="sidebar-footer">
             <div class="sidebar-user">
                 <div class="sidebar-user-avatar">
-                    {% if user.profile_image_url %}
-                        <img src="{{ user.profile_image_url }}" alt="{{ user.get_full_name|default:user.username }}" class="sidebar-avatar-img">
-                    {% else %}
-                        <span class="sidebar-avatar-initials">{{ user.first_name|default:user.username|make_list|first|upper }}{{ user.last_name|make_list|first|upper|default:"" }}</span>
-                    {% endif %}
+
+                        <img src="{% static 'portal/img/avatar.png' %}" alt="{{ user.get_full_name|default:user.username }}" class="sidebar-avatar-img">
+
                 </div>
                 <div class="sidebar-user-info">
                     <p class="sidebar-user-name">{{ user.get_full_name|default:user.username }}</p>
@@ -135,11 +133,7 @@
                 <div class="topbar-divider"></div>
                 <div class="topbar-user" id="topbarUserBtn">
                     <div class="topbar-user-avatar">
-                        {% if user.profile_image_url %}
-                            <img src="{{ user.profile_image_url }}" alt="{{ user.get_full_name|default:user.username }}" class="topbar-avatar-img">
-                        {% else %}
-                            <span class="topbar-avatar-initials">{{ user.first_name|default:user.username|make_list|first|upper }}{{ user.last_name|make_list|first|upper|default:"" }}</span>
-                        {% endif %}
+                        <img src="{% static 'portal/img/avatar.png' %}" alt="{{ user.get_full_name|default:user.username }}" class="topbar-avatar-img">
                     </div>
                     <span class="topbar-user-name">{{ user.get_full_name|default:user.username }}</span>
                     <i data-feather="chevron-down" class="topbar-user-chevron"></i>
