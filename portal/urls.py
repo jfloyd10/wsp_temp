@@ -1,12 +1,13 @@
 """Portal URL routing."""
 
 from django.urls import path
+from django.views.generic import RedirectView
+
 from portal import views
 
 
-
 urlpatterns = [
-    path('', lambda r: __import__('django.shortcuts', fromlist=['redirect']).redirect('/dashboard/')),
+    path('', RedirectView.as_view(pattern_name='dashboard'), name='home'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard_view, name='dashboard'),

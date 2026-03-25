@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'portal/css/custom.css' %}">
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         .login-bg {
@@ -32,7 +33,7 @@
                     <img src="{% static 'portal/img/logo.svg' %}" alt="Company Logo"
                          class="h-10 mx-auto object-contain"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div style="display:none;" class="w-14 h-14 rounded-xl mx-auto items-center justify-center text-white font-bold text-xl" style="background:#EC1C24;">SC</div>
+                    <div style="display:none; background:#EC1C24;" class="w-14 h-14 rounded-xl mx-auto items-center justify-center text-white font-bold text-xl">SC</div>
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900">Welcome back</h1>
                 <p class="text-gray-500 mt-1 text-sm">Sign in to the Wholesale Settlement Portal</p>
@@ -61,8 +62,7 @@
                                class="login-input w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white transition-all">
                     </div>
                     <button type="submit"
-                            class="w-full py-3 px-4 text-white font-semibold rounded-xl text-sm transition-all duration-200 hover:shadow-lg"
-                            style="background: linear-gradient(135deg, #EC1C24 0%, #d01920 100%);">
+                            class="btn-brand w-full py-3 px-4 font-semibold rounded-xl text-sm transition-all duration-200 hover:shadow-lg">
                         Sign In
                     </button>
                 </form>
