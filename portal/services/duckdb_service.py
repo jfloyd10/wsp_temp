@@ -558,3 +558,154 @@ def get_capacity_factors(filters: dict) -> list[dict]:
     except Exception:
         logger.exception("Error fetching capacity factors")
         return []
+
+
+def get_pnl_filter_options() -> dict:
+    """Return distinct values for P&L filter dimensions."""
+    try:
+        conn = get_connection()
+        result = {}
+        result['entity_names'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT entity_name FROM profit_and_loss_statement ORDER BY entity_name"
+            ).fetchall()
+        ]
+        result['entity_classes'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT entity_class FROM profit_and_loss_statement ORDER BY entity_class"
+            ).fetchall()
+        ]
+        result['years'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT year FROM profit_and_loss_statement ORDER BY year DESC"
+            ).fetchall()
+        ]
+        result['months'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT month FROM profit_and_loss_statement ORDER BY month"
+            ).fetchall()
+        ]
+        result['categories'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT category FROM profit_and_loss_statement ORDER BY category"
+            ).fetchall()
+        ]
+        result['covered_or_uncovered'] = [
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT covered_or_uncovered FROM profit_and_loss_statement ORDER BY covered_or_uncovered"
+            ).fetchall()
+        ]
+        conn.close()
+        return result
+    except Exception:
+        logger.exception("Error fetching P&L filter options")
+        return {
+            'entity_names': [], 'entity_classes': [], 'years': [],
+            'months': [], 'categories': [], 'covered_or_uncovered': [],
+        }
+
+
+PNL_COLUMN_MAP = {
+    'entity_name': 'entity_name',
+    'entity_class': 'entity_class',
+    'category': 'category',
+    'covered_or_uncovered': 'covered_or_uncovered',
+}
+
+
+def _build_pnl_where(filters: dict) -> tuple[str, list]:
+    """Build WHERE clause for P&L queries."""
+    conditions = []
+    params = []
+    for key, col in PNL_COLUMN_MAP.items():
+        if filters.get(key):
+            conditions.append(f"{col} = ?")
+            params.append(filters[key])
+    if filters.get('year'):
+        conditions.append("year = ?")
+        params.append(int(filters['year']))
+    if filters.get('month'):
+        conditions.append("month = ?")
+        params.append(int(filters['month']))
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    return where, params
+
+
+def get_pnl_income_statement(filters: dict) -> list[dict]:
+    """Return P&L data grouped by category, type, subtype, line_item."""
+    try:
+        conn = get_connection()
+        where, params = _build_pnl_where(filters)
+        rows = conn.execute(f"""
+            SELECT category, type, subtype, line_item, SUM(amount) AS total_amount
+            FROM profit_and_loss_statement
+            {where}
+            GROUP BY category, type, subtype, line_item
+            ORDER BY category, type, subtype, line_item
+        """, params).fetchall()
+        columns = ['category', 'type', 'subtype', 'line_item', 'total_amount']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching P&L income statement")
+        return []
+
+
+def get_pnl_monthly_trend(filters: dict) -> list[dict]:
+    """Return P&L monthly totals by category for trend charts."""
+    try:
+        conn = get_connection()
+        where, params = _build_pnl_where(filters)
+        rows = conn.execute(f"""
+            SELECT year, month, category, SUM(amount) AS total_amount
+            FROM profit_and_loss_statement
+            {where}
+            GROUP BY year, month, category
+            ORDER BY year, month, category
+        """, params).fetchall()
+        columns = ['year', 'month', 'category', 'total_amount']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching P&L monthly trend")
+        return []
+
+
+def get_pnl_yoy_comparison(filters: dict) -> list[dict]:
+    """Return P&L yearly totals by category for year-over-year comparison."""
+    try:
+        conn = get_connection()
+        where, params = _build_pnl_where(filters)
+        rows = conn.execute(f"""
+            SELECT year, category, SUM(amount) AS total_amount
+            FROM profit_and_loss_statement
+            {where}
+            GROUP BY year, category
+            ORDER BY year, category
+        """, params).fetchall()
+        columns = ['year', 'category', 'total_amount']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching P&L YoY comparison")
+        return []
+
+
+def get_pnl_entity_comparison(filters: dict) -> list[dict]:
+    """Return P&L totals by entity_name and category for entity comparison."""
+    try:
+        conn = get_connection()
+        where, params = _build_pnl_where(filters)
+        rows = conn.execute(f"""
+            SELECT entity_name, category, SUM(amount) AS total_amount
+            FROM profit_and_loss_statement
+            {where}
+            GROUP BY entity_name, category
+            ORDER BY entity_name, category
+        """, params).fetchall()
+        columns = ['entity_name', 'category', 'total_amount']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching P&L entity comparison")
+        return []
