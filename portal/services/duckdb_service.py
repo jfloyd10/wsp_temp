@@ -121,6 +121,57 @@ def get_invoices(filters: dict) -> list[dict]:
         return []
 
 
+def get_invoices_paginated(filters: dict, page: int = 1, per_page: int = 50) -> dict:
+    """Return paginated invoice_header rows with total count and summary amount."""
+    try:
+        conn = get_connection()
+        where, params = _build_where(filters, INVOICE_COLUMN_MAP)
+
+        # Get total count and sum in one query
+        summary_row = conn.execute(f"""
+            SELECT COUNT(*) AS total_count, COALESCE(SUM(invoice_total), 0) AS total_amount
+            FROM invoice_header {where}
+        """, params).fetchone()
+        total_count = summary_row[0]
+        total_amount = float(summary_row[1])
+
+        # Fetch the page of results
+        offset = (page - 1) * per_page
+        sql = f"""
+            SELECT source_system, source_type, operating_company, invoice_no,
+                   invoice_name, invoice_date, invoice_status, counterparty_id,
+                   counterparty_name, invoice_total
+            FROM invoice_header
+            {where}
+            ORDER BY invoice_date DESC, invoice_no
+            LIMIT ? OFFSET ?
+        """
+        rows = conn.execute(sql, params + [per_page, offset]).fetchall()
+        columns = ['source_system', 'source_type', 'operating_company', 'invoice_no',
+                    'invoice_name', 'invoice_date', 'invoice_status', 'counterparty_id',
+                    'counterparty_name', 'invoice_total']
+        conn.close()
+
+        total_pages = max(1, (total_count + per_page - 1) // per_page)
+        return {
+            'invoices': [dict(zip(columns, row)) for row in rows],
+            'total_count': total_count,
+            'total_amount': total_amount,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': total_pages,
+            'has_previous': page > 1,
+            'has_next': page < total_pages,
+        }
+    except Exception:
+        logger.exception("Error fetching paginated invoices")
+        return {
+            'invoices': [], 'total_count': 0, 'total_amount': 0,
+            'page': 1, 'per_page': per_page, 'total_pages': 1,
+            'has_previous': False, 'has_next': False,
+        }
+
+
 def get_invoice_detail(invoice_no: str) -> dict:
     """Return invoice header + line items + attachment metadata for one invoice."""
     try:
