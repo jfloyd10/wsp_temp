@@ -21,5 +21,6 @@ urlpatterns = [
     path('capacity/', views.capacity_view, name='capacity'),
     path('trading-analytics/', views.trading_analytics_view, name='trading_analytics'),
     path('blank/', views.blank_view, name='blank'),
+    path('minipool/', views.minipool_view, name='minipool'),
 ]
 
