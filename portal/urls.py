@@ -18,6 +18,7 @@ urlpatterns = [
     path('profit-loss/', views.profit_loss_view, name='profit_loss'),
     path('metrics/', views.metrics_view, name='metrics'),
     path('capacity/', views.capacity_view, name='capacity'),
+    path('capacity/resource/<str:resource_id>/', views.resource_detail_view, name='resource_detail'),
     path('trading-analytics/', views.trading_analytics_view, name='trading_analytics'),
     path('blank/', views.blank_view, name='blank'),
     path('minipool/', views.minipool_view, name='minipool'),

@@ -1,0 +1,472 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+
+{% block title %}{{ summary.resource_name }} - Resource Detail{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-white border-b border-gray-100">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <nav class="flex items-center gap-2 text-sm">
+                <a href="{% url 'capacity' %}" class="text-brand-600 hover:text-brand-700 hover:underline font-medium">Capacity Factors</a>
+                <i data-feather="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                <span class="text-gray-500">{{ summary.resource_name }}</span>
+            </nav>
+        </div>
+
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-8">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-xl
+                        {% if summary.resource_type == 'NUCLEAR' %}bg-blue-100
+                        {% elif summary.resource_type == 'GAS' %}bg-amber-100
+                        {% elif summary.resource_type == 'COAL' %}bg-gray-200
+                        {% elif summary.resource_type == 'SOLAR' %}bg-emerald-100
+                        {% else %}bg-gray-100{% endif %}
+                        flex items-center justify-center">
+                        <i data-feather="{% if summary.resource_type == 'NUCLEAR' %}zap{% elif summary.resource_type == 'SOLAR' %}sun{% elif summary.resource_type == 'GAS' %}flame{% else %}database{% endif %}"
+                           class="w-6 h-6
+                           {% if summary.resource_type == 'NUCLEAR' %}text-blue-700
+                           {% elif summary.resource_type == 'GAS' %}text-amber-700
+                           {% elif summary.resource_type == 'COAL' %}text-gray-700
+                           {% elif summary.resource_type == 'SOLAR' %}text-emerald-700
+                           {% else %}text-gray-600{% endif %}"></i>
+                    </div>
+                    <span class="px-3 py-1 rounded-lg text-xs font-semibold uppercase
+                        {% if summary.resource_type == 'NUCLEAR' %}bg-blue-100 text-blue-700
+                        {% elif summary.resource_type == 'GAS' %}bg-amber-100 text-amber-700
+                        {% elif summary.resource_type == 'COAL' %}bg-gray-200 text-gray-700
+                        {% elif summary.resource_type == 'SOLAR' %}bg-emerald-100 text-emerald-700
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {{ summary.resource_type }}
+                    </span>
+                </div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">{{ summary.resource_name }}</h1>
+                <p class="text-gray-500 text-lg">{{ summary.operating_company }} &middot; {{ summary.resource_id }}</p>
+            </div>
+            <div class="mt-4 lg:mt-0">
+                <a href="{% url 'capacity' %}" class="inline-flex items-center gap-2 py-2.5 px-5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-all">
+                    <i data-feather="arrow-left" class="w-4 h-4"></i>
+                    Back to Capacity Factors
+                </a>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-brand-100 flex items-center justify-center">
+                        <i data-feather="zap" class="w-4 h-4 text-brand-500"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Avg Actual</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">{{ summary.avg_ac|capacity_pct }}</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i data-feather="target" class="w-4 h-4 text-blue-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Avg Budget</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">{{ summary.avg_bu|capacity_pct }}</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-9 h-9 rounded-xl {% if summary.avg_variance >= 0 %}bg-emerald-100{% else %}bg-red-100{% endif %} flex items-center justify-center">
+                        <i data-feather="trending-{% if summary.avg_variance >= 0 %}up{% else %}down{% endif %}" class="w-4 h-4 {% if summary.avg_variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Avg Variance</span>
+                </div>
+                <p class="text-2xl font-bold {% if summary.avg_variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                    {% if summary.avg_variance >= 0 %}+{% endif %}{{ summary.avg_variance|capacity_pct }}
+                </p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <i data-feather="bar-chart-2" class="w-4 h-4 text-purple-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Rating</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">{{ summary.rating_mw_share|format_number }} <span class="text-sm font-normal text-gray-400">MW</span></p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-cyan-100 flex items-center justify-center">
+                        <i data-feather="battery-charging" class="w-4 h-4 text-cyan-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Gen</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">{{ summary.total_gen|format_number }} <span class="text-sm font-normal text-gray-400">MWh</span></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Charts -->
+<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <!-- Capacity Factor Trend Chart -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Capacity Factor Trend</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Monthly actual vs budget capacity factor</p>
+            </div>
+            <div class="p-6">
+                <div style="height: 320px;">
+                    <canvas id="cfTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generation Chart -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Generation Output</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Monthly net generation vs budget (MWh)</p>
+            </div>
+            <div class="p-6">
+                <div style="height: 320px;">
+                    <canvas id="genChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variance Chart -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Capacity Factor Variance</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Monthly actual minus budget variance</p>
+            </div>
+            <div class="p-6">
+                <div style="height: 320px;">
+                    <canvas id="varianceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Annual Summary Chart -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Annual Performance</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Average capacity factor by year</p>
+            </div>
+            <div class="p-6">
+                <div style="height: 320px;">
+                    <canvas id="annualChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Info & Monthly History Table -->
+    <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <!-- Resource Info Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Resource Info</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Resource ID</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ summary.resource_id }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Operating Company</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ summary.operating_company }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Resource Type</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ summary.resource_type }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Ownership Share</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ summary.ownership_share|capacity_pct }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Total Rating</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ summary.total_rating_mw|format_number }} MW</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Rating (Share)</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ summary.rating_mw_share|format_number }} MW</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Data Range</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ summary.min_year }} &ndash; {{ summary.max_year }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Peak Actual CF</p>
+                    <p class="text-sm font-semibold text-emerald-600">{{ summary.max_ac|capacity_pct }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Min Actual CF</p>
+                    <p class="text-sm font-semibold text-red-600">{{ summary.min_ac|capacity_pct }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Records</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ summary.record_count }} months</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly History Table -->
+        <div class="xl:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Monthly History</h2>
+                    <p class="text-sm text-gray-500 mt-0.5">{{ history|length }} records</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto" style="max-height: 600px; overflow-y: auto;">
+                <table class="w-full">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Rating MW</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Net Gen</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Budget Gen</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Max Possible</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actual CF</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Budget CF</th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for r in history %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3 text-sm text-gray-700 font-medium whitespace-nowrap">{{ r.month|month_name }} {{ r.year }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-600">{{ r.rating_mw_share|format_number }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-700">{{ r.net_generation|format_number }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-500">{{ r.budget_generation|format_number }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-500">{{ r.total_mwh_possible|format_number }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono font-semibold">{{ r.ac_capacity_factor|capacity_pct }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-500">{{ r.bu_capacity_factor|capacity_pct }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono font-bold
+                                {% if r.capacity_factor_variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                                {% if r.capacity_factor_variance >= 0 %}+{% endif %}{{ r.capacity_factor_variance|capacity_pct }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Annual Summary Table -->
+    {% if annual %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-900">Annual Summary</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-50/50">
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Year</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Actual CF</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Budget CF</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Variance</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Generation</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Budget Gen</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Gen vs Budget</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for a in annual %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm text-gray-900 font-semibold">{{ a.year }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono font-semibold">{{ a.avg_ac|capacity_pct }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-500">{{ a.avg_bu|capacity_pct }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono font-bold
+                            {% if a.avg_variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                            {% if a.avg_variance >= 0 %}+{% endif %}{{ a.avg_variance|capacity_pct }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-700">{{ a.total_gen|format_number }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-500">{{ a.total_budget_gen|format_number }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono font-bold
+                            {% if a.total_gen >= a.total_budget_gen %}text-emerald-600{% else %}text-red-600{% endif %}">
+                            {% if a.total_gen >= a.total_budget_gen %}+{% endif %}{{ a.total_gen|floatsub:a.total_budget_gen|format_number }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ chart_data|json_script:"chart-data" }}
+{{ annual_chart|json_script:"annual-chart-data" }}
+<script>
+(function() {
+    const data = JSON.parse(document.getElementById('chart-data').textContent);
+    const annualData = JSON.parse(document.getElementById('annual-chart-data').textContent);
+    const fontFamily = "'Inter', system-ui, sans-serif";
+    Chart.defaults.font.family = fontFamily;
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#6b7280';
+
+    const pctCallback = v => (v * 100).toFixed(0) + '%';
+
+    // CF Trend Chart
+    new Chart(document.getElementById('cfTrendChart'), {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Actual CF',
+                    data: data.ac_values,
+                    borderColor: '#00205B',
+                    backgroundColor: 'rgba(0, 32, 91, 0.08)',
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#00205B',
+                    tension: 0.3,
+                    fill: true,
+                },
+                {
+                    label: 'Budget CF',
+                    data: data.bu_values,
+                    borderColor: '#6CACE4',
+                    backgroundColor: 'rgba(108, 172, 228, 0.08)',
+                    borderWidth: 2,
+                    borderDash: [6, 3],
+                    pointRadius: 2,
+                    pointBackgroundColor: '#6CACE4',
+                    tension: 0.3,
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '%' } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 18 } },
+                y: { title: { display: true, text: 'Capacity Factor' }, ticks: { callback: pctCallback }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    // Generation Chart
+    new Chart(document.getElementById('genChart'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Net Generation',
+                    data: data.gen_values,
+                    backgroundColor: 'rgba(0, 32, 91, 0.7)',
+                    borderColor: '#00205B',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Budget Generation',
+                    data: data.budget_gen_values,
+                    backgroundColor: 'rgba(108, 172, 228, 0.5)',
+                    borderColor: '#6CACE4',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 18 } },
+                y: { title: { display: true, text: 'MWh' }, ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    // Variance Chart
+    new Chart(document.getElementById('varianceChart'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'CF Variance (Actual - Budget)',
+                data: data.variance_values,
+                backgroundColor: data.variance_values.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+                borderColor: data.variance_values.map(v => v >= 0 ? '#10b981' : '#ef4444'),
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                tooltip: { callbacks: { label: ctx => 'Variance: ' + (ctx.parsed.y * 100).toFixed(1) + '%' } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 18 } },
+                y: { title: { display: true, text: 'Variance' }, ticks: { callback: pctCallback }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    // Annual Chart
+    if (annualData.labels.length > 0) {
+        new Chart(document.getElementById('annualChart'), {
+            type: 'bar',
+            data: {
+                labels: annualData.labels,
+                datasets: [
+                    {
+                        label: 'Avg Actual CF',
+                        data: annualData.avg_ac,
+                        backgroundColor: 'rgba(0, 32, 91, 0.7)',
+                        borderColor: '#00205B',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.6,
+                    },
+                    {
+                        label: 'Avg Budget CF',
+                        data: annualData.avg_bu,
+                        backgroundColor: 'rgba(108, 172, 228, 0.5)',
+                        borderColor: '#6CACE4',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.6,
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                    tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '%' } }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { title: { display: true, text: 'Capacity Factor' }, ticks: { callback: pctCallback }, grid: { color: '#f3f4f6' } }
+                }
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}
