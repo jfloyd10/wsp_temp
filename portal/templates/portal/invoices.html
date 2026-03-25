@@ -75,93 +75,68 @@
 
 <!-- Main Content -->
 <main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-4 relative z-20">
-    <!-- Filters -->
+    <!-- Compact Filters -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
-        <form method="get" class="p-5">
-            <div class="flex flex-col lg:flex-row gap-4">
-                <!-- Quick Status Filters -->
-                <div class="flex items-center gap-2 flex-wrap">
-                    <a href="{% url 'invoices' %}" class="filter-pill {% if not active_filters.invoice_status %}active{% endif %} px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium">
-                        All
-                    </a>
-                    {% for s in filter_options.statuses %}
-                    <a href="{% url 'invoices' %}?invoice_status={{ s }}{% if active_filters.operating_company %}&operating_company={{ active_filters.operating_company }}{% endif %}"
-                       class="filter-pill {% if active_filters.invoice_status == s %}active{% endif %} px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium">
-                        <span class="w-2 h-2 rounded-full inline-block mr-2 {% if s == 'FINAL' %}bg-emerald-500{% elif s == 'DRAFT' %}bg-amber-500{% elif s == 'ADJUSTED' %}bg-red-500{% else %}bg-gray-400{% endif %}"></span>
-                        {{ s }}
-                    </a>
+        <form method="get" class="px-4 py-3">
+            <!-- Primary filter row -->
+            <div class="flex flex-wrap items-center gap-2">
+                <select name="operating_company" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                    <option value="">All Companies</option>
+                    {% for oc in filter_options.operating_companies %}
+                    <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
                     {% endfor %}
-                </div>
+                </select>
+                <select name="counterparty_id" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                    <option value="">All Counterparties</option>
+                    {% for cp in filter_options.counterparties %}
+                    <option value="{{ cp.id }}" {% if active_filters.counterparty_id == cp.id %}selected{% endif %}>{{ cp.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="invoice_status" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                    <option value="">All Statuses</option>
+                    {% for s in filter_options.statuses %}
+                    <option value="{{ s }}" {% if active_filters.invoice_status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                <select name="source_system" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                    <option value="">All Systems</option>
+                    {% for ss in filter_options.source_systems %}
+                    <option value="{{ ss }}" {% if active_filters.source_system == ss %}selected{% endif %}>{{ ss }}</option>
+                    {% endfor %}
+                </select>
+                <select name="source_type" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
+                    <option value="">All Types</option>
+                    {% for st in filter_options.source_types %}
+                    <option value="{{ st }}" {% if active_filters.source_type == st %}selected{% endif %}>{{ st }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Date range toggle -->
+                <button type="button" id="toggle-dates" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-all flex items-center gap-1.5 {% if active_filters.date_from or active_filters.date_to %}border-brand-300 bg-brand-50 text-brand-700{% endif %}">
+                    <i data-feather="calendar" class="w-3.5 h-3.5"></i>
+                    {% if active_filters.date_from or active_filters.date_to %}Dates{% else %}Dates{% endif %}
+                </button>
+
+                <button type="submit"
+                        class="btn-brand py-2 px-4 rounded-lg text-sm font-medium transition-all">
+                    Apply
+                </button>
+                {% if active_filters %}
+                <a href="{% url 'invoices' %}" class="py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-500 transition-all flex items-center gap-1">
+                    <i data-feather="x" class="w-3.5 h-3.5"></i>
+                    Clear
+                </a>
+                {% endif %}
             </div>
 
-            <!-- Advanced Filters -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Operating Company</label>
-                    <select name="operating_company" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
-                        <option value="">All Companies</option>
-                        {% for oc in filter_options.operating_companies %}
-                        <option value="{{ oc }}" {% if active_filters.operating_company == oc %}selected{% endif %}>{{ oc }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Counterparty</label>
-                    <select name="counterparty_id" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
-                        <option value="">All Counterparties</option>
-                        {% for cp in filter_options.counterparties %}
-                        <option value="{{ cp.id }}" {% if active_filters.counterparty_id == cp.id %}selected{% endif %}>{{ cp.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Source System</label>
-                    <select name="source_system" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
-                        <option value="">All Systems</option>
-                        {% for ss in filter_options.source_systems %}
-                        <option value="{{ ss }}" {% if active_filters.source_system == ss %}selected{% endif %}>{{ ss }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Source Type</label>
-                    <select name="source_type" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
-                        <option value="">All Types</option>
-                        {% for st in filter_options.source_types %}
-                        <option value="{{ st }}" {% if active_filters.source_type == st %}selected{% endif %}>{{ st }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date From</label>
-                    <input type="date" name="date_from" value="{{ active_filters.date_from|default:'' }}"
-                           class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:bg-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date To</label>
-                    <input type="date" name="date_to" value="{{ active_filters.date_to|default:'' }}"
-                           class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:bg-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select name="invoice_status" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand-500 focus:bg-white cursor-pointer">
-                        <option value="">All Statuses</option>
-                        {% for s in filter_options.statuses %}
-                        <option value="{{ s }}" {% if active_filters.invoice_status == s %}selected{% endif %}>{{ s }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="flex items-end gap-2">
-                    <button type="submit"
-                            class="btn-brand flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all">
-                        Apply Filters
-                    </button>
-                    {% if active_filters %}
-                    <a href="{% url 'invoices' %}" class="py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-all">
-                        Clear
-                    </a>
-                    {% endif %}
-                </div>
+            <!-- Collapsible date range row -->
+            <div id="date-filters" class="{% if not active_filters.date_from and not active_filters.date_to %}hidden{% endif %} mt-2 flex items-center gap-2">
+                <span class="text-xs text-gray-500 font-medium">From</span>
+                <input type="date" name="date_from" value="{{ active_filters.date_from|default:'' }}"
+                       class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand-500 focus:bg-white">
+                <span class="text-xs text-gray-500 font-medium">To</span>
+                <input type="date" name="date_to" value="{{ active_filters.date_to|default:'' }}"
+                       class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand-500 focus:bg-white">
             </div>
         </form>
     </div>
@@ -243,4 +218,13 @@
         {% endif %}
     </div>
 </main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('toggle-dates').addEventListener('click', function() {
+    var dateFilters = document.getElementById('date-filters');
+    dateFilters.classList.toggle('hidden');
+});
+</script>
 {% endblock %}
