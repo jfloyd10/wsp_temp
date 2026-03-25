@@ -90,6 +90,11 @@
                     <i data-feather="alert-triangle" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Trading Analytics</span>
                 </a>
+                <a href="{% url 'customer_landing' %}"
+                   class="sidebar-link {% if page == 'customer_landing' %}sidebar-link-active{% endif %}">
+                    <i data-feather="users" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Customer Portal</span>
+                </a>
                 <a href="{% url 'blank' %}"
                    class="sidebar-link {% if page == 'blank' %}sidebar-link-active{% endif %}">
                     <i data-feather="file" class="sidebar-link-icon"></i>
