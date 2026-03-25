@@ -560,6 +560,230 @@ def get_capacity_factors(filters: dict) -> list[dict]:
         return []
 
 
+def get_weather_monthly_summary(filters: dict) -> list[dict]:
+    """Return monthly weather summary with avg temp and degree days."""
+    try:
+        conn = get_connection()
+        conditions = []
+        params = []
+        if filters.get('year'):
+            conditions.append("year = ?")
+            params.append(int(filters['year']))
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = conn.execute(f"""
+            SELECT year, month,
+                   ROUND(AVG(average_temp), 1) AS avg_temp,
+                   ROUND(SUM(cooling_degree_days), 1) AS total_cdd,
+                   ROUND(SUM(heating_degree_days), 1) AS total_hdd
+            FROM weather
+            {where}
+            GROUP BY year, month
+            ORDER BY year, month
+        """, params).fetchall()
+        columns = ['year', 'month', 'avg_temp', 'total_cdd', 'total_hdd']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching weather monthly summary")
+        return []
+
+
+def get_weather_years() -> list[int]:
+    """Return distinct years from weather data."""
+    try:
+        conn = get_connection()
+        rows = conn.execute(
+            "SELECT DISTINCT year FROM weather ORDER BY year DESC"
+        ).fetchall()
+        conn.close()
+        return [r[0] for r in rows]
+    except Exception:
+        logger.exception("Error fetching weather years")
+        return []
+
+
+def get_avg_interchange_rates(filters: dict) -> list[dict]:
+    """Return average interchange rate data with optional year filter."""
+    try:
+        conn = get_connection()
+        conditions = []
+        params = []
+        if filters.get('year'):
+            conditions.append("year = ?")
+            params.append(int(filters['year']))
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = conn.execute(f"""
+            SELECT year, month, dt, avg_associated_interchange_rate
+            FROM avg_interchange_rate
+            {where}
+            ORDER BY year, month
+        """, params).fetchall()
+        columns = ['year', 'month', 'dt', 'avg_associated_interchange_rate']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching avg interchange rates")
+        return []
+
+
+def get_interchange_rate_years() -> list[int]:
+    """Return distinct years from avg_interchange_rate data."""
+    try:
+        conn = get_connection()
+        rows = conn.execute(
+            "SELECT DISTINCT year FROM avg_interchange_rate ORDER BY year DESC"
+        ).fetchall()
+        conn.close()
+        return [r[0] for r in rows]
+    except Exception:
+        logger.exception("Error fetching interchange rate years")
+        return []
+
+
+def get_platform_overview() -> dict:
+    """Return summary counts/stats across all 9 data tables for the platform overview dashboard."""
+    try:
+        conn = get_connection()
+
+        # Invoice stats
+        inv_row = conn.execute("""
+            SELECT COUNT(*) AS cnt,
+                   COALESCE(SUM(invoice_total), 0) AS total,
+                   COUNT(DISTINCT operating_company) AS opcos,
+                   COUNT(DISTINCT counterparty_id) AS counterparties,
+                   COUNT(DISTINCT source_system) AS sources
+            FROM invoice_header
+        """).fetchone()
+
+        # FCS metrics stats
+        fcs_row = conn.execute("""
+            SELECT COUNT(*) AS cnt,
+                   COALESCE(SUM(total_settled), 0) AS total_settled,
+                   COALESCE(AVG(adjustment_percent), 0) AS avg_adj_pct
+            FROM fcs_metrics
+        """).fetchone()
+
+        # Capacity factors stats
+        cap_row = conn.execute("""
+            SELECT COUNT(*) AS cnt,
+                   COUNT(DISTINCT resource_name) AS resources,
+                   COUNT(DISTINCT resource_type) AS fuel_types,
+                   COALESCE(AVG(ac_capacity_factor), 0) AS avg_cf
+            FROM capacity_factors
+        """).fetchone()
+
+        # Weather stats
+        weather_row = conn.execute("""
+            SELECT COUNT(*) AS cnt,
+                   COALESCE(AVG(average_temp), 0) AS avg_temp,
+                   MIN(year) AS min_year, MAX(year) AS max_year
+            FROM weather
+        """).fetchone()
+
+        # Interchange rate stats
+        ir_row = conn.execute("""
+            SELECT COUNT(*) AS cnt,
+                   COALESCE(AVG(avg_associated_interchange_rate), 0) AS avg_rate,
+                   MIN(year) AS min_year, MAX(year) AS max_year
+            FROM avg_interchange_rate
+        """).fetchone()
+
+        # P&L stats
+        pnl_row = conn.execute("""
+            SELECT COUNT(*) AS cnt,
+                   COUNT(DISTINCT entity_name) AS entities,
+                   COUNT(DISTINCT category) AS categories
+            FROM profit_and_loss_statement
+        """).fetchone()
+
+        # Trading analytics stats
+        ta_row = conn.execute("""
+            SELECT COUNT(*) AS cnt,
+                   COUNT(DISTINCT employee_name) AS traders,
+                   COUNT(DISTINCT issue_category) AS categories
+            FROM trading_analytics
+        """).fetchone()
+
+        # Capacity by resource type (for donut chart)
+        cap_by_type = conn.execute("""
+            SELECT resource_type, COUNT(DISTINCT resource_name) AS cnt
+            FROM capacity_factors
+            GROUP BY resource_type
+            ORDER BY cnt DESC
+        """).fetchall()
+
+        # Invoices by operating company
+        inv_by_opco = conn.execute("""
+            SELECT operating_company, COUNT(*) AS cnt, COALESCE(SUM(invoice_total), 0) AS total
+            FROM invoice_header
+            GROUP BY operating_company
+            ORDER BY total DESC
+        """).fetchall()
+
+        # Trading issues by category
+        ta_by_cat = conn.execute("""
+            SELECT issue_category, COUNT(*) AS cnt
+            FROM trading_analytics
+            GROUP BY issue_category
+            ORDER BY cnt DESC
+        """).fetchall()
+
+        # Invoices by status
+        inv_by_status = conn.execute("""
+            SELECT invoice_status, COUNT(*) AS cnt
+            FROM invoice_header
+            GROUP BY invoice_status
+            ORDER BY cnt DESC
+        """).fetchall()
+
+        conn.close()
+        return {
+            'invoices': {
+                'count': inv_row[0], 'total': inv_row[1], 'opcos': inv_row[2],
+                'counterparties': inv_row[3], 'sources': inv_row[4],
+            },
+            'fcs': {
+                'count': fcs_row[0], 'total_settled': fcs_row[1], 'avg_adj_pct': fcs_row[2],
+            },
+            'capacity': {
+                'count': cap_row[0], 'resources': cap_row[1],
+                'fuel_types': cap_row[2], 'avg_cf': cap_row[3],
+            },
+            'weather': {
+                'count': weather_row[0], 'avg_temp': weather_row[1],
+                'min_year': weather_row[2], 'max_year': weather_row[3],
+            },
+            'interchange': {
+                'count': ir_row[0], 'avg_rate': ir_row[1],
+                'min_year': ir_row[2], 'max_year': ir_row[3],
+            },
+            'pnl': {
+                'count': pnl_row[0], 'entities': pnl_row[1], 'categories': pnl_row[2],
+            },
+            'trading': {
+                'count': ta_row[0], 'traders': ta_row[1], 'categories': ta_row[2],
+            },
+            'cap_by_type': [{'type': r[0], 'count': r[1]} for r in cap_by_type],
+            'inv_by_opco': [{'name': r[0], 'count': r[1], 'total': r[2]} for r in inv_by_opco],
+            'ta_by_category': [{'category': r[0], 'count': r[1]} for r in ta_by_cat],
+            'inv_by_status': [{'status': r[0], 'count': r[1]} for r in inv_by_status],
+        }
+    except Exception:
+        logger.exception("Error fetching platform overview")
+        return {
+            'invoices': {'count': 0, 'total': 0, 'opcos': 0, 'counterparties': 0, 'sources': 0},
+            'fcs': {'count': 0, 'total_settled': 0, 'avg_adj_pct': 0},
+            'capacity': {'count': 0, 'resources': 0, 'fuel_types': 0, 'avg_cf': 0},
+            'weather': {'count': 0, 'avg_temp': 0, 'min_year': 0, 'max_year': 0},
+            'interchange': {'count': 0, 'avg_rate': 0, 'min_year': 0, 'max_year': 0},
+            'pnl': {'count': 0, 'entities': 0, 'categories': 0},
+            'trading': {'count': 0, 'traders': 0, 'categories': 0},
+            'cap_by_type': [], 'inv_by_opco': [], 'ta_by_category': [], 'inv_by_status': [],
+        }
+
+
 def get_pnl_filter_options() -> dict:
     """Return distinct values for P&L filter dimensions."""
     try:
