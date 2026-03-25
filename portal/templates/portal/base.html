@@ -65,6 +65,11 @@
                     <i data-feather="home" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Dashboard</span>
                 </a>
+                <a href="{% url 'command_center' %}"
+                   class="sidebar-link {% if page == 'command_center' %}sidebar-link-active{% endif %}">
+                    <i data-feather="monitor" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Command Center</span>
+                </a>
                 <a href="{% url 'invoices' %}"
                    class="sidebar-link {% if page == 'invoices' %}sidebar-link-active{% endif %}">
                     <i data-feather="file-text" class="sidebar-link-icon"></i>

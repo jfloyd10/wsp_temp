@@ -22,6 +22,7 @@ urlpatterns = [
     path('trading-analytics/', views.trading_analytics_view, name='trading_analytics'),
     path('customer/', views.customer_landing_view, name='customer_landing'),
     path('contact-center/', views.contact_center_view, name='contact_center'),
+    path('command-center/', views.command_center_view, name='command_center'),
     path('blank/', views.blank_view, name='blank'),
     path('minipool/', views.minipool_view, name='minipool'),
 ]

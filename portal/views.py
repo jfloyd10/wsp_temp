@@ -1,7 +1,10 @@
 """Portal views — all function-based, all @login_required except login/logout."""
 
 import csv
+import json
+import math
 import mimetypes
+import random
 from datetime import datetime
 
 from django.contrib.auth import authenticate, login, logout
@@ -1053,3 +1056,299 @@ def export_invoices_csv(request):
             inv.get('invoice_total', ''),
         ])
     return response
+
+
+@login_required
+def command_center_view(request):
+    """Executive Command Center — unified fleet ops, market, weather & financial view."""
+
+    now = datetime.now()
+    current_hour = now.hour
+
+    # ── KPI Cards ──
+    kpis = [
+        {
+            'label': 'Fleet Output',
+            'value': '28,420 MW',
+            'change': '+3.2%',
+            'trend': 'up',
+            'icon': 'zap',
+            'bg_class': 'bg-amber-50',
+            'icon_class': 'text-amber-600',
+        },
+        {
+            'label': 'Settled YTD',
+            'value': '$1.84B',
+            'change': '+5.1%',
+            'trend': 'up',
+            'icon': 'dollar-sign',
+            'bg_class': 'bg-emerald-50',
+            'icon_class': 'text-emerald-600',
+        },
+        {
+            'label': 'Open Invoices',
+            'value': '147',
+            'change': '-12',
+            'trend': 'down',
+            'icon': 'file-text',
+            'bg_class': 'bg-blue-50',
+            'icon_class': 'text-blue-600',
+        },
+        {
+            'label': 'Adj. Rate',
+            'value': '0.38%',
+            'change': '-0.04%',
+            'trend': 'down',
+            'icon': 'percent',
+            'bg_class': 'bg-purple-50',
+            'icon_class': 'text-purple-600',
+        },
+        {
+            'label': 'Capacity Factor',
+            'value': '71.6%',
+            'change': '+2.1%',
+            'trend': 'up',
+            'icon': 'activity',
+            'bg_class': 'bg-rose-50',
+            'icon_class': 'text-rose-600',
+        },
+        {
+            'label': 'Trading Issues',
+            'value': '3',
+            'change': '-5',
+            'trend': 'down',
+            'icon': 'alert-triangle',
+            'bg_class': 'bg-orange-50',
+            'icon_class': 'text-orange-600',
+        },
+    ]
+
+    # ── Fleet Generation Units ──
+    fleet_units = [
+        {'name': 'Plant Vogtle',   'fuel': 'Nuclear',  'capacity_mw': 4600, 'output_mw': 4340, 'output_pct': 94, 'status_color': 'bg-emerald-500'},
+        {'name': 'Plant Scherer',  'fuel': 'Coal',     'capacity_mw': 3520, 'output_mw': 2640, 'output_pct': 75, 'status_color': 'bg-emerald-500'},
+        {'name': 'Plant McDonough','fuel': 'Gas CC',    'capacity_mw': 2520, 'output_mw': 1890, 'output_pct': 75, 'status_color': 'bg-emerald-500'},
+        {'name': 'Plant Wansley',  'fuel': 'Gas CC',    'capacity_mw': 2348, 'output_mw': 1760, 'output_pct': 75, 'status_color': 'bg-emerald-500'},
+        {'name': 'Plant Daniel',   'fuel': 'Gas/Coal',  'capacity_mw': 1716, 'output_mw': 1030, 'output_pct': 60, 'status_color': 'bg-amber-500'},
+        {'name': 'Plant Barry',    'fuel': 'Gas',       'capacity_mw': 2658, 'output_mw': 1860, 'output_pct': 70, 'status_color': 'bg-emerald-500'},
+        {'name': 'Plant Miller',   'fuel': 'Coal',      'capacity_mw': 2822, 'output_mw': 2400, 'output_pct': 85, 'status_color': 'bg-emerald-500'},
+        {'name': 'Solar Fleet',    'fuel': 'Solar',     'capacity_mw': 4200, 'output_mw': 2940, 'output_pct': 70, 'status_color': 'bg-emerald-500'},
+    ]
+
+    fleet_total_mw = sum(u['output_mw'] for u in fleet_units)
+    fleet_capacity_mw = sum(u['capacity_mw'] for u in fleet_units)
+    fleet_utilization_pct = round(fleet_total_mw / fleet_capacity_mw * 100, 1)
+
+    gauge_data_json = json.dumps([{'pct': u['output_pct']} for u in fleet_units])
+
+    # ── Generation Mix ──
+    gen_mix = [
+        {'fuel': 'Nuclear',  'pct': 23, 'color': '#8b5cf6'},
+        {'fuel': 'Gas',      'pct': 38, 'color': '#3b82f6'},
+        {'fuel': 'Coal',     'pct': 19, 'color': '#6b7280'},
+        {'fuel': 'Solar',    'pct': 12, 'color': '#f59e0b'},
+        {'fuel': 'Wind',     'pct': 5,  'color': '#10b981'},
+        {'fuel': 'Hydro',    'pct': 3,  'color': '#06b6d4'},
+    ]
+    gen_mix_labels = json.dumps([g['fuel'] for g in gen_mix])
+    gen_mix_values = json.dumps([g['pct'] for g in gen_mix])
+    gen_mix_colors = json.dumps([g['color'] for g in gen_mix])
+
+    # ── Market Snapshot ──
+    market_data = [
+        {'label': 'Into Southern (DA)', 'value': '$42.18/MWh', 'change': '+$1.24', 'change_class': 'text-red-500', 'icon': 'trending-up', 'bg_class': 'bg-red-50', 'icon_class': 'text-red-500'},
+        {'label': 'Henry Hub Gas',      'value': '$2.87/MMBtu', 'change': '-$0.12', 'change_class': 'text-emerald-500', 'icon': 'trending-down', 'bg_class': 'bg-emerald-50', 'icon_class': 'text-emerald-500'},
+        {'label': 'Avg Interchange',    'value': '$38.54/MWh',  'change': '+$0.82', 'change_class': 'text-red-500', 'icon': 'repeat', 'bg_class': 'bg-blue-50', 'icon_class': 'text-blue-500'},
+        {'label': 'Carbon Credit',      'value': '$54.20/ton',  'change': '+$2.10', 'change_class': 'text-emerald-500', 'icon': 'wind', 'bg_class': 'bg-teal-50', 'icon_class': 'text-teal-500'},
+    ]
+
+    # ── System Load Curve (24-hour) ──
+    random.seed(42)  # deterministic
+    base_load = [18200, 17800, 17400, 17100, 17000, 17200, 18500, 21000, 24500, 27200,
+                 29100, 30800, 32400, 33100, 33600, 33200, 32000, 30500, 28800, 27100,
+                 25400, 23200, 21000, 19500]
+    load_labels = json.dumps([f'{h:02d}:00' for h in range(24)])
+    # Actual only up to current hour
+    load_actual = base_load[:min(current_hour + 1, 24)]
+    load_forecast = [None] * len(load_actual) + base_load[len(load_actual):]
+    if load_actual:
+        load_forecast[len(load_actual) - 1] = load_actual[-1]
+    day_ahead = [v + random.randint(-800, 800) for v in base_load]
+
+    load_actual_json = json.dumps(load_actual + [None] * (24 - len(load_actual)))
+    load_forecast_json = json.dumps(load_forecast)
+    load_day_ahead_json = json.dumps(day_ahead)
+
+    peak_load = f'{max(base_load):,}'
+    current_load_val = load_actual[-1] if load_actual else base_load[0]
+    current_load = f'{current_load_val:,}'
+    min_load = f'{min(base_load):,}'
+
+    # ── Weather Data ──
+    weather_data = [
+        {'city': 'Atlanta, GA',      'opco': 'Georgia Power',      'temp': 78, 'condition': 'Partly Cloudy', 'humidity': 62, 'wind': 8,  'cdd': 13, 'hdd': 0, 'bg_gradient': 'bg-gradient-to-r from-amber-50 to-orange-50'},
+        {'city': 'Birmingham, AL',   'opco': 'Alabama Power',      'temp': 82, 'condition': 'Sunny',         'humidity': 55, 'wind': 5,  'cdd': 17, 'hdd': 0, 'bg_gradient': 'bg-gradient-to-r from-orange-50 to-red-50'},
+        {'city': 'Gulfport, MS',     'opco': 'Mississippi Power',  'temp': 84, 'condition': 'Humid',         'humidity': 78, 'wind': 12, 'cdd': 19, 'hdd': 0, 'bg_gradient': 'bg-gradient-to-r from-red-50 to-orange-50'},
+    ]
+
+    # Degree day mini chart (12 months)
+    dd_labels = json.dumps(['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'])
+    dd_cdd = json.dumps([120, 280, 520, 680, 640, 380, 140, 20, 0, 0, 0, 45])
+    dd_hdd = json.dumps([80, 10, 0, 0, 0, 0, 60, 280, 480, 560, 420, 210])
+
+    # ── Settlement Pipeline ──
+    pipeline_stages = [
+        {'label': 'Finalized',     'count': 842, 'amount': '$1.62B', 'pct': 100, 'bar_class': 'bg-emerald-500'},
+        {'label': 'Under Review',  'count': 89,  'amount': '$168M',  'pct': 48,  'bar_class': 'bg-blue-500'},
+        {'label': 'Draft',         'count': 47,  'amount': '$92M',   'pct': 28,  'bar_class': 'bg-amber-500'},
+        {'label': 'Disputed',      'count': 11,  'amount': '$24M',   'pct': 8,   'bar_class': 'bg-red-500'},
+    ]
+
+    # Budget vs Actual (quarterly)
+    budget_labels = json.dumps(['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026'])
+    budget_values = json.dumps([420e6, 385e6, 510e6, 445e6, 440e6])
+    actual_values = json.dumps([435e6, 378e6, 528e6, 452e6, 462e6])
+
+    # ── Risk Alerts ──
+    alerts = [
+        {
+            'title': 'Pool Bill Variance Detected',
+            'detail': 'Alabama Power Feb pool bill shows $38.2K unreconciled variance',
+            'icon': 'alert-circle',
+            'icon_bg': 'bg-red-100',
+            'icon_color': 'text-red-600',
+            'bg_class': 'bg-red-50/50',
+            'border_class': 'border-red-100',
+            'time': '35 min ago',
+            'time_class': 'text-red-500',
+        },
+        {
+            'title': 'Capacity Factor Below Threshold',
+            'detail': 'Plant Daniel CF dropped to 48% — investigate forced outage',
+            'icon': 'alert-triangle',
+            'icon_bg': 'bg-amber-100',
+            'icon_color': 'text-amber-600',
+            'bg_class': 'bg-amber-50/50',
+            'border_class': 'border-amber-100',
+            'time': '2 hours ago',
+            'time_class': 'text-amber-500',
+        },
+        {
+            'title': 'FERC Filing Deadline Approaching',
+            'detail': 'EQR quarterly filing due in 5 business days',
+            'icon': 'clock',
+            'icon_bg': 'bg-blue-100',
+            'icon_color': 'text-blue-600',
+            'bg_class': 'bg-blue-50/50',
+            'border_class': 'border-blue-100',
+            'time': '4 hours ago',
+            'time_class': 'text-blue-500',
+        },
+        {
+            'title': 'Gas Price Spike Alert',
+            'detail': 'Henry Hub up 8% week-over-week — monitor fuel cost impact',
+            'icon': 'trending-up',
+            'icon_bg': 'bg-purple-100',
+            'icon_color': 'text-purple-600',
+            'bg_class': 'bg-purple-50/50',
+            'border_class': 'border-purple-100',
+            'time': '6 hours ago',
+            'time_class': 'text-purple-500',
+        },
+    ]
+
+    # ── Data Platform Health ──
+    source_systems = [
+        {'name': 'Wholesale Settlement',  'records': '12,847',  'last_sync': '2 min ago',  'freshness_pct': 100, 'freshness_class': 'text-emerald-500', 'status_bg': 'bg-emerald-100', 'status_icon': 'check', 'status_icon_color': 'text-emerald-600', 'bar_class': 'bg-emerald-500'},
+        {'name': 'Pool Bill System',      'records': '8,234',   'last_sync': '15 min ago', 'freshness_pct': 95,  'freshness_class': 'text-emerald-500', 'status_bg': 'bg-emerald-100', 'status_icon': 'check', 'status_icon_color': 'text-emerald-600', 'bar_class': 'bg-emerald-500'},
+        {'name': 'Gas Accounting',        'records': '4,521',   'last_sync': '1 hr ago',   'freshness_pct': 85,  'freshness_class': 'text-emerald-500', 'status_bg': 'bg-emerald-100', 'status_icon': 'check', 'status_icon_color': 'text-emerald-600', 'bar_class': 'bg-emerald-500'},
+        {'name': 'Coal Accounting',       'records': '3,108',   'last_sync': '1 hr ago',   'freshness_pct': 85,  'freshness_class': 'text-emerald-500', 'status_bg': 'bg-emerald-100', 'status_icon': 'check', 'status_icon_color': 'text-emerald-600', 'bar_class': 'bg-emerald-500'},
+        {'name': 'Resource Planning',     'records': '6,892',   'last_sync': '3 hrs ago',  'freshness_pct': 70,  'freshness_class': 'text-amber-500',   'status_bg': 'bg-amber-100',   'status_icon': 'clock', 'status_icon_color': 'text-amber-600',   'bar_class': 'bg-amber-500'},
+        {'name': 'Weather Service',       'records': '52,416',  'last_sync': '5 min ago',  'freshness_pct': 98,  'freshness_class': 'text-emerald-500', 'status_bg': 'bg-emerald-100', 'status_icon': 'check', 'status_icon_color': 'text-emerald-600', 'bar_class': 'bg-emerald-500'},
+        {'name': 'Trading & Risk',        'records': '2,340',   'last_sync': '30 min ago', 'freshness_pct': 90,  'freshness_class': 'text-emerald-500', 'status_bg': 'bg-emerald-100', 'status_icon': 'check', 'status_icon_color': 'text-emerald-600', 'bar_class': 'bg-emerald-500'},
+        {'name': 'FERC/Regulatory',       'records': '1,856',   'last_sync': '6 hrs ago',  'freshness_pct': 60,  'freshness_class': 'text-amber-500',   'status_bg': 'bg-amber-100',   'status_icon': 'clock', 'status_icon_color': 'text-amber-600',   'bar_class': 'bg-amber-500'},
+        {'name': 'Budgeting System',      'records': '9,720',   'last_sync': '12 hrs ago', 'freshness_pct': 45,  'freshness_class': 'text-gray-400',    'status_bg': 'bg-gray-100',    'status_icon': 'clock', 'status_icon_color': 'text-gray-500',    'bar_class': 'bg-gray-400'},
+    ]
+
+    # ── Operating Company Comparison Chart ──
+    opco_labels = json.dumps(['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'])
+    opco_ga = json.dumps([182e6, 195e6, 210e6, 205e6, 188e6, 218e6])
+    opco_al = json.dumps([98e6, 105e6, 118e6, 112e6, 95e6, 124e6])
+    opco_ms = json.dumps([42e6, 48e6, 55e6, 51e6, 44e6, 58e6])
+
+    # ── Settlement Heatmap ──
+    heatmap_months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']
+    heatmap_raw = {
+        'Wholesale':  [24.5, 28.1, 32.4, 30.2, 26.8, 34.1],
+        'PPA':        [18.2, 19.8, 22.5, 21.0, 18.6, 24.3],
+        'Short-Term': [8.4, 10.2, 14.8, 12.1, 9.5, 15.2],
+        'Pool Bill':  [42.6, 45.8, 52.1, 48.3, 41.2, 56.0],
+        'Gas Acctg':  [6.2, 7.1, 8.8, 7.5, 6.0, 9.2],
+    }
+    all_vals = [v for row in heatmap_raw.values() for v in row]
+    hm_min, hm_max = min(all_vals), max(all_vals)
+
+    def heatmap_class(val):
+        normalized = (val - hm_min) / (hm_max - hm_min) if hm_max > hm_min else 0
+        if normalized < 0.15:
+            return 'bg-emerald-100 text-emerald-700'
+        elif normalized < 0.3:
+            return 'bg-emerald-200 text-emerald-800'
+        elif normalized < 0.5:
+            return 'bg-emerald-300 text-emerald-800'
+        elif normalized < 0.7:
+            return 'bg-emerald-400 text-white'
+        elif normalized < 0.85:
+            return 'bg-emerald-500 text-white'
+        else:
+            return 'bg-emerald-600 text-white'
+
+    heatmap_data = []
+    for label, values in heatmap_raw.items():
+        cells = []
+        for v in values:
+            cells.append({
+                'display': f'${v:.0f}M',
+                'class': heatmap_class(v),
+                'tooltip': f'{label}: ${v:.1f}M',
+            })
+        heatmap_data.append({'label': label, 'cells': cells})
+
+    return render(request, 'portal/command_center.html', {
+        'page': 'command_center',
+        'current_time': now.strftime('%b %d, %Y %I:%M %p ET'),
+        'kpis': kpis,
+        'fleet_units': fleet_units,
+        'fleet_total_mw': fleet_total_mw,
+        'fleet_capacity_mw': fleet_capacity_mw,
+        'fleet_utilization_pct': fleet_utilization_pct,
+        'gauge_data_json': gauge_data_json,
+        'gen_mix': gen_mix,
+        'gen_mix_labels': gen_mix_labels,
+        'gen_mix_values': gen_mix_values,
+        'gen_mix_colors': gen_mix_colors,
+        'market_data': market_data,
+        'load_labels': load_labels,
+        'load_actual': load_actual_json,
+        'load_forecast': load_forecast_json,
+        'load_day_ahead': load_day_ahead_json,
+        'peak_load': peak_load,
+        'current_load': current_load,
+        'min_load': min_load,
+        'weather_data': weather_data,
+        'dd_labels': dd_labels,
+        'dd_cdd': dd_cdd,
+        'dd_hdd': dd_hdd,
+        'pipeline_stages': pipeline_stages,
+        'budget_labels': budget_labels,
+        'budget_values': budget_values,
+        'actual_values': actual_values,
+        'alerts': alerts,
+        'source_systems': source_systems,
+        'opco_labels': opco_labels,
+        'opco_ga': opco_ga,
+        'opco_al': opco_al,
+        'opco_ms': opco_ms,
+        'heatmap_months': heatmap_months,
+        'heatmap_data': heatmap_data,
+    })
