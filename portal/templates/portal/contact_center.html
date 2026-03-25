@@ -1,0 +1,446 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+{% load static %}
+
+{% block title %}Contact Center{% endblock %}
+
+{% block content %}
+<div class="p-6 lg:p-8 space-y-6">
+
+    <!-- Hero Header -->
+    <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl shadow-xl">
+        <div class="absolute inset-0 opacity-[0.07]">
+            <svg class="w-full h-full" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <circle cx="2" cy="2" r="1" fill="white"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#dots)" />
+                <circle cx="650" cy="80" r="180" fill="rgba(236,28,36,0.12)"/>
+                <circle cx="150" cy="220" r="120" fill="rgba(59,130,246,0.08)"/>
+            </svg>
+        </div>
+        <div class="relative px-8 py-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                        <i data-feather="headphones" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Account Support</p>
+                        <h1 class="text-2xl lg:text-3xl font-bold text-white">Contact Center</h1>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm mt-2 max-w-xl">Manage your notifications, reach your account team, submit support requests, and find answers to common questions.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 text-sm font-medium text-gray-300">
+                    <i data-feather="bell" class="w-4 h-4"></i>
+                    <span class="text-white font-bold">{{ unread_count }}</span> unread
+                </span>
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 text-sm font-medium text-gray-300">
+                    <i data-feather="message-circle" class="w-4 h-4"></i>
+                    <span class="text-white font-bold">{{ open_tickets }}</span> open tickets
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Contact Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="dashboard-card bg-white rounded-xl p-5 border border-gray-100 flex items-center gap-4 cursor-pointer hover:border-brand-200 transition-colors">
+            <div class="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
+                <i data-feather="phone" class="w-5 h-5 text-brand-500"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-900">Call Us</p>
+                <p class="text-xs text-gray-500">(404) 506-2810</p>
+            </div>
+        </div>
+        <div class="dashboard-card bg-white rounded-xl p-5 border border-gray-100 flex items-center gap-4 cursor-pointer hover:border-blue-200 transition-colors">
+            <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <i data-feather="mail" class="w-5 h-5 text-blue-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-900">Email Support</p>
+                <p class="text-xs text-gray-500">fcs.support@southernco.com</p>
+            </div>
+        </div>
+        <div class="dashboard-card bg-white rounded-xl p-5 border border-gray-100 flex items-center gap-4 cursor-pointer hover:border-emerald-200 transition-colors">
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                <i data-feather="message-square" class="w-5 h-5 text-emerald-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-900">Live Chat</p>
+                <p class="text-xs text-gray-500">Available Mon-Fri 8am-5pm</p>
+            </div>
+        </div>
+        <div class="dashboard-card bg-white rounded-xl p-5 border border-gray-100 flex items-center gap-4 cursor-pointer hover:border-purple-200 transition-colors">
+            <div class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                <i data-feather="help-circle" class="w-5 h-5 text-purple-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-900">Help Desk</p>
+                <p class="text-xs text-gray-500">24/7 Technical Support</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content: Notifications + Contact Directory -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Notifications Panel (wider) -->
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-semibold text-gray-900">Notifications</h2>
+                    {% if unread_count > 0 %}
+                    <span class="px-2.5 py-0.5 bg-brand-100 text-brand-600 rounded-full text-xs font-bold">{{ unread_count }} new</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="filterAll" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-900 text-white transition-colors" onclick="filterNotifications('all')">All</button>
+                    <button id="filterUnread" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-100 transition-colors" onclick="filterNotifications('unread')">Unread</button>
+                    <button id="filterRead" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-100 transition-colors" onclick="filterNotifications('read')">Read</button>
+                </div>
+            </div>
+            <div class="divide-y divide-gray-50 max-h-[600px] overflow-y-auto custom-scrollbar">
+                {% for notif in notifications %}
+                <div class="notification-item px-6 py-5 hover:bg-gray-50/50 transition-colors {% if notif.unread %}bg-blue-50/30{% endif %}"
+                     data-read="{{ notif.unread|yesno:'false,true' }}">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center relative
+                                {% if notif.color == 'blue' %}bg-blue-100
+                                {% elif notif.color == 'emerald' %}bg-emerald-100
+                                {% elif notif.color == 'amber' %}bg-amber-100
+                                {% elif notif.color == 'purple' %}bg-purple-100
+                                {% elif notif.color == 'gray' %}bg-gray-100
+                                {% else %}bg-gray-100{% endif %}">
+                                <i data-feather="{{ notif.icon }}" class="w-5 h-5
+                                    {% if notif.color == 'blue' %}text-blue-600
+                                    {% elif notif.color == 'emerald' %}text-emerald-600
+                                    {% elif notif.color == 'amber' %}text-amber-600
+                                    {% elif notif.color == 'purple' %}text-purple-600
+                                    {% elif notif.color == 'gray' %}text-gray-500
+                                    {% else %}text-gray-500{% endif %}"></i>
+                                {% if notif.unread %}
+                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-brand-500 rounded-full border-2 border-white"></span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-3">
+                                <p class="text-sm font-semibold text-gray-900 {% if notif.unread %}text-gray-900{% else %}text-gray-700{% endif %}">{{ notif.title }}</p>
+                                <span class="text-xs text-gray-400 flex-shrink-0 mt-0.5">{{ notif.time }}</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1 leading-relaxed">{{ notif.message }}</p>
+                            <div class="flex items-center gap-3 mt-3">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium
+                                    {% if notif.category == 'invoice' %}bg-blue-50 text-blue-700
+                                    {% elif notif.category == 'payment' %}bg-emerald-50 text-emerald-700
+                                    {% elif notif.category == 'alert' %}bg-amber-50 text-amber-700
+                                    {% elif notif.category == 'report' %}bg-purple-50 text-purple-700
+                                    {% elif notif.category == 'document' %}bg-blue-50 text-blue-700
+                                    {% else %}bg-gray-50 text-gray-600{% endif %}">
+                                    {{ notif.category|title }}
+                                </span>
+                                <span class="text-xs text-gray-400">{{ notif.date }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Contact Directory -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Your Account Team</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Direct contacts for your account</p>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% for contact in contacts %}
+                <div class="p-5 hover:bg-gray-50/50 transition-colors">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold
+                            {% if contact.color == 'brand' %}bg-brand-100 text-brand-600
+                            {% elif contact.color == 'blue' %}bg-blue-100 text-blue-600
+                            {% elif contact.color == 'emerald' %}bg-emerald-100 text-emerald-600
+                            {% elif contact.color == 'purple' %}bg-purple-100 text-purple-600
+                            {% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ contact.avatar_initials }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm font-semibold text-gray-900">{{ contact.name }}</p>
+                                {% if contact.primary %}
+                                <span class="px-1.5 py-0.5 bg-brand-50 text-brand-600 rounded text-[10px] font-bold uppercase">Primary</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ contact.title }}</p>
+                            <p class="text-xs text-gray-400">{{ contact.department }}</p>
+                            <div class="flex flex-col gap-1.5 mt-3">
+                                <a href="mailto:{{ contact.email }}" class="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-700">
+                                    <i data-feather="mail" class="w-3 h-3"></i> {{ contact.email }}
+                                </a>
+                                <span class="flex items-center gap-2 text-xs text-gray-600">
+                                    <i data-feather="phone" class="w-3 h-3"></i> {{ contact.phone }}
+                                </span>
+                                <span class="flex items-center gap-2 text-xs text-gray-400">
+                                    <i data-feather="clock" class="w-3 h-3"></i> {{ contact.availability }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Tickets -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Support Tickets</h2>
+                <p class="text-xs text-gray-500 mt-0.5">{{ open_tickets }} open &middot; {{ resolved_tickets }} resolved</p>
+            </div>
+            <button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 transition-all shadow-sm">
+                <i data-feather="plus" class="w-4 h-4"></i> New Ticket
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-50/80">
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ticket</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Subject</th>
+                        <th class="px-6 py-3.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Priority</th>
+                        <th class="px-6 py-3.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Assignee</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Update</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for ticket in tickets %}
+                    <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer">
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-semibold text-blue-600">{{ ticket.id }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm text-gray-900">{{ ticket.subject }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
+                                {% if ticket.priority == 'high' %}bg-red-50 text-red-700
+                                {% elif ticket.priority == 'medium' %}bg-amber-50 text-amber-700
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                                <span class="w-1.5 h-1.5 rounded-full
+                                    {% if ticket.priority == 'high' %}bg-red-500
+                                    {% elif ticket.priority == 'medium' %}bg-amber-500
+                                    {% else %}bg-gray-400{% endif %}"></span>
+                                {{ ticket.priority|title }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
+                                {% if ticket.status == 'open' %}bg-blue-50 text-blue-700
+                                {% elif ticket.status == 'in_progress' %}bg-amber-50 text-amber-700
+                                {% else %}bg-emerald-50 text-emerald-700{% endif %}">
+                                <span class="w-1.5 h-1.5 rounded-full
+                                    {% if ticket.status == 'open' %}bg-blue-500
+                                    {% elif ticket.status == 'in_progress' %}bg-amber-500
+                                    {% else %}bg-emerald-500{% endif %}"></span>
+                                {% if ticket.status == 'in_progress' %}In Progress{% else %}{{ ticket.status|title }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ ticket.assignee }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ ticket.created }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-400">{{ ticket.updated }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FAQs + Help Resources -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- FAQ Accordion (wider) -->
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Frequently Asked Questions</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Find quick answers to common questions</p>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% for section in faqs %}
+                <div class="px-6 py-5">
+                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
+                        {{ section.category }}
+                    </h3>
+                    <div class="space-y-2">
+                        {% for item in section.questions %}
+                        <div class="faq-item rounded-xl border border-gray-100 overflow-hidden">
+                            <button class="faq-toggle w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50/50 transition-colors" onclick="toggleFaq(this)">
+                                <span class="text-sm font-medium text-gray-800 pr-4">{{ item.q }}</span>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 flex-shrink-0 faq-chevron transition-transform duration-200"></i>
+                            </button>
+                            <div class="faq-answer hidden px-5 pb-4">
+                                <p class="text-sm text-gray-600 leading-relaxed">{{ item.a }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Help Resources + Submit Feedback -->
+        <div class="space-y-6">
+            <!-- Help Resources -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-900">Help Resources</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Guides, tutorials, and documentation</p>
+                </div>
+                <div class="p-5 space-y-2">
+                    {% for resource in help_resources %}
+                    <div class="flex items-center gap-4 p-3.5 rounded-xl hover:bg-gray-50 transition-all cursor-pointer group">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
+                            {% if resource.color == 'blue' %}bg-blue-50 group-hover:bg-blue-100
+                            {% elif resource.color == 'purple' %}bg-purple-50 group-hover:bg-purple-100
+                            {% elif resource.color == 'emerald' %}bg-emerald-50 group-hover:bg-emerald-100
+                            {% elif resource.color == 'amber' %}bg-amber-50 group-hover:bg-amber-100
+                            {% else %}bg-gray-50 group-hover:bg-gray-100{% endif %} transition-colors">
+                            <i data-feather="{{ resource.icon }}" class="w-5 h-5
+                                {% if resource.color == 'blue' %}text-blue-600
+                                {% elif resource.color == 'purple' %}text-purple-600
+                                {% elif resource.color == 'emerald' %}text-emerald-600
+                                {% elif resource.color == 'amber' %}text-amber-600
+                                {% else %}text-gray-600{% endif %}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900">{{ resource.title }}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ resource.description }}</p>
+                        </div>
+                        <i data-feather="arrow-right" class="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors"></i>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Feedback -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-900">Send Feedback</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Help us improve the portal</p>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Subject</label>
+                            <input type="text" placeholder="Brief description of your feedback"
+                                   class="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Message</label>
+                            <textarea rows="4" placeholder="Tell us how we can improve your experience..."
+                                      class="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none"></textarea>
+                        </div>
+                        <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 transition-all shadow-sm">
+                            <i data-feather="send" class="w-4 h-4"></i> Submit Feedback
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="bg-gradient-to-br from-red-50 to-amber-50 rounded-2xl border border-red-100 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                            <i data-feather="alert-triangle" class="w-5 h-5 text-red-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">Emergency Contact</p>
+                            <p class="text-xs text-gray-600">Critical settlement issues only</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mt-4">
+                        <div class="flex items-center gap-2">
+                            <i data-feather="phone" class="w-3.5 h-3.5 text-red-500"></i>
+                            <span class="text-sm font-semibold text-gray-900">(800) 555-0911</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-feather="mail" class="w-3.5 h-3.5 text-red-500"></i>
+                            <span class="text-sm text-gray-700">urgent@southernco.com</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Available 24/7 for time-sensitive settlement and billing emergencies.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // FAQ accordion toggle
+    function toggleFaq(btn) {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const chevron = item.querySelector('.faq-chevron');
+        const isOpen = !answer.classList.contains('hidden');
+
+        if (isOpen) {
+            answer.classList.add('hidden');
+            chevron.style.transform = 'rotate(0deg)';
+            item.classList.remove('bg-gray-50/50');
+        } else {
+            answer.classList.remove('hidden');
+            chevron.style.transform = 'rotate(180deg)';
+            item.classList.add('bg-gray-50/50');
+        }
+    }
+
+    // Notification filter
+    function filterNotifications(type) {
+        const items = document.querySelectorAll('.notification-item');
+        const buttons = {
+            all: document.getElementById('filterAll'),
+            unread: document.getElementById('filterUnread'),
+            read: document.getElementById('filterRead'),
+        };
+
+        // Update button styles
+        Object.values(buttons).forEach(btn => {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-100 transition-colors';
+        });
+        buttons[type].className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-900 text-white transition-colors';
+
+        // Filter items
+        items.forEach(item => {
+            const isRead = item.getAttribute('data-read') === 'true';
+            if (type === 'all') {
+                item.style.display = '';
+            } else if (type === 'unread') {
+                item.style.display = isRead ? 'none' : '';
+            } else {
+                item.style.display = isRead ? '' : 'none';
+            }
+        });
+    }
+
+    // Re-render feather icons
+    feather.replace();
+</script>
+{% endblock %}

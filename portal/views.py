@@ -612,6 +612,271 @@ def customer_landing_view(request):
 
 
 @login_required
+def contact_center_view(request):
+    """Customer account contact center with notifications, contacts, FAQs, and support."""
+
+    # Notifications
+    notifications = [
+        {
+            'id': 1, 'unread': True, 'category': 'invoice',
+            'icon': 'file-text', 'color': 'blue',
+            'title': 'March 2026 Settlement Statement Ready',
+            'message': 'Your March 2026 wholesale settlement statement has been finalized and is available for download. Total amount: $5,684,100.00.',
+            'time': '2 hours ago', 'date': 'Mar 25, 2026',
+        },
+        {
+            'id': 2, 'unread': True, 'category': 'payment',
+            'icon': 'credit-card', 'color': 'emerald',
+            'title': 'Payment Confirmation Received',
+            'message': 'Your payment of $5,123,400.00 for the February 2026 wholesale settlement has been received and applied to your account.',
+            'time': '1 day ago', 'date': 'Mar 24, 2026',
+        },
+        {
+            'id': 3, 'unread': True, 'category': 'alert',
+            'icon': 'alert-circle', 'color': 'amber',
+            'title': 'Adjustment Notice - January Pool Bill',
+            'message': 'A $38,200 adjustment has been applied to your January 2026 Pool Bill allocation. An updated statement is available for review.',
+            'time': '3 days ago', 'date': 'Mar 22, 2026',
+        },
+        {
+            'id': 4, 'unread': False, 'category': 'system',
+            'icon': 'settings', 'color': 'gray',
+            'title': 'Scheduled Maintenance - Apr 5',
+            'message': 'The Wholesale Settlement Portal will undergo scheduled maintenance on April 5, 2026 from 2:00 AM to 6:00 AM ET. Access may be intermittent during this window.',
+            'time': '5 days ago', 'date': 'Mar 20, 2026',
+        },
+        {
+            'id': 5, 'unread': False, 'category': 'invoice',
+            'icon': 'check-circle', 'color': 'emerald',
+            'title': 'February Settlement Approved',
+            'message': 'All February 2026 invoices have been reviewed and approved. Final statements are now available in the Invoices section.',
+            'time': '1 week ago', 'date': 'Mar 18, 2026',
+        },
+        {
+            'id': 6, 'unread': False, 'category': 'report',
+            'icon': 'bar-chart-2', 'color': 'purple',
+            'title': 'Q1 2026 Metrics Report Published',
+            'message': 'The Q1 2026 FCS settlement metrics report has been published. Adjustment rate trending at 0.42%, within target range.',
+            'time': '1 week ago', 'date': 'Mar 17, 2026',
+        },
+        {
+            'id': 7, 'unread': False, 'category': 'document',
+            'icon': 'paperclip', 'color': 'blue',
+            'title': 'New Supporting Documents Attached',
+            'message': '3 supporting documents have been attached to your Mississippi Power short-term invoice #INV-2026-02-0318.',
+            'time': '2 weeks ago', 'date': 'Mar 11, 2026',
+        },
+        {
+            'id': 8, 'unread': False, 'category': 'system',
+            'icon': 'shield', 'color': 'gray',
+            'title': 'Annual Security Review Completed',
+            'message': 'Your annual portal security review has been completed. No action is required. Your account credentials remain unchanged.',
+            'time': '3 weeks ago', 'date': 'Mar 4, 2026',
+        },
+    ]
+
+    # Contact directory
+    contacts = [
+        {
+            'name': 'Sarah Mitchell',
+            'title': 'Senior Account Manager',
+            'department': 'Financial & Contract Services',
+            'email': 'sarah.mitchell@southernco.com',
+            'phone': '(404) 506-2810',
+            'availability': 'Mon-Fri 8:00 AM - 5:00 PM ET',
+            'avatar_initials': 'SM',
+            'color': 'brand',
+            'primary': True,
+        },
+        {
+            'name': 'James Richardson',
+            'title': 'Settlement Analyst',
+            'department': 'Wholesale Settlement Operations',
+            'email': 'james.richardson@southernco.com',
+            'phone': '(404) 506-3145',
+            'availability': 'Mon-Fri 7:00 AM - 4:00 PM ET',
+            'avatar_initials': 'JR',
+            'color': 'blue',
+            'primary': False,
+        },
+        {
+            'name': 'Maria Chen',
+            'title': 'Billing Specialist',
+            'department': 'Revenue & Billing',
+            'email': 'maria.chen@southernco.com',
+            'phone': '(404) 506-4287',
+            'availability': 'Mon-Fri 8:30 AM - 5:30 PM ET',
+            'avatar_initials': 'MC',
+            'color': 'emerald',
+            'primary': False,
+        },
+        {
+            'name': 'Technical Support',
+            'title': 'Portal Help Desk',
+            'department': 'IT Service Desk',
+            'email': 'portal.support@southernco.com',
+            'phone': '(800) 555-0199',
+            'availability': '24/7 Support',
+            'avatar_initials': 'TS',
+            'color': 'purple',
+            'primary': False,
+        },
+    ]
+
+    # Support tickets
+    tickets = [
+        {
+            'id': 'TKT-2026-0347',
+            'subject': 'Invoice discrepancy on PPA Solar Fleet',
+            'status': 'open',
+            'priority': 'high',
+            'created': 'Mar 23, 2026',
+            'updated': '2 hours ago',
+            'assignee': 'James Richardson',
+        },
+        {
+            'id': 'TKT-2026-0312',
+            'subject': 'Request for historical data export (2023-2024)',
+            'status': 'in_progress',
+            'priority': 'medium',
+            'created': 'Mar 18, 2026',
+            'updated': '1 day ago',
+            'assignee': 'Maria Chen',
+        },
+        {
+            'id': 'TKT-2026-0298',
+            'subject': 'Unable to download Q4 2025 attachment',
+            'status': 'resolved',
+            'priority': 'low',
+            'created': 'Mar 12, 2026',
+            'updated': 'Mar 14, 2026',
+            'assignee': 'Technical Support',
+        },
+        {
+            'id': 'TKT-2026-0275',
+            'subject': 'Add new authorized user to portal access',
+            'status': 'resolved',
+            'priority': 'medium',
+            'created': 'Mar 5, 2026',
+            'updated': 'Mar 7, 2026',
+            'assignee': 'Sarah Mitchell',
+        },
+    ]
+
+    # FAQs
+    faqs = [
+        {
+            'category': 'Invoices & Billing',
+            'questions': [
+                {
+                    'q': 'When are monthly settlement invoices available?',
+                    'a': 'Monthly wholesale settlement invoices are typically finalized and available in the portal by the 5th business day of the following month. You will receive a notification when your statement is ready for review.',
+                },
+                {
+                    'q': 'How do I dispute a charge on my invoice?',
+                    'a': 'To dispute a charge, navigate to the specific invoice in the Invoices section, identify the line item in question, and submit a support ticket through the Contact Center. Please include the invoice number, line item ID, and a description of the discrepancy. Your account manager will respond within 2 business days.',
+                },
+                {
+                    'q': 'What payment methods are accepted?',
+                    'a': 'We accept ACH/wire transfers and electronic funds transfer (EFT). Payment details are included on each invoice. For new payment method setup, contact your account manager.',
+                },
+                {
+                    'q': 'How are adjustments handled?',
+                    'a': 'When an adjustment is necessary, a credit or debit memo will be issued against the original invoice. You will receive a notification with details about the adjustment. Adjustments are typically reflected in the next billing cycle.',
+                },
+            ],
+        },
+        {
+            'category': 'Account & Access',
+            'questions': [
+                {
+                    'q': 'How do I add new users to our portal account?',
+                    'a': 'To request additional user access, submit a ticket through the Contact Center or email your account manager. Include the new user\'s full name, email address, and the level of access required. New accounts are typically provisioned within 1-2 business days.',
+                },
+                {
+                    'q': 'How do I reset my password?',
+                    'a': 'Click "Forgot Password" on the login page, or contact the IT Service Desk at (800) 555-0199. For security purposes, password resets require identity verification.',
+                },
+                {
+                    'q': 'Can I customize my notification preferences?',
+                    'a': 'Yes. In a future portal release, you will be able to customize which notifications you receive via email and in-portal alerts. Currently, all account holders receive the standard notification set. Contact your account manager for specific notification requests.',
+                },
+            ],
+        },
+        {
+            'category': 'Reports & Data',
+            'questions': [
+                {
+                    'q': 'How do I export my invoice data?',
+                    'a': 'Navigate to the Invoices page and click the "Export CSV" button. The export will include all invoices matching your current filter selections. For custom data requests beyond what the portal offers, submit a ticket to your account manager.',
+                },
+                {
+                    'q': 'How far back does historical data go?',
+                    'a': 'The portal currently contains settlement data going back to January 2019. For data prior to 2019, please contact your account manager who can coordinate with the data management team.',
+                },
+                {
+                    'q': 'What is the capacity factor dashboard?',
+                    'a': 'The Capacity Factors page shows generation resource performance metrics, comparing actual output against budgeted generation. This data covers all resource types in the Southern Company fleet, including gas, coal, nuclear, solar, and hydro assets.',
+                },
+            ],
+        },
+    ]
+
+    # Help resources
+    help_resources = [
+        {
+            'icon': 'book-open',
+            'color': 'blue',
+            'title': 'User Guide',
+            'description': 'Complete portal navigation and feature documentation',
+            'link_text': 'View Guide',
+        },
+        {
+            'icon': 'video',
+            'color': 'purple',
+            'title': 'Video Tutorials',
+            'description': 'Step-by-step walkthrough videos for common tasks',
+            'link_text': 'Watch Tutorials',
+        },
+        {
+            'icon': 'download',
+            'color': 'emerald',
+            'title': 'Downloadable Resources',
+            'description': 'Rate schedules, contract templates, and reference docs',
+            'link_text': 'Browse Downloads',
+        },
+        {
+            'icon': 'file-text',
+            'color': 'amber',
+            'title': 'API Documentation',
+            'description': 'Technical docs for data integration and automation',
+            'link_text': 'View API Docs',
+        },
+    ]
+
+    # Notification summary
+    unread_count = sum(1 for n in notifications if n['unread'])
+    total_count = len(notifications)
+
+    # Ticket summary
+    open_tickets = sum(1 for t in tickets if t['status'] in ('open', 'in_progress'))
+    resolved_tickets = sum(1 for t in tickets if t['status'] == 'resolved')
+
+    return render(request, 'portal/contact_center.html', {
+        'notifications': notifications,
+        'contacts': contacts,
+        'tickets': tickets,
+        'faqs': faqs,
+        'help_resources': help_resources,
+        'unread_count': unread_count,
+        'total_count': total_count,
+        'open_tickets': open_tickets,
+        'resolved_tickets': resolved_tickets,
+        'page': 'contact_center',
+    })
+
+
+@login_required
 def blank_view(request):
     return render(request, 'portal/blank.html', {'page': 'blank'})
 
