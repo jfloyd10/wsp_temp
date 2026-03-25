@@ -525,7 +525,7 @@ def trading_analytics_view(request):
     group_counts = [r['issue_count'] for r in by_group]
 
     # Stacked bar chart: categories by month
-    all_categories = sorted(set(r['issue_category'] for r in category_by_month))
+    all_categories = sorted(set(r['issue_category'] for r in category_by_month if r['issue_category'] is not None))
     stacked_labels = []
     stacked_datasets = {cat: [] for cat in all_categories}
 
