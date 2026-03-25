@@ -35,7 +35,7 @@ Southern Company is a large utility holding company in the Southeast US. Its ret
 
 ## Database Schema (DuckDB)
 
-The DuckDB file contains **5 tables**. All data has already been consolidated from the various legacy source systems. The `source_system` and `source_type` columns identify where each record originated.
+The DuckDB file contains **8 tables**. All data has already been consolidated from the various legacy source systems. The `source_system` and `source_type` columns identify where each record originated.
 
 ### `invoice_header`
 
@@ -122,6 +122,58 @@ Generation resource performance data by operating company. Useful for operationa
 | `ac_capacity_factor` | DECIMAL | Actual capacity factor |
 | `bu_capacity_factor` | DECIMAL | Budget capacity factor |
 | `capacity_factor_variance` | DECIMAL | Actual − Budget variance |
+
+### `avg_interchange_rate`
+
+Average associated interchange rates by month. Used for tracking wholesale interchange pricing trends.
+
+| Column | Type | Description |
+|---|---|---|
+| `year` | INTEGER | Calendar year |
+| `month` | INTEGER | Calendar month (1–12) |
+| `dt` | TIMESTAMP | Date timestamp for the record |
+| `avg_associated_interchange_rate` | DECIMAL | Average interchange rate for the period |
+
+### `weather`
+
+Historical weather data including temperature and degree-day metrics. Useful for correlating energy demand with weather patterns.
+
+| Column | Type | Description |
+|---|---|---|
+| `dt` | TIMESTAMP | Date timestamp |
+| `year` | INTEGER | Calendar year |
+| `qtr` | INTEGER | Calendar quarter (1–4) |
+| `month` | INTEGER | Calendar month (1–12) |
+| `day` | INTEGER | Day of month |
+| `average_temp` | DECIMAL | Average temperature for the day |
+| `cooling_degree_days` | DECIMAL | Cooling degree days |
+| `heating_degree_days` | DECIMAL | Heating degree days |
+| `cooling_degree_hours` | DECIMAL | Cooling degree hours |
+| `heating_degree_hours` | DECIMAL | Heating degree hours |
+
+### `profit_and_loss_statement`
+
+Profit and loss statement data from various sources. Supports financial analysis across entities, categories, and allocation dimensions.
+
+| Column | Type | Description |
+|---|---|---|
+| `short_desc` | VARCHAR | Short description of the P&L entry |
+| `source` | VARCHAR | Data source identifier |
+| `year` | INTEGER | Calendar year |
+| `month` | INTEGER | Calendar month (1–12) |
+| `dt` | TIMESTAMP | Date timestamp |
+| `entity_class` | VARCHAR | Entity classification (e.g., operating company type) |
+| `entity_name` | VARCHAR | Entity name |
+| `covered_or_uncovered` | VARCHAR | Whether the item is covered or uncovered |
+| `allocation_name` | VARCHAR | Name of the cost allocation |
+| `category` | VARCHAR | P&L category |
+| `type` | VARCHAR | Entry type |
+| `subtype` | VARCHAR | Entry subtype |
+| `line_item` | VARCHAR | Specific line item description |
+| `legacy_subtype` | VARCHAR | Legacy system subtype mapping |
+| `tag` | VARCHAR | Additional classification tag |
+| `ledger` | VARCHAR | Ledger identifier |
+| `amount` | DECIMAL | Dollar amount |
 
 ---
 
@@ -353,6 +405,42 @@ FROM invoice_header
 WHERE 1=1;
   -- AND operating_company = ? (optional filter)
   -- AND counterparty_id = ?   (optional filter)
+
+-- Average interchange rates for a year
+SELECT * FROM avg_interchange_rate
+WHERE year = ?
+ORDER BY month;
+
+-- Weather data for a date range
+SELECT * FROM weather
+WHERE year = ? AND month = ?
+ORDER BY dt;
+
+-- Weather degree-day summary by month
+SELECT year, month,
+       AVG(average_temp) AS avg_temp,
+       SUM(cooling_degree_days) AS total_cdd,
+       SUM(heating_degree_days) AS total_hdd
+FROM weather
+WHERE year = ?
+GROUP BY year, month
+ORDER BY year, month;
+
+-- Profit & loss statement (with optional filters)
+SELECT * FROM profit_and_loss_statement
+WHERE 1=1
+  -- AND entity_name = ?           (optional filter)
+  -- AND category = ?              (optional filter)
+  -- AND covered_or_uncovered = ?  (optional filter)
+  AND year = ? AND month = ?
+ORDER BY entity_name, category, type, subtype;
+
+-- P&L summary by category
+SELECT category, type, SUM(amount) AS total_amount
+FROM profit_and_loss_statement
+WHERE year = ? AND month = ?
+GROUP BY category, type
+ORDER BY category, type;
 ```
 
 ---
