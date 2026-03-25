@@ -344,16 +344,13 @@ def profit_loss_view(request):
                 subtype_totals[cat][typ][sub] = sub_total
                 type_totals[cat][typ] += sub_total
 
-    # Summary metrics
+    # Summary metrics — dynamically sum revenue vs non-revenue categories
     total_revenue = category_totals.get('Revenue', 0)
-    total_cost_of_revenue = category_totals.get('Cost of Revenue', 0)
-    gross_margin = total_revenue + total_cost_of_revenue
-    total_opex = category_totals.get('Operating Expenses', 0)
-    operating_income = gross_margin + total_opex
-    total_other = category_totals.get('Other Income / (Expense)', 0)
-    net_income = operating_income + total_other
+    total_expenses = sum(v for k, v in category_totals.items() if k != 'Revenue')
+    net_income = total_revenue + total_expenses  # expenses are typically negative
+    gross_margin = net_income
     gross_margin_pct = (gross_margin / total_revenue * 100) if total_revenue else 0
-    operating_margin_pct = (operating_income / total_revenue * 100) if total_revenue else 0
+    operating_margin_pct = gross_margin_pct
     net_margin_pct = (net_income / total_revenue * 100) if total_revenue else 0
 
     # Monthly trend data (for charts)
@@ -370,27 +367,24 @@ def profit_loss_view(request):
     monthly_net = []
     monthly_gross_margin = []
 
-    # Group by year-month
+    # Group by year-month — dynamically handle whatever categories exist
     monthly_buckets = {}
     for row in monthly_trend:
         key = (row['year'], row['month'])
         if key not in monthly_buckets:
-            monthly_buckets[key] = {'Revenue': 0, 'Cost of Revenue': 0,
-                                     'Operating Expenses': 0, 'Other Income / (Expense)': 0}
+            monthly_buckets[key] = {}
         monthly_buckets[key][row['category']] = float(row['total_amount'])
 
     for (year, month) in sorted(monthly_buckets.keys()):
         bucket = monthly_buckets[(year, month)]
         label = f"{month_names[month]} {year}"
         monthly_labels.append(label)
-        rev = bucket['Revenue']
-        cor = bucket['Cost of Revenue']
-        opx = bucket['Operating Expenses']
-        oth = bucket['Other Income / (Expense)']
+        rev = bucket.get('Revenue', 0)
+        expenses = sum(v for k, v in bucket.items() if k != 'Revenue')
         monthly_revenue.append(round(rev, 2))
-        monthly_costs.append(round(abs(cor + opx), 2))
-        monthly_net.append(round(rev + cor + opx + oth, 2))
-        monthly_gross_margin.append(round(rev + cor, 2))
+        monthly_costs.append(round(abs(expenses), 2))
+        monthly_net.append(round(rev + expenses, 2))
+        monthly_gross_margin.append(round(rev + expenses, 2))
 
     chart_data = {
         'labels': monthly_labels,
@@ -416,14 +410,12 @@ def profit_loss_view(request):
     for year in yoy_years:
         year_data = {r['category']: float(r['total_amount']) for r in yoy_data if r['year'] == year}
         rev = year_data.get('Revenue', 0)
-        cor = year_data.get('Cost of Revenue', 0)
-        opx = year_data.get('Operating Expenses', 0)
-        oth = year_data.get('Other Income / (Expense)', 0)
+        expenses = sum(v for k, v in year_data.items() if k != 'Revenue')
         yoy_chart['revenue'].append(round(rev, 2))
-        yoy_chart['cost_of_revenue'].append(round(abs(cor), 2))
-        yoy_chart['operating_expenses'].append(round(abs(opx), 2))
-        yoy_chart['other'].append(round(oth, 2))
-        yoy_chart['net_income'].append(round(rev + cor + opx + oth, 2))
+        yoy_chart['cost_of_revenue'].append(round(abs(expenses), 2))
+        yoy_chart['operating_expenses'].append(0)
+        yoy_chart['other'].append(0)
+        yoy_chart['net_income'].append(round(rev + expenses, 2))
 
     # Entity comparison data
     entity_filters = {k: v for k, v in filters.items() if k != 'entity_name'}
@@ -442,8 +434,8 @@ def profit_loss_view(request):
         entity_chart['revenue'].append(round(rev, 2))
         entity_chart['net_income'].append(round(total, 2))
 
-    # Ordered categories for template rendering
-    category_order = ['Revenue', 'Cost of Revenue', 'Operating Expenses', 'Other Income / (Expense)']
+    # Ordered categories for template rendering — Revenue first, then others alphabetically
+    category_order = ['Revenue'] + sorted(k for k in statement_structure.keys() if k != 'Revenue')
 
     return render(request, 'portal/profit_loss.html', {
         'filter_options': filter_options,
@@ -454,11 +446,8 @@ def profit_loss_view(request):
         'subtype_totals': subtype_totals,
         'category_order': category_order,
         'total_revenue': total_revenue,
-        'total_cost_of_revenue': total_cost_of_revenue,
+        'total_expenses': total_expenses,
         'gross_margin': gross_margin,
-        'total_opex': total_opex,
-        'operating_income': operating_income,
-        'total_other': total_other,
         'net_income': net_income,
         'gross_margin_pct': gross_margin_pct,
         'operating_margin_pct': operating_margin_pct,

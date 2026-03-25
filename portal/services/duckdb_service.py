@@ -840,7 +840,7 @@ def get_pnl_filter_options() -> dict:
     try:
         conn = get_connection()
         result = {}
-        result['entity_names'] = [
+        result['entities'] = [
             r[0] for r in conn.execute(
                 "SELECT DISTINCT entity_name FROM profit_and_loss_statement ORDER BY entity_name"
             ).fetchall()
@@ -865,7 +865,7 @@ def get_pnl_filter_options() -> dict:
                 "SELECT DISTINCT category FROM profit_and_loss_statement ORDER BY category"
             ).fetchall()
         ]
-        result['covered_or_uncovered'] = [
+        result['covered_uncovered'] = [
             r[0] for r in conn.execute(
                 "SELECT DISTINCT covered_or_uncovered FROM profit_and_loss_statement ORDER BY covered_or_uncovered"
             ).fetchall()
@@ -875,8 +875,8 @@ def get_pnl_filter_options() -> dict:
     except Exception:
         logger.exception("Error fetching P&L filter options")
         return {
-            'entity_names': [], 'entity_classes': [], 'years': [],
-            'months': [], 'categories': [], 'covered_or_uncovered': [],
+            'entities': [], 'entity_classes': [], 'years': [],
+            'months': [], 'categories': [], 'covered_uncovered': [],
         }
 
 
