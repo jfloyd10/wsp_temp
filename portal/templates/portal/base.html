@@ -100,6 +100,11 @@
                     <i data-feather="file" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Blank</span>
                 </a>
+                <a href="{% url 'minipool' %}"
+                   class="sidebar-link {% if page == 'minipool' %}sidebar-link-active{% endif %}">
+                    <i data-feather="zap" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">MiniPool</span>
+                </a>
             </div>
         </nav>
 
