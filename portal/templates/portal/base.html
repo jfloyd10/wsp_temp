@@ -44,9 +44,9 @@
 
 <div class="flex min-h-screen">
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar sidebar-expanded">
-        <!-- Logo & Toggle -->
+    <!-- Fixed Sidebar -->
+    <aside class="sidebar">
+        <!-- Logo -->
         <div class="sidebar-header">
             <div class="sidebar-logo-area">
                 <img src="{% static 'portal/img/logo.svg' %}" alt="Company Logo"
@@ -55,31 +55,28 @@
                 <div style="display:none;" class="w-9 h-9 rounded-lg bg-brand-500 items-center justify-center text-white font-bold text-sm flex-shrink-0">SC</div>
                 <span class="sidebar-brand-text">Settlement Portal</span>
             </div>
-            <button id="sidebarToggle" class="sidebar-toggle-btn" title="Collapse sidebar">
-                <i data-feather="chevrons-left" class="sidebar-toggle-icon"></i>
-            </button>
         </div>
 
         <!-- Navigation -->
         <nav class="sidebar-nav">
             <div class="sidebar-nav-group">
                 <span class="sidebar-nav-label">Menu</span>
-                <a href="/dashboard/" data-tooltip="Dashboard"
+                <a href="/dashboard/"
                    class="sidebar-link {% if page == 'dashboard' %}sidebar-link-active{% endif %}">
                     <i data-feather="home" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Dashboard</span>
                 </a>
-                <a href="/invoices/" data-tooltip="Invoices"
+                <a href="/invoices/"
                    class="sidebar-link {% if page == 'invoices' %}sidebar-link-active{% endif %}">
                     <i data-feather="file-text" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Invoices</span>
                 </a>
-                <a href="/metrics/" data-tooltip="FCS Metrics"
+                <a href="/metrics/"
                    class="sidebar-link {% if page == 'metrics' %}sidebar-link-active{% endif %}">
                     <i data-feather="bar-chart-2" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">FCS Metrics</span>
                 </a>
-                <a href="/capacity/" data-tooltip="Capacity"
+                <a href="/capacity/"
                    class="sidebar-link {% if page == 'capacity' %}sidebar-link-active{% endif %}">
                     <i data-feather="activity" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Capacity</span>
@@ -108,16 +105,36 @@
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
     <!-- Main Content Area -->
-    <div id="mainContent" class="sidebar-main-content">
-        <!-- Top Bar (mobile) -->
-        <header class="sidebar-topbar">
-            <button id="mobileMenuBtn" class="sidebar-mobile-btn">
+    <div class="main-content">
+        <!-- Top Header Bar -->
+        <header class="topbar">
+            <!-- Mobile hamburger (shown only on small screens) -->
+            <button id="mobileMenuBtn" class="topbar-mobile-btn">
                 <i data-feather="menu" class="w-5 h-5"></i>
             </button>
-            <h1 class="text-sm font-semibold text-gray-700">Wholesale Settlement Portal</h1>
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                    <i data-feather="user" class="w-4 h-4 text-gray-500"></i>
+
+            <!-- Left spacer on desktop to balance the layout -->
+            <div class="topbar-left">
+                {% block topbar_left %}{% endblock %}
+            </div>
+
+            <!-- Right section: title + icons -->
+            <div class="topbar-right">
+                <h1 class="topbar-title">Wholesale Settlement Portal</h1>
+                <div class="topbar-divider"></div>
+                <button class="topbar-icon-btn" title="Notifications">
+                    <i data-feather="bell" class="w-[18px] h-[18px]"></i>
+                    <span class="topbar-notification-dot"></span>
+                </button>
+                <button class="topbar-icon-btn" title="Settings">
+                    <i data-feather="settings" class="w-[18px] h-[18px]"></i>
+                </button>
+                <div class="topbar-divider"></div>
+                <div class="topbar-user">
+                    <div class="topbar-user-avatar">
+                        <i data-feather="user" class="w-4 h-4"></i>
+                    </div>
+                    <span class="topbar-user-name">{{ user.username }}</span>
                 </div>
             </div>
         </header>
@@ -135,49 +152,22 @@
 <script>
     feather.replace();
 
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const sidebarToggle = document.getElementById('sidebarToggle');
+    // Mobile sidebar
+    const sidebar = document.querySelector('.sidebar');
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
-    const toggleIcon = sidebarToggle.querySelector('.sidebar-toggle-icon');
 
-    // Restore sidebar state from localStorage
-    const savedState = localStorage.getItem('sidebarCollapsed');
-    if (savedState === 'true') {
-        sidebar.classList.remove('sidebar-expanded');
-        sidebar.classList.add('sidebar-collapsed');
-    }
-
-    // Toggle sidebar (desktop)
-    sidebarToggle.addEventListener('click', () => {
-        const isExpanded = sidebar.classList.contains('sidebar-expanded');
-        if (isExpanded) {
-            sidebar.classList.remove('sidebar-expanded');
-            sidebar.classList.add('sidebar-collapsed');
-            localStorage.setItem('sidebarCollapsed', 'true');
-        } else {
-            sidebar.classList.remove('sidebar-collapsed');
-            sidebar.classList.add('sidebar-expanded');
-            localStorage.setItem('sidebarCollapsed', 'false');
-        }
-        feather.replace();
-    });
-
-    // Mobile menu open
     mobileMenuBtn.addEventListener('click', () => {
         sidebar.classList.add('sidebar-mobile-open');
         sidebarOverlay.classList.add('active');
     });
 
-    // Mobile menu close
     function closeMobileSidebar() {
         sidebar.classList.remove('sidebar-mobile-open');
         sidebarOverlay.classList.remove('active');
     }
     sidebarOverlay.addEventListener('click', closeMobileSidebar);
 
-    // Close mobile sidebar on nav click
     document.querySelectorAll('.sidebar-link').forEach(link => {
         link.addEventListener('click', () => {
             if (window.innerWidth < 1024) closeMobileSidebar();
