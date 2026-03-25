@@ -129,7 +129,9 @@
                 </div>
             </div>
             <div class="p-6">
-                <canvas id="settlementTrendChart" height="260"></canvas>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="settlementTrendChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -140,7 +142,9 @@
                 <p class="text-xs text-gray-500 mt-0.5">YTD settlement breakdown</p>
             </div>
             <div class="p-6 flex flex-col items-center">
-                <canvas id="settlementTypeChart" height="220"></canvas>
+                <div style="position: relative; height: 220px; width: 100%;">
+                    <canvas id="settlementTypeChart"></canvas>
+                </div>
                 <div class="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 w-full">
                     {% for label in settlement_by_type.labels %}
                     <div class="flex items-center gap-2">
@@ -225,7 +229,9 @@
                     <p class="text-xs text-gray-500 mt-0.5">YTD invoice distribution</p>
                 </div>
                 <div class="p-6 flex flex-col items-center">
-                    <canvas id="invoiceStatusChart" height="180"></canvas>
+                    <div style="position: relative; height: 180px; width: 100%;">
+                        <canvas id="invoiceStatusChart"></canvas>
+                    </div>
                     <div class="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 w-full">
                         {% for label in invoice_status.labels %}
                         <div class="flex items-center justify-between gap-2">
