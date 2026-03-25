@@ -121,8 +121,6 @@
                         <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustments</th>
                         <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Settled</th>
                         <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adj %</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Cumulative Adj</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Cumulative Total</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -135,8 +133,6 @@
                         <td class="px-6 py-4 text-sm text-right font-mono">{{ m.adjustments|currency }}</td>
                         <td class="px-6 py-4 text-sm text-right font-mono font-semibold">{{ m.total_settled|currency }}</td>
                         <td class="px-6 py-4 text-sm text-right font-mono">{{ m.adjustment_percent|percentage }}</td>
-                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-500 hidden lg:table-cell">{{ m.cumulative_adjustment|currency }}</td>
-                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-500 hidden lg:table-cell">{{ m.cumulative_total|currency }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
