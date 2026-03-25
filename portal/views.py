@@ -175,6 +175,183 @@ def capacity_view(request):
     })
 
 
+PNL_FILTER_KEYS = [
+    'entity_name', 'entity_class', 'year', 'month',
+    'category', 'covered_or_uncovered',
+]
+
+
+@login_required
+def profit_loss_view(request):
+    filters = _get_filters(request, PNL_FILTER_KEYS)
+    filter_options = duckdb_service.get_pnl_filter_options()
+
+    # Income statement data
+    income_statement = duckdb_service.get_pnl_income_statement(filters)
+
+    # Build structured income statement (category -> type -> subtype -> line_items)
+    statement_structure = {}
+    category_totals = {}
+    for row in income_statement:
+        cat = row['category']
+        typ = row['type']
+        sub = row['subtype']
+        amt = float(row['total_amount'])
+
+        if cat not in statement_structure:
+            statement_structure[cat] = {}
+            category_totals[cat] = 0
+        category_totals[cat] += amt
+
+        if typ not in statement_structure[cat]:
+            statement_structure[cat][typ] = {}
+        if sub not in statement_structure[cat][typ]:
+            statement_structure[cat][typ][sub] = []
+        statement_structure[cat][typ][sub].append({
+            'line_item': row['line_item'],
+            'amount': amt,
+        })
+
+    # Compute type and subtype totals
+    type_totals = {}
+    subtype_totals = {}
+    for cat, types in statement_structure.items():
+        type_totals[cat] = {}
+        subtype_totals[cat] = {}
+        for typ, subs in types.items():
+            type_totals[cat][typ] = 0
+            subtype_totals[cat][typ] = {}
+            for sub, items in subs.items():
+                sub_total = sum(i['amount'] for i in items)
+                subtype_totals[cat][typ][sub] = sub_total
+                type_totals[cat][typ] += sub_total
+
+    # Summary metrics
+    total_revenue = category_totals.get('Revenue', 0)
+    total_cost_of_revenue = category_totals.get('Cost of Revenue', 0)
+    gross_margin = total_revenue + total_cost_of_revenue
+    total_opex = category_totals.get('Operating Expenses', 0)
+    operating_income = gross_margin + total_opex
+    total_other = category_totals.get('Other Income / (Expense)', 0)
+    net_income = operating_income + total_other
+    gross_margin_pct = (gross_margin / total_revenue * 100) if total_revenue else 0
+    operating_margin_pct = (operating_income / total_revenue * 100) if total_revenue else 0
+    net_margin_pct = (net_income / total_revenue * 100) if total_revenue else 0
+
+    # Monthly trend data (for charts)
+    trend_filters = {k: v for k, v in filters.items() if k != 'month'}
+    monthly_trend = duckdb_service.get_pnl_monthly_trend(trend_filters)
+
+    month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    # Build chart data: monthly revenue, costs, net income
+    monthly_labels = []
+    monthly_revenue = []
+    monthly_costs = []
+    monthly_net = []
+    monthly_gross_margin = []
+
+    # Group by year-month
+    monthly_buckets = {}
+    for row in monthly_trend:
+        key = (row['year'], row['month'])
+        if key not in monthly_buckets:
+            monthly_buckets[key] = {'Revenue': 0, 'Cost of Revenue': 0,
+                                     'Operating Expenses': 0, 'Other Income / (Expense)': 0}
+        monthly_buckets[key][row['category']] = float(row['total_amount'])
+
+    for (year, month) in sorted(monthly_buckets.keys()):
+        bucket = monthly_buckets[(year, month)]
+        label = f"{month_names[month]} {year}"
+        monthly_labels.append(label)
+        rev = bucket['Revenue']
+        cor = bucket['Cost of Revenue']
+        opx = bucket['Operating Expenses']
+        oth = bucket['Other Income / (Expense)']
+        monthly_revenue.append(round(rev, 2))
+        monthly_costs.append(round(abs(cor + opx), 2))
+        monthly_net.append(round(rev + cor + opx + oth, 2))
+        monthly_gross_margin.append(round(rev + cor, 2))
+
+    chart_data = {
+        'labels': monthly_labels,
+        'revenue': monthly_revenue,
+        'costs': monthly_costs,
+        'net_income': monthly_net,
+        'gross_margin': monthly_gross_margin,
+    }
+
+    # YoY comparison data
+    yoy_filters = {k: v for k, v in filters.items() if k not in ('year', 'month')}
+    yoy_data = duckdb_service.get_pnl_yoy_comparison(yoy_filters)
+
+    yoy_years = sorted(set(r['year'] for r in yoy_data))
+    yoy_chart = {
+        'years': [str(y) for y in yoy_years],
+        'revenue': [],
+        'cost_of_revenue': [],
+        'operating_expenses': [],
+        'other': [],
+        'net_income': [],
+    }
+    for year in yoy_years:
+        year_data = {r['category']: float(r['total_amount']) for r in yoy_data if r['year'] == year}
+        rev = year_data.get('Revenue', 0)
+        cor = year_data.get('Cost of Revenue', 0)
+        opx = year_data.get('Operating Expenses', 0)
+        oth = year_data.get('Other Income / (Expense)', 0)
+        yoy_chart['revenue'].append(round(rev, 2))
+        yoy_chart['cost_of_revenue'].append(round(abs(cor), 2))
+        yoy_chart['operating_expenses'].append(round(abs(opx), 2))
+        yoy_chart['other'].append(round(oth, 2))
+        yoy_chart['net_income'].append(round(rev + cor + opx + oth, 2))
+
+    # Entity comparison data
+    entity_filters = {k: v for k, v in filters.items() if k != 'entity_name'}
+    entity_data = duckdb_service.get_pnl_entity_comparison(entity_filters)
+
+    entities = sorted(set(r['entity_name'] for r in entity_data))
+    entity_chart = {
+        'entities': entities,
+        'revenue': [],
+        'net_income': [],
+    }
+    for entity in entities:
+        ent_rows = {r['category']: float(r['total_amount']) for r in entity_data if r['entity_name'] == entity}
+        rev = ent_rows.get('Revenue', 0)
+        total = sum(ent_rows.values())
+        entity_chart['revenue'].append(round(rev, 2))
+        entity_chart['net_income'].append(round(total, 2))
+
+    # Ordered categories for template rendering
+    category_order = ['Revenue', 'Cost of Revenue', 'Operating Expenses', 'Other Income / (Expense)']
+
+    return render(request, 'portal/profit_loss.html', {
+        'filter_options': filter_options,
+        'active_filters': filters,
+        'statement_structure': statement_structure,
+        'category_totals': category_totals,
+        'type_totals': type_totals,
+        'subtype_totals': subtype_totals,
+        'category_order': category_order,
+        'total_revenue': total_revenue,
+        'total_cost_of_revenue': total_cost_of_revenue,
+        'gross_margin': gross_margin,
+        'total_opex': total_opex,
+        'operating_income': operating_income,
+        'total_other': total_other,
+        'net_income': net_income,
+        'gross_margin_pct': gross_margin_pct,
+        'operating_margin_pct': operating_margin_pct,
+        'net_margin_pct': net_margin_pct,
+        'chart_data': chart_data,
+        'yoy_chart': yoy_chart,
+        'entity_chart': entity_chart,
+        'page': 'profit_loss',
+    })
+
+
 @login_required
 def export_invoices_csv(request):
     filters = _get_filters(request, INVOICE_FILTER_KEYS)

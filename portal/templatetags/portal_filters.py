@@ -88,5 +88,23 @@ def month_name(value):
 def dictget(d, key):
     """Look up a key in a dictionary. Usage: {{ mydict|dictget:key }}"""
     if isinstance(d, dict):
-        return d.get(key, 0)
+        val = d.get(key)
+        return val if val is not None else 0
     return 0
+
+
+@register.filter
+def dictitems(d):
+    """Return sorted items of a dictionary for template iteration."""
+    if isinstance(d, dict):
+        return sorted(d.items())
+    return []
+
+
+@register.filter
+def abs_val(value):
+    """Return absolute value of a number."""
+    try:
+        return abs(float(value))
+    except (ValueError, TypeError):
+        return 0
