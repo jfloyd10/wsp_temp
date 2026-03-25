@@ -82,3 +82,11 @@ def month_name(value):
         return names[int(value)]
     except (ValueError, TypeError, IndexError):
         return str(value)
+
+
+@register.filter
+def dictget(d, key):
+    """Look up a key in a dictionary. Usage: {{ mydict|dictget:key }}"""
+    if isinstance(d, dict):
+        return d.get(key, 0)
+    return 0

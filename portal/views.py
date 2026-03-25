@@ -77,6 +77,33 @@ def invoices_view(request):
 
 
 @login_required
+def invoices_b_view(request):
+    """B-variant of invoices page for A/B testing."""
+    filters = _get_filters(request, INVOICE_FILTER_KEYS)
+    invoices = duckdb_service.get_invoices(filters)
+    filter_options = duckdb_service.get_filter_options()
+    total_amount = sum(float(inv.get('invoice_total', 0) or 0) for inv in invoices)
+
+    # Compute per-OpCo counts (ignoring the OpCo filter itself)
+    filters_no_opco = {k: v for k, v in filters.items() if k != 'operating_company'}
+    all_invoices_for_counts = duckdb_service.get_invoices(filters_no_opco)
+    opco_counts = {}
+    for inv in all_invoices_for_counts:
+        oc = inv.get('operating_company', '')
+        opco_counts[oc] = opco_counts.get(oc, 0) + 1
+
+    return render(request, 'portal/invoices_b.html', {
+        'invoices': invoices,
+        'filter_options': filter_options,
+        'active_filters': filters,
+        'total_amount': total_amount,
+        'opco_counts': opco_counts,
+        'total_count_all': len(all_invoices_for_counts),
+        'page': 'invoices',
+    })
+
+
+@login_required
 def invoice_detail_view(request, invoice_no):
     data = duckdb_service.get_invoice_detail(invoice_no)
     if not data['header']:
