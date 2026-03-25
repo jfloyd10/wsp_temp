@@ -293,6 +293,62 @@ def capacity_view(request):
     })
 
 
+@login_required
+def resource_detail_view(request, resource_id):
+    summary = duckdb_service.get_resource_summary(resource_id)
+    if not summary:
+        raise Http404("Resource not found")
+
+    history = duckdb_service.get_resource_monthly_history(resource_id)
+    annual = duckdb_service.get_resource_annual_summary(resource_id)
+
+    # Build chart data for monthly CF trends
+    chart_labels = []
+    ac_values = []
+    bu_values = []
+    variance_values = []
+    gen_values = []
+    budget_gen_values = []
+
+    for r in history:
+        month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        label = f"{month_names[r['month']]} {r['year']}"
+        chart_labels.append(label)
+        ac_values.append(float(r['ac_capacity_factor'] or 0))
+        bu_values.append(float(r['bu_capacity_factor'] or 0))
+        variance_values.append(float(r['capacity_factor_variance'] or 0))
+        gen_values.append(float(r['net_generation'] or 0))
+        budget_gen_values.append(float(r['budget_generation'] or 0))
+
+    chart_data = {
+        'labels': chart_labels,
+        'ac_values': ac_values,
+        'bu_values': bu_values,
+        'variance_values': variance_values,
+        'gen_values': gen_values,
+        'budget_gen_values': budget_gen_values,
+    }
+
+    # Annual chart data
+    annual_chart = {
+        'labels': [str(a['year']) for a in annual],
+        'avg_ac': [float(a['avg_ac'] or 0) for a in annual],
+        'avg_bu': [float(a['avg_bu'] or 0) for a in annual],
+        'total_gen': [float(a['total_gen'] or 0) for a in annual],
+        'total_budget_gen': [float(a['total_budget_gen'] or 0) for a in annual],
+    }
+
+    return render(request, 'portal/resource_detail.html', {
+        'summary': summary,
+        'history': history,
+        'annual': annual,
+        'chart_data': chart_data,
+        'annual_chart': annual_chart,
+        'page': 'capacity',
+    })
+
+
 PNL_FILTER_KEYS = [
     'entity_name', 'entity_class', 'year', 'month',
     'category', 'covered_or_uncovered',

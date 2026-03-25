@@ -108,3 +108,12 @@ def abs_val(value):
         return abs(float(value))
     except (ValueError, TypeError):
         return 0
+
+
+@register.filter
+def floatsub(value, arg):
+    """Subtract arg from value as floats."""
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return 0

@@ -611,6 +611,100 @@ def get_capacity_factors(filters: dict) -> list[dict]:
         return []
 
 
+def get_resource_summary(resource_id: str) -> dict | None:
+    """Return summary info for a single resource (latest record + aggregates)."""
+    try:
+        conn = get_connection()
+        row = conn.execute("""
+            SELECT resource_id, resource_name, resource_type, operating_company,
+                   ownership_share, total_rating_mw, rating_mw_share
+            FROM capacity_factors
+            WHERE resource_id = ?
+            ORDER BY year DESC, month DESC
+            LIMIT 1
+        """, [resource_id]).fetchone()
+        if not row:
+            conn.close()
+            return None
+        cols = ['resource_id', 'resource_name', 'resource_type', 'operating_company',
+                'ownership_share', 'total_rating_mw', 'rating_mw_share']
+        summary = dict(zip(cols, row))
+
+        agg = conn.execute("""
+            SELECT
+                AVG(ac_capacity_factor) AS avg_ac,
+                AVG(bu_capacity_factor) AS avg_bu,
+                AVG(capacity_factor_variance) AS avg_variance,
+                MAX(ac_capacity_factor) AS max_ac,
+                MIN(ac_capacity_factor) AS min_ac,
+                SUM(net_generation) AS total_gen,
+                SUM(budget_generation) AS total_budget_gen,
+                COUNT(*) AS record_count,
+                MIN(year) AS min_year,
+                MAX(year) AS max_year
+            FROM capacity_factors
+            WHERE resource_id = ?
+        """, [resource_id]).fetchone()
+        agg_cols = ['avg_ac', 'avg_bu', 'avg_variance', 'max_ac', 'min_ac',
+                     'total_gen', 'total_budget_gen', 'record_count', 'min_year', 'max_year']
+        summary.update(dict(zip(agg_cols, agg)))
+        conn.close()
+        return summary
+    except Exception:
+        logger.exception("Error fetching resource summary")
+        return None
+
+
+def get_resource_monthly_history(resource_id: str) -> list[dict]:
+    """Return all monthly records for a resource, ordered chronologically."""
+    try:
+        conn = get_connection()
+        rows = conn.execute("""
+            SELECT year, month, hours_in_month, total_rating_mw, rating_mw_share,
+                   total_net_generation, net_generation, budget_generation,
+                   total_mwh_possible, ac_capacity_factor, bu_capacity_factor,
+                   capacity_factor_variance, ownership_share
+            FROM capacity_factors
+            WHERE resource_id = ?
+            ORDER BY year, month
+        """, [resource_id]).fetchall()
+        columns = ['year', 'month', 'hours_in_month', 'total_rating_mw', 'rating_mw_share',
+                    'total_net_generation', 'net_generation', 'budget_generation',
+                    'total_mwh_possible', 'ac_capacity_factor', 'bu_capacity_factor',
+                    'capacity_factor_variance', 'ownership_share']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching resource monthly history")
+        return []
+
+
+def get_resource_annual_summary(resource_id: str) -> list[dict]:
+    """Return annual aggregates for a resource."""
+    try:
+        conn = get_connection()
+        rows = conn.execute("""
+            SELECT year,
+                   AVG(ac_capacity_factor) AS avg_ac,
+                   AVG(bu_capacity_factor) AS avg_bu,
+                   AVG(capacity_factor_variance) AS avg_variance,
+                   SUM(net_generation) AS total_gen,
+                   SUM(budget_generation) AS total_budget_gen,
+                   SUM(total_mwh_possible) AS total_possible
+            FROM capacity_factors
+            WHERE resource_id = ?
+            GROUP BY year
+            ORDER BY year
+        """, [resource_id]).fetchall()
+        columns = ['year', 'avg_ac', 'avg_bu', 'avg_variance',
+                    'total_gen', 'total_budget_gen', 'total_possible']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching resource annual summary")
+        return []
+
+
 def get_weather_monthly_summary(filters: dict) -> list[dict]:
     """Return monthly weather summary with avg temp and degree days."""
     try:
