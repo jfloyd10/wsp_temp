@@ -42,152 +42,169 @@
     <div class="loader"></div>
 </div>
 
-<!-- Header -->
-<header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-    <div class="relative flex items-center justify-between py-3 px-4">
+<div class="flex min-h-screen">
+
+    <!-- Fixed Sidebar -->
+    <aside class="sidebar">
         <!-- Logo -->
-        <div class="flex items-center gap-3">
-            <img src="{% static 'portal/img/logo.svg' %}" alt="Company Logo"
-                 class="ml-3 h-7 object-contain sm:inline" style="height:35px;"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div style="display:none;" class="w-9 h-9 rounded-lg bg-brand-500 items-center justify-center text-white font-bold text-sm flex-shrink-0">SC</div>
-        </div>
-
-        <!-- Centered Desktop Nav -->
-        <div class="hidden md:flex items-center space-x-2 md:absolute md:left-1/2 md:-translate-x-1/2">
-            <a href="/dashboard/"
-               class="nav-btn {% if page == 'dashboard' %}nav-active{% endif %} flex items-center px-4 py-2 rounded-lg font-medium hover:bg-transparent">
-                <i data-feather="home" class="mr-2 h-4 w-4"></i><span>Dashboard</span>
-            </a>
-            <a href="/invoices/"
-               class="nav-btn {% if page == 'invoices' %}nav-active{% endif %} flex items-center px-4 py-2 rounded-lg font-medium hover:bg-transparent">
-                <i data-feather="file-text" class="mr-2 h-4 w-4"></i><span>Invoices</span>
-            </a>
-            <a href="/metrics/"
-               class="nav-btn {% if page == 'metrics' %}nav-active{% endif %} flex items-center px-4 py-2 rounded-lg font-medium hover:bg-transparent">
-                <i data-feather="bar-chart-2" class="mr-2 h-4 w-4"></i><span>FCS&nbsp;Metrics</span>
-            </a>
-            <a href="/capacity/"
-               class="nav-btn {% if page == 'capacity' %}nav-active{% endif %} flex items-center px-4 py-2 rounded-lg font-medium hover:bg-transparent">
-                <i data-feather="activity" class="mr-2 h-4 w-4"></i><span>Capacity</span>
+        <div class="sidebar-header">
+            <a href="/dashboard/" class="sidebar-logo-link">
+                <img src="{% static 'portal/img/logo.svg' %}" alt="Southern Company"
+                     class="sidebar-logo-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display:none;" class="sidebar-logo-fallback">SC</div>
             </a>
         </div>
 
-        <!-- Right Controls -->
-        <div class="flex items-center space-x-4">
-            <h1 class="hidden lg:block text-sm font-medium text-gray-700 mr-4">
-                Wholesale Settlement Portal
-            </h1>
-            <div class="hidden md:flex items-center">
-                <div class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shadow-inner">
-                    <i data-feather="user"></i>
-                </div>
-                <span class="ml-2 font-medium">{{ user.username }}</span>
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+            <div class="sidebar-nav-group">
+                <span class="sidebar-nav-label">Main</span>
+                <a href="/dashboard/"
+                   class="sidebar-link {% if page == 'dashboard' %}sidebar-link-active{% endif %}">
+                    <i data-feather="home" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Dashboard</span>
+                </a>
+                <a href="/invoices/"
+                   class="sidebar-link {% if page == 'invoices' %}sidebar-link-active{% endif %}">
+                    <i data-feather="file-text" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Invoices</span>
+                </a>
+                <a href="/metrics/"
+                   class="sidebar-link {% if page == 'metrics' %}sidebar-link-active{% endif %}">
+                    <i data-feather="bar-chart-2" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">FCS Metrics</span>
+                </a>
+                <a href="/capacity/"
+                   class="sidebar-link {% if page == 'capacity' %}sidebar-link-active{% endif %}">
+                    <i data-feather="activity" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Capacity</span>
+                </a>
             </div>
-            <div class="relative">
-                <button id="userMenuBtn"
-                        class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
-                    <i data-feather="more-vertical"></i>
-                </button>
-                <div id="userMenuDropdown" class="dropdown-menu w-48 right-0">
-                    <a href="/logout/"
-                       class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center text-brand-500 transition-colors duration-200">
-                        <i data-feather="log-out" class="mr-2 h-4 w-4"></i><span>Logout</span>
-                    </a>
-                </div>
-            </div>
-            <!-- Mobile menu button -->
-            <button id="openMobileMenu"
-                    class="inline-flex md:hidden items-center p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
-                <i data-feather="menu"></i>
-            </button>
-        </div>
-    </div>
-</header>
+        </nav>
 
-<!-- Mobile Menu Overlay -->
-<div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm">
-    <div id="mobileMenu" class="fixed top-0 right-0 w-72 h-full bg-white transform translate-x-full transition-transform duration-300 ease-out shadow-2xl">
-        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-            <span class="font-semibold">Navigation</span>
-            <button id="closeMobileMenu" class="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100">
-                <i data-feather="x"></i>
-            </button>
-        </div>
-        <div class="flex flex-col p-4 space-y-2">
-            <a href="/dashboard/" class="flex items-center p-3 rounded-lg transition-colors duration-200 {% if page == 'dashboard' %}bg-brand-500 bg-opacity-10 text-brand-500{% else %}hover:bg-gray-100{% endif %}">
-                <i data-feather="home" class="mr-3"></i><span>Dashboard</span>
-            </a>
-            <a href="/invoices/" class="flex items-center p-3 rounded-lg transition-colors duration-200 {% if page == 'invoices' %}bg-brand-500 bg-opacity-10 text-brand-500{% else %}hover:bg-gray-100{% endif %}">
-                <i data-feather="file-text" class="mr-3"></i><span>Invoices</span>
-            </a>
-            <a href="/metrics/" class="flex items-center p-3 rounded-lg transition-colors duration-200 {% if page == 'metrics' %}bg-brand-500 bg-opacity-10 text-brand-500{% else %}hover:bg-gray-100{% endif %}">
-                <i data-feather="bar-chart-2" class="mr-3"></i><span>FCS Metrics</span>
-            </a>
-            <a href="/capacity/" class="flex items-center p-3 rounded-lg transition-colors duration-200 {% if page == 'capacity' %}bg-brand-500 bg-opacity-10 text-brand-500{% else %}hover:bg-gray-100{% endif %}">
-                <i data-feather="activity" class="mr-3"></i><span>Capacity Factors</span>
-            </a>
-            <div class="pt-6 mt-6 border-t border-gray-200">
-                <a href="/logout/" class="flex items-center p-3 rounded-lg hover:bg-gray-100 text-brand-500 transition-colors duration-200">
-                    <i data-feather="log-out" class="mr-3"></i><span>Logout</span>
+        <!-- User Section (bottom) -->
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar">
+                    {% if user.profile_image_url %}
+                        <img src="{{ user.profile_image_url }}" alt="{{ user.get_full_name|default:user.username }}" class="sidebar-avatar-img">
+                    {% else %}
+                        <span class="sidebar-avatar-initials">{{ user.first_name|default:user.username|make_list|first|upper }}{{ user.last_name|make_list|first|upper|default:"" }}</span>
+                    {% endif %}
+                </div>
+                <div class="sidebar-user-info">
+                    <p class="sidebar-user-name">{{ user.get_full_name|default:user.username }}</p>
+                    <p class="sidebar-user-role">Administrator</p>
+                </div>
+                <a href="/logout/" class="sidebar-logout-btn" title="Logout">
+                    <i data-feather="log-out" class="w-4 h-4"></i>
                 </a>
             </div>
         </div>
-        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
-            <div class="flex items-center">
-                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shadow-sm">
-                    <i data-feather="user"></i>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Top Header Bar -->
+        <header class="topbar">
+            <!-- Mobile hamburger -->
+            <button id="mobileMenuBtn" class="topbar-mobile-btn">
+                <i data-feather="menu" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Left section -->
+            <div class="topbar-left">
+                {% block topbar_left %}{% endblock %}
+            </div>
+
+            <!-- Right section -->
+            <div class="topbar-right">
+                <h1 class="topbar-title">Wholesale Settlement Portal</h1>
+                <div class="topbar-divider"></div>
+                <button class="topbar-icon-btn" title="Notifications">
+                    <i data-feather="bell" class="w-[18px] h-[18px]"></i>
+                    <span class="topbar-notification-dot"></span>
+                </button>
+                <button class="topbar-icon-btn" title="Help">
+                    <i data-feather="help-circle" class="w-[18px] h-[18px]"></i>
+                </button>
+                <div class="topbar-divider"></div>
+                <div class="topbar-user" id="topbarUserBtn">
+                    <div class="topbar-user-avatar">
+                        {% if user.profile_image_url %}
+                            <img src="{{ user.profile_image_url }}" alt="{{ user.get_full_name|default:user.username }}" class="topbar-avatar-img">
+                        {% else %}
+                            <span class="topbar-avatar-initials">{{ user.first_name|default:user.username|make_list|first|upper }}{{ user.last_name|make_list|first|upper|default:"" }}</span>
+                        {% endif %}
+                    </div>
+                    <span class="topbar-user-name">{{ user.get_full_name|default:user.username }}</span>
+                    <i data-feather="chevron-down" class="topbar-user-chevron"></i>
                 </div>
-                <div class="ml-3">
-                    <p class="font-medium">{{ user.username }}</p>
-                    <p class="text-xs text-gray-500">Settlement Portal</p>
+                <!-- User dropdown -->
+                <div id="topbarUserDropdown" class="dropdown-menu topbar-user-dropdown">
+                    <div class="dropdown-header">
+                        <p class="dropdown-header-name">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="dropdown-header-email">{{ user.email|default:"admin@southernco.com" }}</p>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="/logout/" class="dropdown-item dropdown-item-danger">
+                        <i data-feather="log-out" class="w-4 h-4"></i>
+                        <span>Sign out</span>
+                    </a>
                 </div>
             </div>
-        </div>
+        </header>
+
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+
+        <!-- Footer -->
+        <footer class="border-t border-gray-200 bg-white py-6 text-center">
+            <p class="text-xs text-gray-400">Wholesale Settlement Portal &mdash; Demo &bull; Southern Company &copy; 2025</p>
+        </footer>
     </div>
 </div>
-
-<!-- Main Content -->
-{% block content %}{% endblock %}
-
-<!-- Footer -->
-<footer class="border-t border-gray-200 bg-white py-6 text-center">
-    <p class="text-xs text-gray-400">Wholesale Settlement Portal &mdash; Demo &bull; Southern Company &copy; 2025</p>
-</footer>
 
 <script>
     feather.replace();
 
-    // User menu dropdown
-    const userMenuBtn = document.getElementById('userMenuBtn');
-    const userMenuDropdown = document.getElementById('userMenuDropdown');
-    if (userMenuBtn) {
-        userMenuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            userMenuDropdown.classList.toggle('show');
-        });
-        document.addEventListener('click', () => userMenuDropdown.classList.remove('show'));
-    }
+    // Mobile sidebar
+    const sidebar = document.querySelector('.sidebar');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-    // Mobile menu
-    const openMobile = document.getElementById('openMobileMenu');
-    const closeMobile = document.getElementById('closeMobileMenu');
-    const overlay = document.getElementById('mobileOverlay');
-    const mobileMenu = document.getElementById('mobileMenu');
-    if (openMobile) {
-        openMobile.addEventListener('click', () => {
-            overlay.classList.remove('opacity-0', 'pointer-events-none');
-            overlay.classList.add('opacity-100');
-            mobileMenu.classList.remove('translate-x-full');
+    mobileMenuBtn.addEventListener('click', () => {
+        sidebar.classList.add('sidebar-mobile-open');
+        sidebarOverlay.classList.add('active');
+    });
+
+    function closeMobileSidebar() {
+        sidebar.classList.remove('sidebar-mobile-open');
+        sidebarOverlay.classList.remove('active');
+    }
+    sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 1024) closeMobileSidebar();
         });
+    });
+
+    // Topbar user dropdown
+    const topbarUserBtn = document.getElementById('topbarUserBtn');
+    const topbarUserDropdown = document.getElementById('topbarUserDropdown');
+    if (topbarUserBtn) {
+        topbarUserBtn.style.cursor = 'pointer';
+        topbarUserBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            topbarUserDropdown.classList.toggle('show');
+        });
+        document.addEventListener('click', () => topbarUserDropdown.classList.remove('show'));
     }
-    function closeMobileNav() {
-        overlay.classList.add('opacity-0', 'pointer-events-none');
-        overlay.classList.remove('opacity-100');
-        mobileMenu.classList.add('translate-x-full');
-    }
-    if (closeMobile) closeMobile.addEventListener('click', closeMobileNav);
-    if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) closeMobileNav(); });
 
     // Loading overlay
     window.addEventListener('load', () => {
