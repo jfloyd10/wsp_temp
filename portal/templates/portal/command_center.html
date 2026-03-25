@@ -1,0 +1,639 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+
+{% block title %}Executive Command Center — Wholesale Settlement Portal{% endblock %}
+
+{% block content %}
+<div class="px-6 py-5 space-y-5">
+
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Executive Command Center</h1>
+            <p class="text-sm text-gray-500 mt-0.5">Real-time fleet operations, market conditions & financial position</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-xs font-semibold text-emerald-700">LIVE</span>
+            </div>
+            <span class="text-xs text-gray-400">Last updated: {{ current_time }}</span>
+        </div>
+    </div>
+
+    <!-- Row 1: KPI Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {% for kpi in kpis %}
+        <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center {{ kpi.bg_class }}">
+                    <i data-feather="{{ kpi.icon }}" class="w-4 h-4 {{ kpi.icon_class }}"></i>
+                </div>
+                <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ kpi.label }}</span>
+            </div>
+            <p class="text-xl font-bold text-gray-900">{{ kpi.value }}</p>
+            <div class="flex items-center gap-1 mt-1">
+                {% if kpi.trend == 'up' %}
+                <i data-feather="trending-up" class="w-3 h-3 text-emerald-500"></i>
+                <span class="text-xs font-medium text-emerald-600">{{ kpi.change }}</span>
+                {% elif kpi.trend == 'down' %}
+                <i data-feather="trending-down" class="w-3 h-3 text-red-500"></i>
+                <span class="text-xs font-medium text-red-600">{{ kpi.change }}</span>
+                {% else %}
+                <i data-feather="minus" class="w-3 h-3 text-gray-400"></i>
+                <span class="text-xs font-medium text-gray-500">{{ kpi.change }}</span>
+                {% endif %}
+                <span class="text-xs text-gray-400">vs last month</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Row 2: Fleet Status + Generation Mix + System Load -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Fleet Generation Status (Gauges) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Fleet Generation Status</h2>
+                <span class="text-xs text-gray-400">Current hour</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                {% for unit in fleet_units %}
+                <div class="text-center">
+                    <div class="relative w-24 h-24 mx-auto">
+                        <canvas id="gauge-{{ forloop.counter }}" width="96" height="96"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-lg font-bold text-gray-900">{{ unit.output_pct }}%</span>
+                            <span class="text-[10px] text-gray-400">{{ unit.output_mw }} MW</span>
+                        </div>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-800 mt-1.5">{{ unit.name }}</p>
+                    <div class="flex items-center justify-center gap-1 mt-0.5">
+                        <span class="w-1.5 h-1.5 rounded-full {{ unit.status_color }}"></span>
+                        <span class="text-[10px] text-gray-500">{{ unit.fuel }} &middot; {{ unit.capacity_mw }} MW</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- Fleet Summary Bar -->
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+                    <span>Total Fleet Output</span>
+                    <span class="font-semibold text-gray-900">{{ fleet_total_mw|floatformat:0 }} MW / {{ fleet_capacity_mw|floatformat:0 }} MW</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                    <div class="h-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-1000" style="width: {{ fleet_utilization_pct }}%"></div>
+                </div>
+                <p class="text-xs text-gray-400 mt-1 text-right">{{ fleet_utilization_pct }}% fleet utilization</p>
+            </div>
+        </div>
+
+        <!-- Generation Mix Donut + Market Prices -->
+        <div class="lg:col-span-3 space-y-5">
+            <!-- Generation Mix -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">Generation Mix</h2>
+                <div class="relative" style="height: 180px;">
+                    <canvas id="genMixChart"></canvas>
+                </div>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1 mt-3">
+                    {% for item in gen_mix %}
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background: {{ item.color }};"></span>
+                        <span class="text-xs text-gray-600">{{ item.fuel }}</span>
+                        <span class="text-xs font-semibold text-gray-900 ml-auto">{{ item.pct }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Market Snapshot -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">Market Snapshot</h2>
+                <div class="space-y-3">
+                    {% for mkt in market_data %}
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-lg {{ mkt.bg_class }} flex items-center justify-center">
+                                <i data-feather="{{ mkt.icon }}" class="w-3.5 h-3.5 {{ mkt.icon_class }}"></i>
+                            </div>
+                            <span class="text-xs text-gray-600">{{ mkt.label }}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-gray-900">{{ mkt.value }}</span>
+                            <span class="text-[10px] ml-1 {{ mkt.change_class }}">{{ mkt.change }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- System Load Curve -->
+        <div class="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">System Load Curve</h2>
+                <div class="flex items-center gap-3 text-[10px]">
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-brand-500 rounded-full"></span> Actual</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-gray-300 rounded-full border border-dashed border-gray-400"></span> Forecast</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-amber-400 rounded-full"></span> Day Ahead</span>
+                </div>
+            </div>
+            <div style="height: 280px;">
+                <canvas id="loadCurveChart"></canvas>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mt-3 pt-3 border-t border-gray-100">
+                <div class="text-center">
+                    <p class="text-[10px] text-gray-400 uppercase">Peak</p>
+                    <p class="text-sm font-bold text-gray-900">{{ peak_load }} MW</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-[10px] text-gray-400 uppercase">Current</p>
+                    <p class="text-sm font-bold text-brand-500">{{ current_load }} MW</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-[10px] text-gray-400 uppercase">Min</p>
+                    <p class="text-sm font-bold text-gray-900">{{ min_load }} MW</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Weather + Financial Pipeline + Risk Alerts -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Weather Across Service Territory -->
+        <div class="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Service Territory Weather</h2>
+            <div class="space-y-3">
+                {% for w in weather_data %}
+                <div class="rounded-xl p-3 {{ w.bg_gradient }}">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900">{{ w.city }}</p>
+                            <p class="text-[10px] text-gray-500">{{ w.opco }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-gray-900">{{ w.temp }}&deg;F</p>
+                            <p class="text-[10px] text-gray-500">{{ w.condition }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-2">
+                        <div class="flex items-center gap-1">
+                            <i data-feather="droplet" class="w-3 h-3 text-blue-400"></i>
+                            <span class="text-[10px] text-gray-500">{{ w.humidity }}%</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i data-feather="wind" class="w-3 h-3 text-gray-400"></i>
+                            <span class="text-[10px] text-gray-500">{{ w.wind }} mph</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i data-feather="thermometer" class="w-3 h-3 text-orange-400"></i>
+                            <span class="text-[10px] text-gray-500">CDD: {{ w.cdd }}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i data-feather="thermometer" class="w-3 h-3 text-blue-400"></i>
+                            <span class="text-[10px] text-gray-500">HDD: {{ w.hdd }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- Degree Day Trend Mini Chart -->
+            <div class="mt-4 pt-3 border-t border-gray-100">
+                <p class="text-[10px] text-gray-400 uppercase mb-2">Monthly Degree Days (12-mo)</p>
+                <div style="height: 80px;">
+                    <canvas id="degreeDayChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settlement Pipeline -->
+        <div class="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Settlement Pipeline</h2>
+            <!-- Pipeline Funnel -->
+            <div class="space-y-2">
+                {% for stage in pipeline_stages %}
+                <div>
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="text-gray-600 font-medium">{{ stage.label }}</span>
+                        <span class="font-semibold text-gray-900">{{ stage.count }} invoices &middot; {{ stage.amount }}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3">
+                        <div class="h-3 rounded-full {{ stage.bar_class }} transition-all duration-700" style="width: {{ stage.pct }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- Budget vs Actual -->
+            <div class="mt-5 pt-4 border-t border-gray-100">
+                <h3 class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">YTD Budget vs Actual</h3>
+                <div style="height: 140px;">
+                    <canvas id="budgetChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Alerts + Data Platform Health -->
+        <div class="lg:col-span-4 space-y-5">
+            <!-- Risk Alerts -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Active Alerts</h2>
+                    <span class="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px] font-bold">{{ alerts|length }}</span>
+                </div>
+                <div class="space-y-2 max-h-48 overflow-y-auto">
+                    {% for alert in alerts %}
+                    <div class="flex items-start gap-2.5 p-2.5 rounded-xl {{ alert.bg_class }} border {{ alert.border_class }}">
+                        <div class="w-6 h-6 rounded-lg {{ alert.icon_bg }} flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-feather="{{ alert.icon }}" class="w-3 h-3 {{ alert.icon_color }}"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-gray-900">{{ alert.title }}</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">{{ alert.detail }}</p>
+                            <p class="text-[10px] {{ alert.time_class }} font-medium mt-1">{{ alert.time }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Data Platform Health -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">Data Platform Health</h2>
+                <div class="space-y-2.5">
+                    {% for src in source_systems %}
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full {{ src.status_bg }} flex items-center justify-center flex-shrink-0">
+                            <i data-feather="{{ src.status_icon }}" class="w-3 h-3 {{ src.status_icon_color }}"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-gray-800">{{ src.name }}</span>
+                                <span class="text-[10px] text-gray-400">{{ src.records }} records</span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-1 mt-1">
+                                <div class="h-1 rounded-full {{ src.bar_class }}" style="width: {{ src.freshness_pct }}%"></div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] {{ src.freshness_class }} font-medium whitespace-nowrap">{{ src.last_sync }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[10px] text-gray-400">9 source systems consolidated</span>
+                    <span class="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                        <i data-feather="check-circle" class="w-3 h-3"></i> All systems nominal
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 4: Operating Company Comparison + Settlement Heatmap -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Operating Company Performance -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Operating Company Performance</h2>
+            <div style="height: 220px;">
+                <canvas id="opcoChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Settlement Heatmap (Month x Category) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Monthly Settlement Heatmap</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-[10px]">
+                    <thead>
+                        <tr>
+                            <th class="text-left text-gray-400 font-medium pb-2 pr-2">Source</th>
+                            {% for m in heatmap_months %}
+                            <th class="text-center text-gray-400 font-medium pb-2 px-1">{{ m }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in heatmap_data %}
+                        <tr>
+                            <td class="text-gray-700 font-medium py-1 pr-2 whitespace-nowrap">{{ row.label }}</td>
+                            {% for cell in row.cells %}
+                            <td class="py-1 px-1">
+                                <div class="w-full h-7 rounded flex items-center justify-center font-semibold {{ cell.class }}" title="{{ cell.tooltip }}">
+                                    {{ cell.display }}
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex items-center justify-center gap-2 mt-3 pt-2 border-t border-gray-100">
+                <span class="text-[10px] text-gray-400">Low</span>
+                <div class="flex gap-0.5">
+                    <span class="w-5 h-3 rounded-sm bg-emerald-100"></span>
+                    <span class="w-5 h-3 rounded-sm bg-emerald-200"></span>
+                    <span class="w-5 h-3 rounded-sm bg-emerald-300"></span>
+                    <span class="w-5 h-3 rounded-sm bg-emerald-400"></span>
+                    <span class="w-5 h-3 rounded-sm bg-emerald-500"></span>
+                    <span class="w-5 h-3 rounded-sm bg-emerald-600"></span>
+                </div>
+                <span class="text-[10px] text-gray-400">High ($M)</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+// ========== Gauge Charts ==========
+const gaugeData = {{ gauge_data_json|safe }};
+gaugeData.forEach((unit, idx) => {
+    const canvas = document.getElementById('gauge-' + (idx + 1));
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const pct = unit.pct / 100;
+    const cx = 48, cy = 52, r = 38;
+    const startAngle = 0.75 * Math.PI;
+    const endAngle = 2.25 * Math.PI;
+    const sweepAngle = endAngle - startAngle;
+
+    // Background arc
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Value arc
+    const valEnd = startAngle + sweepAngle * pct;
+    const grad = ctx.createLinearGradient(0, 0, 96, 96);
+    if (pct >= 0.7) {
+        grad.addColorStop(0, '#10b981');
+        grad.addColorStop(1, '#059669');
+    } else if (pct >= 0.4) {
+        grad.addColorStop(0, '#f59e0b');
+        grad.addColorStop(1, '#d97706');
+    } else {
+        grad.addColorStop(0, '#ef4444');
+        grad.addColorStop(1, '#dc2626');
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, startAngle, valEnd);
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = grad;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+});
+
+// ========== Generation Mix Donut ==========
+const genMixCtx = document.getElementById('genMixChart').getContext('2d');
+new Chart(genMixCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ gen_mix_labels|safe }},
+        datasets: [{
+            data: {{ gen_mix_values|safe }},
+            backgroundColor: {{ gen_mix_colors|safe }},
+            borderWidth: 0,
+            hoverOffset: 6
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ctx.label + ': ' + ctx.parsed + '%'
+                }
+            }
+        }
+    }
+});
+
+// ========== System Load Curve ==========
+const loadCtx = document.getElementById('loadCurveChart').getContext('2d');
+const loadLabels = {{ load_labels|safe }};
+const actualLoad = {{ load_actual|safe }};
+const forecastLoad = {{ load_forecast|safe }};
+const dayAheadLoad = {{ load_day_ahead|safe }};
+
+new Chart(loadCtx, {
+    type: 'line',
+    data: {
+        labels: loadLabels,
+        datasets: [
+            {
+                label: 'Actual',
+                data: actualLoad,
+                borderColor: '#EC1C24',
+                backgroundColor: 'rgba(236,28,36,0.08)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 2.5,
+                pointRadius: 0,
+                pointHoverRadius: 4
+            },
+            {
+                label: 'Day Ahead',
+                data: dayAheadLoad,
+                borderColor: '#f59e0b',
+                borderWidth: 1.5,
+                borderDash: [],
+                tension: 0.4,
+                pointRadius: 0,
+                fill: false
+            },
+            {
+                label: 'Forecast',
+                data: forecastLoad,
+                borderColor: '#9ca3af',
+                borderWidth: 1.5,
+                borderDash: [5, 5],
+                tension: 0.4,
+                pointRadius: 0,
+                fill: false
+            }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(17,24,39,0.9)',
+                padding: 10,
+                cornerRadius: 8,
+                titleFont: { size: 11 },
+                bodyFont: { size: 11 },
+                callbacks: {
+                    label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString() + ' MW'
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { font: { size: 9 }, color: '#9ca3af', maxTicksLimit: 12 }
+            },
+            y: {
+                grid: { color: '#f1f5f9' },
+                ticks: {
+                    font: { size: 9 }, color: '#9ca3af',
+                    callback: v => (v/1000).toFixed(0) + 'k'
+                }
+            }
+        }
+    }
+});
+
+// ========== Degree Day Chart ==========
+const ddCtx = document.getElementById('degreeDayChart').getContext('2d');
+new Chart(ddCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ dd_labels|safe }},
+        datasets: [
+            {
+                label: 'CDD',
+                data: {{ dd_cdd|safe }},
+                backgroundColor: '#f97316',
+                borderRadius: 2
+            },
+            {
+                label: 'HDD',
+                data: {{ dd_hdd|safe }},
+                backgroundColor: '#3b82f6',
+                borderRadius: 2
+            }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { stacked: true, grid: { display: false }, ticks: { font: { size: 8 }, color: '#9ca3af' } },
+            y: { stacked: true, display: false }
+        }
+    }
+});
+
+// ========== Budget vs Actual ==========
+const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+new Chart(budgetCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ budget_labels|safe }},
+        datasets: [
+            {
+                label: 'Budget',
+                data: {{ budget_values|safe }},
+                backgroundColor: '#e2e8f0',
+                borderRadius: 4,
+                barPercentage: 0.6
+            },
+            {
+                label: 'Actual',
+                data: {{ actual_values|safe }},
+                backgroundColor: function(ctx) {
+                    const budgetVal = {{ budget_values|safe }}[ctx.dataIndex];
+                    return ctx.raw > budgetVal ? '#ef4444' : '#10b981';
+                },
+                borderRadius: 4,
+                barPercentage: 0.6
+            }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 9 }, boxWidth: 12, padding: 8 }
+            },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ctx.dataset.label + ': $' + (ctx.parsed.y / 1e6).toFixed(1) + 'M'
+                }
+            }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#9ca3af' } },
+            y: {
+                grid: { color: '#f1f5f9' },
+                ticks: {
+                    font: { size: 9 }, color: '#9ca3af',
+                    callback: v => '$' + (v / 1e6).toFixed(0) + 'M'
+                }
+            }
+        }
+    }
+});
+
+// ========== Operating Company Comparison ==========
+const opcoCtx = document.getElementById('opcoChart').getContext('2d');
+new Chart(opcoCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ opco_labels|safe }},
+        datasets: [
+            {
+                label: 'Georgia Power',
+                data: {{ opco_ga|safe }},
+                backgroundColor: '#EC1C24',
+                borderRadius: 3,
+                barPercentage: 0.7
+            },
+            {
+                label: 'Alabama Power',
+                data: {{ opco_al|safe }},
+                backgroundColor: '#3b82f6',
+                borderRadius: 3,
+                barPercentage: 0.7
+            },
+            {
+                label: 'Mississippi Power',
+                data: {{ opco_ms|safe }},
+                backgroundColor: '#10b981',
+                borderRadius: 3,
+                barPercentage: 0.7
+            }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 10 }, boxWidth: 12, padding: 12, usePointStyle: true, pointStyle: 'rectRounded' }
+            },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ctx.dataset.label + ': $' + (ctx.parsed.y / 1e6).toFixed(1) + 'M'
+                }
+            }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#6b7280' } },
+            y: {
+                grid: { color: '#f1f5f9' },
+                ticks: {
+                    font: { size: 10 }, color: '#6b7280',
+                    callback: v => '$' + (v / 1e6).toFixed(0) + 'M'
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
