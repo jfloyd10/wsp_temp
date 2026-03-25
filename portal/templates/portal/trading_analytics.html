@@ -1,0 +1,444 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+
+{% block title %}Trading Analytics - Wholesale Settlement Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-white border-b border-gray-100">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-8">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                        <i data-feather="alert-triangle" class="w-5 h-5 text-amber-500"></i>
+                    </div>
+                    <span class="text-gray-400 text-sm font-medium uppercase tracking-wider">Analytics</span>
+                </div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Trader Issue Monitoring</h1>
+                <p class="text-gray-500 text-lg">Deal classification and tagging error analysis</p>
+            </div>
+            <div class="mt-4 lg:mt-0">
+                <form method="get" class="flex flex-wrap items-center gap-3">
+                    <select name="trading_group"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                        <option value="">All Desks</option>
+                        {% for g in filter_options.trading_groups %}
+                        <option value="{{ g }}" {% if active_filters.trading_group == g %}selected{% endif %}>{{ g }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="employee_name"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                        <option value="">All Traders</option>
+                        {% for e in filter_options.employees %}
+                        <option value="{{ e }}" {% if active_filters.employee_name == e %}selected{% endif %}>{{ e }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="issue_category"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                        <option value="">All Categories</option>
+                        {% for c in filter_options.issue_categories %}
+                        <option value="{{ c }}" {% if active_filters.issue_category == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="year"
+                            class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                        <option value="">All Years</option>
+                        {% for y in filter_options.years %}
+                        <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit"
+                            class="btn-brand py-2 px-4 rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                        Apply
+                    </button>
+                    {% if active_filters %}
+                    <a href="{% url 'trading_analytics' %}" class="py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-600 transition-all">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                        <i data-feather="alert-circle" class="w-5 h-5 text-brand-500"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Total</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_issues|format_number }}</p>
+                <p class="text-sm text-gray-500 mt-1">Issues Logged</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i data-feather="users" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Traders</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ unique_traders }}</p>
+                <p class="text-sm text-gray-500 mt-1">Unique Traders with Issues</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
+                        <i data-feather="hash" class="w-5 h-5 text-violet-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Deals</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ unique_deals }}</p>
+                <p class="text-sm text-gray-500 mt-1">Unique Deals Affected</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                        <i data-feather="tag" class="w-5 h-5 text-amber-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Top Category</span>
+                </div>
+                <p class="text-xl lg:text-2xl font-bold text-gray-900 truncate" title="{{ top_category }}">{{ top_category }}</p>
+                <p class="text-sm text-gray-500 mt-1">{{ top_category_count }} occurrences</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {% if issues %}
+    <!-- Charts Row 1: Trend + Category Breakdown -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="dashboard-card bg-white rounded-2xl p-5">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="font-bold text-lg">Monthly Issue Trend</h2>
+            </div>
+            <div class="h-72 chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+        <div class="dashboard-card bg-white rounded-2xl p-5">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="font-bold text-lg">Issues by Category</h2>
+            </div>
+            <div class="h-72 chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: By Desk + Stacked Categories by Month -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="dashboard-card bg-white rounded-2xl p-5">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="font-bold text-lg">Issues by Trading Desk</h2>
+            </div>
+            <div class="h-72 chart-container">
+                <canvas id="groupChart"></canvas>
+            </div>
+        </div>
+        <div class="dashboard-card bg-white rounded-2xl p-5">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="font-bold text-lg">Category Breakdown by Month</h2>
+            </div>
+            <div class="h-72 chart-container">
+                <canvas id="stackedChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Leaderboard -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-semibold text-gray-900">Issues by Trader</h2>
+                    <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ by_employee|length }}</span>
+                </div>
+            </div>
+            <div class="overflow-y-auto" style="max-height: 400px;">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50/50 sticky top-0">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Trader</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Desk</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Issues</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for emp in by_employee %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-3 text-sm font-medium text-gray-900">{{ emp.employee_name }}</td>
+                            <td class="px-6 py-3">
+                                <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ emp.trading_group }}</span>
+                            </td>
+                            <td class="px-6 py-3 text-sm text-right">
+                                <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-bold
+                                    {% if emp.issue_count >= 10 %}bg-red-100 text-red-700
+                                    {% elif emp.issue_count >= 5 %}bg-amber-100 text-amber-700
+                                    {% else %}bg-emerald-100 text-emerald-700{% endif %}">
+                                    {{ emp.issue_count }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Category Summary -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-semibold text-gray-900">Category Summary</h2>
+                    <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ by_category|length }}</span>
+                </div>
+            </div>
+            <div class="p-6 space-y-4">
+                {% for cat in by_category %}
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium text-gray-700">{{ cat.issue_category }}</span>
+                        <span class="text-sm font-bold text-gray-900">{{ cat.issue_count }}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5">
+                        {% widthratio cat.issue_count total_issues 100 as bar_width %}
+                        <div class="h-2.5 rounded-full {% cycle 'bg-brand-500' 'bg-blue-500' 'bg-amber-500' 'bg-violet-500' 'bg-emerald-500' 'bg-pink-500' %}"
+                             style="width: {% widthratio cat.issue_count total_issues 100 %}%"></div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">{% widthratio cat.issue_count total_issues 100 %}% of total</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Desk Summary -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-semibold text-gray-900">Desk Summary</h2>
+                    <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ by_group|length }}</span>
+                </div>
+            </div>
+            <div class="p-6 space-y-4">
+                {% for grp in by_group %}
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium text-gray-700">{{ grp.trading_group }}</span>
+                        <span class="text-sm font-bold text-gray-900">{{ grp.issue_count }}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5">
+                        <div class="h-2.5 rounded-full {% cycle 'bg-emerald-500' 'bg-blue-500' 'bg-amber-500' 'bg-violet-500' 'bg-brand-500' 'bg-pink-500' %}"
+                             style="width: {% widthratio grp.issue_count total_issues 100 %}%"></div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">{% widthratio grp.issue_count total_issues 100 %}% of total</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Detail Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold text-gray-900">Issue Detail Log</h2>
+                <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ issues|length }} records</span>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-50/50">
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Deal No</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Trading Desk</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Trader</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Reason</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for issue in issues %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm text-gray-900 font-medium whitespace-nowrap">{{ issue.dt|format_date }}</td>
+                        <td class="px-6 py-4 text-sm font-mono text-gray-700">{{ issue.deal_no }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600">{{ issue.trading_group }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ issue.employee_name }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold
+                                {% if issue.issue_category == 'Misclassification' %}bg-red-100 text-red-700
+                                {% elif issue.issue_category == 'Tagging Error' %}bg-amber-100 text-amber-700
+                                {% elif issue.issue_category == 'Price Entry Error' %}bg-violet-100 text-violet-700
+                                {% else %}bg-blue-100 text-blue-700{% endif %}">
+                                {{ issue.issue_category }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 hidden lg:table-cell">{{ issue.issue_reason }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 hidden xl:table-cell max-w-xs truncate" title="{{ issue.issue_description }}">{{ issue.issue_description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 py-16 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <i data-feather="alert-triangle" class="w-8 h-8 text-gray-400"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No trading analytics data</h3>
+        <p class="text-gray-500 text-sm">No issues found for the selected filters.</p>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block extra_js %}
+{% if issues %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ chart_data|json_script:"chart-data" }}
+<script>
+    const data = JSON.parse(document.getElementById('chart-data').textContent);
+    const fontFamily = "'Inter', system-ui, sans-serif";
+    Chart.defaults.font.family = fontFamily;
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#6b7280';
+
+    // Color palette
+    const colors = [
+        { bg: 'rgba(236, 28, 36, 0.15)', border: '#EC1C24' },
+        { bg: 'rgba(59, 130, 246, 0.15)', border: '#3b82f6' },
+        { bg: 'rgba(245, 158, 11, 0.15)', border: '#f59e0b' },
+        { bg: 'rgba(139, 92, 246, 0.15)', border: '#8b5cf6' },
+        { bg: 'rgba(16, 185, 129, 0.15)', border: '#10b981' },
+        { bg: 'rgba(236, 72, 153, 0.15)', border: '#ec4899' },
+    ];
+
+    // Monthly Trend (line chart)
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: data.trend_labels,
+            datasets: [{
+                label: 'Issues',
+                data: data.trend_counts,
+                borderColor: '#EC1C24',
+                backgroundColor: 'rgba(236, 28, 36, 0.08)',
+                borderWidth: 2.5,
+                pointRadius: 4,
+                pointBackgroundColor: '#EC1C24',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Issue Count' },
+                    grid: { color: '#f3f4f6' },
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+
+    // Category Doughnut
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: data.cat_labels,
+            datasets: [{
+                data: data.cat_counts,
+                backgroundColor: colors.map(c => c.border),
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true, padding: 16, font: { size: 12 } }
+                }
+            }
+        }
+    });
+
+    // Trading Desk (horizontal bar)
+    new Chart(document.getElementById('groupChart'), {
+        type: 'bar',
+        data: {
+            labels: data.group_labels,
+            datasets: [{
+                label: 'Issues',
+                data: data.group_counts,
+                backgroundColor: data.group_labels.map((_, i) => colors[i % colors.length].border),
+                borderWidth: 0,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { color: '#f3f4f6' },
+                    ticks: { stepSize: 1 }
+                },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Stacked Bar: Categories by Month
+    const stackedDatasets = data.stacked_categories.map((cat, i) => ({
+        label: cat,
+        data: data.stacked_datasets[cat],
+        backgroundColor: colors[i % colors.length].border,
+        borderWidth: 0,
+        borderRadius: 4
+    }));
+
+    new Chart(document.getElementById('stackedChart'), {
+        type: 'bar',
+        data: {
+            labels: data.stacked_labels,
+            datasets: stackedDatasets
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true, padding: 16, font: { size: 11 } }
+                }
+            },
+            scales: {
+                x: { stacked: true, grid: { display: false } },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: { display: true, text: 'Issue Count' },
+                    grid: { color: '#f3f4f6' },
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

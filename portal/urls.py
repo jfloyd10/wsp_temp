@@ -18,5 +18,6 @@ urlpatterns = [
     path('profit-loss/', views.profit_loss_view, name='profit_loss'),
     path('metrics/', views.metrics_view, name='metrics'),
     path('capacity/', views.capacity_view, name='capacity'),
+    path('trading-analytics/', views.trading_analytics_view, name='trading_analytics'),
 ]
 
