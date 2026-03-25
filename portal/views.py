@@ -126,6 +126,7 @@ def _get_filters(request, keys):
 INVOICE_FILTER_KEYS = [
     'operating_company', 'counterparty_id', 'source_system',
     'source_type', 'invoice_status', 'date_from', 'date_to',
+    'search',
 ]
 
 
