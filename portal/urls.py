@@ -15,6 +15,7 @@ urlpatterns = [
     path('invoices/export/', views.export_invoices_csv, name='export_invoices'),
     path('invoices/<str:invoice_no>/', views.invoice_detail_view, name='invoice_detail'),
     path('invoices/<str:invoice_no>/attachments/<str:file_name>/', views.download_attachment_view, name='download_attachment'),
+    path('profit-loss/', views.profit_loss_view, name='profit_loss'),
     path('metrics/', views.metrics_view, name='metrics'),
     path('capacity/', views.capacity_view, name='capacity'),
 ]

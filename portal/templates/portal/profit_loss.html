@@ -1,0 +1,590 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+
+{% block title %}Profit & Loss - Wholesale Settlement Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-white border-b border-gray-100">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-8">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+                        <i data-feather="trending-up" class="w-5 h-5 text-brand-500"></i>
+                    </div>
+                    <span class="text-gray-400 text-sm font-medium uppercase tracking-wider">Financial Analysis</span>
+                </div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Profit & Loss Statement</h1>
+                <p class="text-gray-500 text-lg">Income statement and profitability analysis across entities</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="get" class="mb-8">
+            <div class="flex flex-wrap items-center gap-3">
+                <select name="entity_name"
+                        class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                    <option value="">All Entities</option>
+                    {% for e in filter_options.entities %}
+                    <option value="{{ e }}" {% if active_filters.entity_name == e %}selected{% endif %}>{{ e }}</option>
+                    {% endfor %}
+                </select>
+                <select name="year"
+                        class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                    <option value="">All Years</option>
+                    {% for y in filter_options.years %}
+                    <option value="{{ y }}" {% if active_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <select name="month"
+                        class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                    <option value="">All Months</option>
+                    <option value="1" {% if active_filters.month == "1" %}selected{% endif %}>Jan</option>
+                    <option value="2" {% if active_filters.month == "2" %}selected{% endif %}>Feb</option>
+                    <option value="3" {% if active_filters.month == "3" %}selected{% endif %}>Mar</option>
+                    <option value="4" {% if active_filters.month == "4" %}selected{% endif %}>Apr</option>
+                    <option value="5" {% if active_filters.month == "5" %}selected{% endif %}>May</option>
+                    <option value="6" {% if active_filters.month == "6" %}selected{% endif %}>Jun</option>
+                    <option value="7" {% if active_filters.month == "7" %}selected{% endif %}>Jul</option>
+                    <option value="8" {% if active_filters.month == "8" %}selected{% endif %}>Aug</option>
+                    <option value="9" {% if active_filters.month == "9" %}selected{% endif %}>Sep</option>
+                    <option value="10" {% if active_filters.month == "10" %}selected{% endif %}>Oct</option>
+                    <option value="11" {% if active_filters.month == "11" %}selected{% endif %}>Nov</option>
+                    <option value="12" {% if active_filters.month == "12" %}selected{% endif %}>Dec</option>
+                </select>
+                <select name="covered_or_uncovered"
+                        class="py-2 px-4 bg-white rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all filter-btn shadow-sm appearance-none pr-8 cursor-pointer">
+                    <option value="">All Coverage</option>
+                    {% for c in filter_options.covered_uncovered %}
+                    <option value="{{ c }}" {% if active_filters.covered_or_uncovered == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit"
+                        class="btn-brand py-2 px-4 rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                    Apply
+                </button>
+                {% if active_filters %}
+                <a href="{% url 'profit_loss' %}" class="py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-600 transition-all">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <!-- Summary Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                        <i data-feather="dollar-sign" class="w-5 h-5 text-emerald-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Revenue</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_revenue|currency }}</p>
+                <p class="text-sm text-gray-500 mt-1">Total Revenue</p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i data-feather="layers" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Gross</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ gross_margin|currency }}</p>
+                <p class="text-sm mt-1 {% if gross_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                    {{ gross_margin_pct|percentage }} margin
+                </p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
+                        <i data-feather="briefcase" class="w-5 h-5 text-violet-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Operating</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ operating_income|currency }}</p>
+                <p class="text-sm mt-1 {% if operating_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                    {{ operating_margin_pct|percentage }} margin
+                </p>
+            </div>
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl {% if net_income >= 0 %}bg-emerald-100{% else %}bg-red-100{% endif %} flex items-center justify-center">
+                        <i data-feather="trending-up" class="w-5 h-5 {% if net_income >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Net</span>
+                </div>
+                <p class="text-2xl lg:text-3xl font-bold {% if net_income >= 0 %}text-emerald-700{% else %}text-red-700{% endif %}">{{ net_income|currency }}</p>
+                <p class="text-sm mt-1 {% if net_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                    {{ net_margin_pct|percentage }} margin
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    {% if statement_structure %}
+
+    <!-- Tab Navigation -->
+    <div class="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
+        <button id="tabCharts" onclick="switchTab('charts')"
+                class="tab-btn px-5 py-2.5 rounded-lg text-sm font-semibold transition-all bg-white text-gray-900 shadow-sm">
+            <i data-feather="bar-chart-2" class="w-4 h-4 inline-block mr-1 -mt-0.5"></i>
+            Charts & Analytics
+        </button>
+        <button id="tabStatement" onclick="switchTab('statement')"
+                class="tab-btn px-5 py-2.5 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:text-gray-700">
+            <i data-feather="file-text" class="w-4 h-4 inline-block mr-1 -mt-0.5"></i>
+            Income Statement
+        </button>
+    </div>
+
+    <!-- Charts Tab -->
+    <div id="chartsContent">
+        <!-- Row 1: Monthly Trend + Net Income Trend -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="dashboard-card bg-white rounded-2xl p-5">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="font-bold text-lg">Monthly Revenue vs Total Costs</h2>
+                </div>
+                <div class="h-80 chart-container">
+                    <canvas id="revenueCostChart"></canvas>
+                </div>
+            </div>
+            <div class="dashboard-card bg-white rounded-2xl p-5">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="font-bold text-lg">Monthly Net Income Trend</h2>
+                </div>
+                <div class="h-80 chart-container">
+                    <canvas id="netIncomeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: YoY Comparison + Entity Comparison -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="dashboard-card bg-white rounded-2xl p-5">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="font-bold text-lg">Year-over-Year Comparison</h2>
+                </div>
+                <div class="h-80 chart-container">
+                    <canvas id="yoyChart"></canvas>
+                </div>
+            </div>
+            <div class="dashboard-card bg-white rounded-2xl p-5">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="font-bold text-lg">Revenue & Net Income by Entity</h2>
+                </div>
+                <div class="h-80 chart-container">
+                    <canvas id="entityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Margin Trend -->
+        <div class="dashboard-card bg-white rounded-2xl p-5 mb-6">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="font-bold text-lg">Monthly Gross Margin Trend</h2>
+            </div>
+            <div class="h-72 chart-container">
+                <canvas id="marginChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Income Statement Tab -->
+    <div id="statementContent" class="hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <!-- Statement Header -->
+            <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">Income Statement</h2>
+                        <p class="text-sm text-gray-500 mt-1">
+                            {% if active_filters.entity_name %}{{ active_filters.entity_name }}{% else %}All Entities (Consolidated){% endif %}
+                            {% if active_filters.year %}&mdash; {{ active_filters.year }}{% endif %}
+                            {% if active_filters.month %} {{ active_filters.month|month_name }}{% endif %}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-3 py-1.5 bg-gray-100 rounded-lg text-xs font-semibold text-gray-600">USD</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50/80">
+                            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-2/3">Description</th>
+                            <th class="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in category_order %}
+                        {% if cat in statement_structure %}
+                        <!-- Category Header -->
+                        <tr class="bg-slate-100 border-t-2 border-slate-300">
+                            <td class="px-6 py-3 text-sm font-bold text-slate-800 uppercase tracking-wide" colspan="2">
+                                {{ cat }}
+                            </td>
+                        </tr>
+
+                        {% for typ, subtypes in statement_structure|dictget:cat|dictitems %}
+                        <!-- Type Header -->
+                        <tr class="bg-gray-50/50 border-t border-gray-200">
+                            <td class="px-6 py-2.5 pl-10 text-sm font-semibold text-gray-700">{{ typ }}</td>
+                            <td class="px-6 py-2.5 text-sm text-right font-semibold font-mono text-gray-700">
+                                {% with type_totals|dictget:cat as cat_types %}
+                                    {{ cat_types|dictget:typ|currency }}
+                                {% endwith %}
+                            </td>
+                        </tr>
+
+                        {% for sub, items in subtypes|dictitems %}
+                        <!-- Subtype Row -->
+                        <tr class="border-t border-gray-100">
+                            <td class="px-6 py-2 pl-14 text-sm font-medium text-gray-600 italic">{{ sub }}</td>
+                            <td class="px-6 py-2 text-sm text-right font-mono text-gray-600">
+                                {% with subtype_totals|dictget:cat as cat_subs %}
+                                    {% with cat_subs|dictget:typ as typ_subs %}
+                                        {{ typ_subs|dictget:sub|currency }}
+                                    {% endwith %}
+                                {% endwith %}
+                            </td>
+                        </tr>
+
+                        {% for item in items %}
+                        <!-- Line Item -->
+                        <tr class="hover:bg-blue-50/30 transition-colors">
+                            <td class="px-6 py-1.5 pl-20 text-sm text-gray-500">{{ item.line_item }}</td>
+                            <td class="px-6 py-1.5 text-sm text-right font-mono text-gray-500">{{ item.amount|currency }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+                        {% endfor %}
+
+                        <!-- Category Total -->
+                        <tr class="border-t-2 border-slate-300 bg-slate-50">
+                            <td class="px-6 py-3 text-sm font-bold text-slate-800">
+                                Total {{ cat }}
+                            </td>
+                            <td class="px-6 py-3 text-sm text-right font-bold font-mono text-slate-800">
+                                {{ category_totals|dictget:cat|currency }}
+                            </td>
+                        </tr>
+
+                        <!-- Computed Subtotals -->
+                        {% if cat == "Cost of Revenue" %}
+                        <tr class="bg-blue-50 border-t-2 border-blue-200">
+                            <td class="px-6 py-3 text-sm font-bold text-blue-900">
+                                Gross Margin
+                            </td>
+                            <td class="px-6 py-3 text-sm text-right font-bold font-mono text-blue-900">
+                                {{ gross_margin|currency }}
+                                <span class="text-xs font-normal ml-1 {% if gross_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">({{ gross_margin_pct|percentage }})</span>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        {% if cat == "Operating Expenses" %}
+                        <tr class="bg-violet-50 border-t-2 border-violet-200">
+                            <td class="px-6 py-3 text-sm font-bold text-violet-900">
+                                Operating Income
+                            </td>
+                            <td class="px-6 py-3 text-sm text-right font-bold font-mono text-violet-900">
+                                {{ operating_income|currency }}
+                                <span class="text-xs font-normal ml-1 {% if operating_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">({{ operating_margin_pct|percentage }})</span>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- Net Income -->
+                        <tr class="border-t-4 border-gray-900 {% if net_income >= 0 %}bg-emerald-50{% else %}bg-red-50{% endif %}">
+                            <td class="px-6 py-4 text-base font-extrabold {% if net_income >= 0 %}text-emerald-900{% else %}text-red-900{% endif %}">
+                                Net Income
+                            </td>
+                            <td class="px-6 py-4 text-base text-right font-extrabold font-mono {% if net_income >= 0 %}text-emerald-900{% else %}text-red-900{% endif %}">
+                                {{ net_income|currency }}
+                                <span class="text-xs font-normal ml-1">({{ net_margin_pct|percentage }})</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 py-16 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <i data-feather="trending-up" class="w-8 h-8 text-gray-400"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No P&L data available</h3>
+        <p class="text-gray-500 text-sm">No data found for the selected filters.</p>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block extra_js %}
+{% if statement_structure %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ chart_data|json_script:"chart-data" }}
+{{ yoy_chart|json_script:"yoy-data" }}
+{{ entity_chart|json_script:"entity-data" }}
+<script>
+    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    const yoyData = JSON.parse(document.getElementById('yoy-data').textContent);
+    const entityData = JSON.parse(document.getElementById('entity-data').textContent);
+
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#6b7280';
+
+    const fmtM = v => {
+        if (Math.abs(v) >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
+        if (Math.abs(v) >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
+        if (Math.abs(v) >= 1e3) return '$' + (v / 1e3).toFixed(0) + 'K';
+        return '$' + v.toFixed(0);
+    };
+
+    const tooltipCb = {
+        callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + fmtM(ctx.parsed.y)
+        }
+    };
+
+    // 1. Revenue vs Costs
+    new Chart(document.getElementById('revenueCostChart'), {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: chartData.revenue,
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    borderColor: '#10b981',
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Total Costs',
+                    data: chartData.costs,
+                    backgroundColor: 'rgba(236, 28, 36, 0.15)',
+                    borderColor: '#EC1C24',
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+                tooltip: tooltipCb
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
+                y: { ticks: { callback: fmtM }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    // 2. Net Income Trend
+    new Chart(document.getElementById('netIncomeChart'), {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Net Income',
+                data: chartData.net_income,
+                borderColor: '#6366f1',
+                backgroundColor: ctx => {
+                    const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height);
+                    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.15)');
+                    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)');
+                    return gradient;
+                },
+                borderWidth: 2.5,
+                pointRadius: 3,
+                pointBackgroundColor: '#6366f1',
+                tension: 0.35,
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+                tooltip: tooltipCb
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
+                y: { ticks: { callback: fmtM }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    // 3. YoY Comparison
+    new Chart(document.getElementById('yoyChart'), {
+        type: 'bar',
+        data: {
+            labels: yoyData.years,
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: yoyData.revenue,
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Cost of Revenue',
+                    data: yoyData.cost_of_revenue,
+                    backgroundColor: 'rgba(236, 28, 36, 0.5)',
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Operating Expenses',
+                    data: yoyData.operating_expenses,
+                    backgroundColor: 'rgba(245, 158, 11, 0.5)',
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Net Income',
+                    data: yoyData.net_income,
+                    backgroundColor: yoyData.net_income.map(v => v >= 0 ? 'rgba(99, 102, 241, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+                tooltip: tooltipCb
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { ticks: { callback: fmtM }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    // 4. Entity Comparison
+    new Chart(document.getElementById('entityChart'), {
+        type: 'bar',
+        data: {
+            labels: entityData.entities,
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: entityData.revenue,
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    borderColor: '#10b981',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Net Income',
+                    data: entityData.net_income,
+                    backgroundColor: entityData.net_income.map(v => v >= 0 ? 'rgba(99, 102, 241, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+                    borderColor: entityData.net_income.map(v => v >= 0 ? '#6366f1' : '#ef4444'),
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+                tooltip: tooltipCb
+            },
+            scales: {
+                x: { ticks: { callback: fmtM }, grid: { color: '#f3f4f6' } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 5. Gross Margin Trend
+    new Chart(document.getElementById('marginChart'), {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: chartData.revenue,
+                    borderColor: '#10b981',
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    tension: 0.3,
+                    fill: false,
+                },
+                {
+                    label: 'Gross Margin',
+                    data: chartData.gross_margin,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#3b82f6',
+                    tension: 0.35,
+                    fill: true,
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+                tooltip: tooltipCb
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
+                y: { ticks: { callback: fmtM }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    // Tab switching
+    function switchTab(tab) {
+        const charts = document.getElementById('chartsContent');
+        const statement = document.getElementById('statementContent');
+        const tabCharts = document.getElementById('tabCharts');
+        const tabStatement = document.getElementById('tabStatement');
+
+        if (tab === 'charts') {
+            charts.classList.remove('hidden');
+            statement.classList.add('hidden');
+            tabCharts.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+            tabCharts.classList.remove('text-gray-500');
+            tabStatement.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+            tabStatement.classList.add('text-gray-500');
+        } else {
+            charts.classList.add('hidden');
+            statement.classList.remove('hidden');
+            tabStatement.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+            tabStatement.classList.remove('text-gray-500');
+            tabCharts.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+            tabCharts.classList.add('text-gray-500');
+        }
+    }
+
+    // Make switchTab available globally
+    window.switchTab = switchTab;
+</script>
+{% endif %}
+{% endblock %}

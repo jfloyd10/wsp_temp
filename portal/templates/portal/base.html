@@ -70,6 +70,11 @@
                     <i data-feather="file-text" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Invoices</span>
                 </a>
+                <a href="{% url 'profit_loss' %}"
+                   class="sidebar-link {% if page == 'profit_loss' %}sidebar-link-active{% endif %}">
+                    <i data-feather="trending-up" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Profit & Loss</span>
+                </a>
                 <a href="{% url 'metrics' %}"
                    class="sidebar-link {% if page == 'metrics' %}sidebar-link-active{% endif %}">
                     <i data-feather="bar-chart-2" class="sidebar-link-icon"></i>
