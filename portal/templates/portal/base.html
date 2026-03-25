@@ -95,6 +95,11 @@
                     <i data-feather="alert-triangle" class="sidebar-link-icon"></i>
                     <span class="sidebar-link-text">Trading Analytics</span>
                 </a>
+                <a href="{% url 'blank' %}"
+                   class="sidebar-link {% if page == 'blank' %}sidebar-link-active{% endif %}">
+                    <i data-feather="file" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Blank</span>
+                </a>
             </div>
         </nav>
 

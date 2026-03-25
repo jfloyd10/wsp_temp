@@ -476,6 +476,11 @@ TRADING_ANALYTICS_FILTER_KEYS = [
 
 
 @login_required
+def blank_view(request):
+    return render(request, 'portal/blank.html', {'page': 'blank'})
+
+
+@login_required
 def trading_analytics_view(request):
     filters = _get_filters(request, TRADING_ANALYTICS_FILTER_KEYS)
     filter_options = duckdb_service.get_trading_analytics_filter_options()
