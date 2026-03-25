@@ -52,7 +52,7 @@ INVOICE_FILTER_KEYS = [
 
 @login_required
 def dashboard_view(request):
-    filters = _get_filters(request, ['operating_company', 'counterparty_id'])
+    filters = _get_filters(request, ['operating_company', 'counterparty_id', 'source_system'])
     summary = duckdb_service.get_dashboard_summary(filters)
     filter_options = duckdb_service.get_filter_options()
 
@@ -81,6 +81,8 @@ def dashboard_view(request):
                 cp_name = cp['name']
                 break
         active_filter_labels['counterparty_id'] = cp_name
+    if filters.get('source_system'):
+        active_filter_labels['source_system'] = filters['source_system']
 
     return render(request, 'portal/dashboard.html', {
         'summary': summary,
