@@ -69,56 +69,6 @@
                 {% endif %}
             </div>
         </form>
-
-        <!-- Summary Stat Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                        <i data-feather="dollar-sign" class="w-5 h-5 text-emerald-600"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Revenue</span>
-                </div>
-                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_revenue|currency }}</p>
-                <p class="text-sm text-gray-500 mt-1">Total Revenue</p>
-            </div>
-            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                        <i data-feather="layers" class="w-5 h-5 text-blue-600"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Gross</span>
-                </div>
-                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ gross_margin|currency }}</p>
-                <p class="text-sm mt-1 {% if gross_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
-                    {{ gross_margin_pct|percentage }} margin
-                </p>
-            </div>
-            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-                        <i data-feather="briefcase" class="w-5 h-5 text-violet-600"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Operating</span>
-                </div>
-                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ net_income|currency }}</p>
-                <p class="text-sm mt-1 {% if operating_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
-                    {{ operating_margin_pct|percentage }} margin
-                </p>
-            </div>
-            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl {% if net_income >= 0 %}bg-emerald-100{% else %}bg-red-100{% endif %} flex items-center justify-center">
-                        <i data-feather="trending-up" class="w-5 h-5 {% if net_income >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Net</span>
-                </div>
-                <p class="text-2xl lg:text-3xl font-bold {% if net_income >= 0 %}text-emerald-700{% else %}text-red-700{% endif %}">{{ net_income|currency }}</p>
-                <p class="text-sm mt-1 {% if net_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
-                    {{ net_margin_pct|percentage }} margin
-                </p>
-            </div>
-        </div>
     </div>
 </section>
 
