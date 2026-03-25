@@ -256,7 +256,6 @@ def get_fcs_metrics(filters: dict) -> list[dict]:
         return []
 
 
-<<<<<<< HEAD
 def get_pnl_filter_options() -> dict:
     """Return distinct values for P&L filter dimensions."""
     try:
@@ -303,15 +302,10 @@ def get_pnl_income_statement(filters: dict) -> list[dict]:
     Returns rows grouped by category -> type -> subtype -> line_item
     with the total amount for the selected period.
     """
-=======
-def get_trading_analytics(filters: dict) -> list[dict]:
-    """Return trading_analytics rows with optional filters."""
->>>>>>> 018af786d4d381fc1368f76eb86efd80cf186ba9
     try:
         conn = get_connection()
         conditions = []
         params = []
-<<<<<<< HEAD
         col_map = {
             'entity_name': 'entity_name',
             'entity_class': 'entity_class',
@@ -327,28 +321,11 @@ def get_trading_analytics(filters: dict) -> list[dict]:
             params.append(int(filters['year']))
         if filters.get('month'):
             conditions.append("month = ?")
-=======
-        if filters.get('trading_group'):
-            conditions.append("trading_group = ?")
-            params.append(filters['trading_group'])
-        if filters.get('employee_name'):
-            conditions.append("employee_name = ?")
-            params.append(filters['employee_name'])
-        if filters.get('issue_category'):
-            conditions.append("issue_category = ?")
-            params.append(filters['issue_category'])
-        if filters.get('year'):
-            conditions.append("YEAR(dt) = ?")
-            params.append(int(filters['year']))
-        if filters.get('month'):
-            conditions.append("MONTH(dt) = ?")
->>>>>>> 018af786d4d381fc1368f76eb86efd80cf186ba9
             params.append(int(filters['month']))
 
         where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 
         rows = conn.execute(f"""
-<<<<<<< HEAD
             SELECT category, type, subtype, line_item,
                    SUM(amount) AS total_amount,
                    COUNT(*) AS row_count
@@ -494,7 +471,33 @@ def get_pnl_entity_comparison(filters: dict) -> list[dict]:
     except Exception:
         logger.exception("Error fetching P&L entity comparison")
         return []
-=======
+
+
+def get_trading_analytics(filters: dict) -> list[dict]:
+    """Return trading_analytics rows with optional filters."""
+    try:
+        conn = get_connection()
+        conditions = []
+        params = []
+        if filters.get('trading_group'):
+            conditions.append("trading_group = ?")
+            params.append(filters['trading_group'])
+        if filters.get('employee_name'):
+            conditions.append("employee_name = ?")
+            params.append(filters['employee_name'])
+        if filters.get('issue_category'):
+            conditions.append("issue_category = ?")
+            params.append(filters['issue_category'])
+        if filters.get('year'):
+            conditions.append("YEAR(dt) = ?")
+            params.append(int(filters['year']))
+        if filters.get('month'):
+            conditions.append("MONTH(dt) = ?")
+            params.append(int(filters['month']))
+
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = conn.execute(f"""
             SELECT dt, deal_no, trading_group, employee_name,
                    issue_description, issue_category, issue_reason
             FROM trading_analytics
@@ -541,7 +544,6 @@ def get_trading_analytics_filter_options() -> dict:
     except Exception:
         logger.exception("Error fetching trading analytics filter options")
         return {'trading_groups': [], 'employees': [], 'issue_categories': [], 'years': []}
->>>>>>> 018af786d4d381fc1368f76eb86efd80cf186ba9
 
 
 def get_capacity_factors(filters: dict) -> list[dict]:
