@@ -55,10 +55,36 @@ def dashboard_view(request):
     filters = _get_filters(request, ['operating_company', 'counterparty_id'])
     summary = duckdb_service.get_dashboard_summary(filters)
     filter_options = duckdb_service.get_filter_options()
+
+    # Monthly settlement trend for chart
+    trend_data = duckdb_service.get_monthly_settlement_trend(filters)
+    month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    trend_chart = {
+        'labels': [f"{month_names[r['month']]} {r['year']}" for r in trend_data],
+        'amounts': [float(r['total_amount']) for r in trend_data],
+        'counts': [int(r['invoice_count']) for r in trend_data],
+    }
+
+    # Build human-readable filter labels for active filter chips
+    active_filter_labels = {}
+    if filters.get('operating_company'):
+        active_filter_labels['operating_company'] = filters['operating_company']
+    if filters.get('counterparty_id'):
+        # Look up counterparty name
+        cp_name = filters['counterparty_id']
+        for cp in filter_options.get('counterparties', []):
+            if cp['id'] == filters['counterparty_id']:
+                cp_name = cp['name']
+                break
+        active_filter_labels['counterparty_id'] = cp_name
+
     return render(request, 'portal/dashboard.html', {
         'summary': summary,
         'filter_options': filter_options,
         'active_filters': filters,
+        'active_filter_labels': active_filter_labels,
+        'trend_chart': trend_chart,
         'page': 'dashboard',
     })
 
@@ -96,10 +122,36 @@ def invoices_view(request):
     # Build query string for pagination links (preserve filters)
     filter_query = urlencode(filters)
 
+    # Human-readable labels for active filter chips
+    filter_label_map = {
+        'operating_company': 'Company',
+        'counterparty_id': 'Counterparty',
+        'source_system': 'System',
+        'source_type': 'Type',
+        'invoice_status': 'Status',
+        'date_from': 'From',
+        'date_to': 'To',
+        'search': 'Search',
+    }
+    active_filter_chips = []
+    for key, val in filters.items():
+        display_val = val
+        if key == 'counterparty_id':
+            for cp in filter_options.get('counterparties', []):
+                if cp['id'] == val:
+                    display_val = cp['name']
+                    break
+        active_filter_chips.append({
+            'key': key,
+            'label': filter_label_map.get(key, key),
+            'value': display_val,
+        })
+
     return render(request, 'portal/invoices.html', {
         'invoices': result['invoices'],
         'filter_options': filter_options,
         'active_filters': filters,
+        'active_filter_chips': active_filter_chips,
         'total_amount': result['total_amount'],
         'total_count': result['total_count'],
         'current_page': result['page'],

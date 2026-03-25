@@ -281,6 +281,31 @@ def get_dashboard_summary(filters: dict) -> dict:
         }
 
 
+def get_monthly_settlement_trend(filters: dict) -> list[dict]:
+    """Return monthly settlement totals for the last 12 months (for dashboard chart)."""
+    try:
+        conn = get_connection()
+        where, params = _build_where(filters, INVOICE_COLUMN_MAP)
+        sql = f"""
+            SELECT
+                YEAR(invoice_date) AS year,
+                MONTH(invoice_date) AS month,
+                COUNT(*) AS invoice_count,
+                COALESCE(SUM(invoice_total), 0) AS total_amount
+            FROM invoice_header
+            {where}
+            GROUP BY YEAR(invoice_date), MONTH(invoice_date)
+            ORDER BY year, month
+        """
+        rows = conn.execute(sql, params).fetchall()
+        columns = ['year', 'month', 'invoice_count', 'total_amount']
+        conn.close()
+        return [dict(zip(columns, row)) for row in rows]
+    except Exception:
+        logger.exception("Error fetching monthly settlement trend")
+        return []
+
+
 def get_fcs_metrics(filters: dict) -> list[dict]:
     """Return fcs_metrics rows with optional filters."""
     try:
