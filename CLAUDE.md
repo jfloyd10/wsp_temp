@@ -35,7 +35,7 @@ Southern Company is a large utility holding company in the Southeast US. Its ret
 
 ## Database Schema (DuckDB)
 
-The DuckDB file contains **8 tables**. All data has already been consolidated from the various legacy source systems. The `source_system` and `source_type` columns identify where each record originated.
+The DuckDB file contains **9 tables**. All data has already been consolidated from the various legacy source systems. The `source_system` and `source_type` columns identify where each record originated.
 
 ### `invoice_header`
 
@@ -174,6 +174,20 @@ Profit and loss statement data from various sources. Supports financial analysis
 | `tag` | VARCHAR | Additional classification tag |
 | `ledger` | VARCHAR | Ledger identifier |
 | `amount` | DECIMAL | Dollar amount |
+
+### `trading_analytics`
+
+Trader issue monitoring data. When a trader makes an error classifying or tagging a deal, it is logged here for analysis.
+
+| Column | Type | Description |
+|---|---|---|
+| `dt` | TIMESTAMP | Date the issue was logged |
+| `deal_no` | VARCHAR | Deal number associated with the issue |
+| `trading_group` | VARCHAR | Trading desk/group (e.g., `'East Desk'`, `'Gas Desk'`) |
+| `employee_name` | VARCHAR | Name of the trader who made the error |
+| `issue_description` | VARCHAR | Description of the issue |
+| `issue_category` | VARCHAR | Category (e.g., `'Misclassification'`, `'Tagging Error'`, `'Price Entry Error'`) |
+| `issue_reason` | VARCHAR | Specific reason for the issue |
 
 ---
 
@@ -441,6 +455,35 @@ FROM profit_and_loss_statement
 WHERE year = ? AND month = ?
 GROUP BY category, type
 ORDER BY category, type;
+
+-- Trading analytics (with optional filters)
+SELECT * FROM trading_analytics
+WHERE 1=1
+  -- AND trading_group = ?    (optional filter)
+  -- AND employee_name = ?    (optional filter)
+  -- AND issue_category = ?   (optional filter)
+  -- AND YEAR(dt) = ?         (optional filter)
+  -- AND MONTH(dt) = ?        (optional filter)
+ORDER BY dt DESC;
+
+-- Trading analytics summary by category
+SELECT issue_category, COUNT(*) AS issue_count
+FROM trading_analytics
+WHERE YEAR(dt) = ?
+GROUP BY issue_category
+ORDER BY issue_count DESC;
+
+-- Trading analytics summary by employee
+SELECT employee_name, trading_group, COUNT(*) AS issue_count
+FROM trading_analytics
+WHERE YEAR(dt) = ?
+GROUP BY employee_name, trading_group
+ORDER BY issue_count DESC;
+
+-- Populate trading analytics filter dropdowns
+SELECT DISTINCT trading_group FROM trading_analytics ORDER BY trading_group;
+SELECT DISTINCT employee_name FROM trading_analytics ORDER BY employee_name;
+SELECT DISTINCT issue_category FROM trading_analytics ORDER BY issue_category;
 ```
 
 ---
