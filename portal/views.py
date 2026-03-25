@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
+from urllib.parse import urlencode
 
 from portal.services import duckdb_service
 
@@ -144,14 +145,51 @@ def dashboard_view(request):
 @login_required
 def invoices_view(request):
     filters = _get_filters(request, INVOICE_FILTER_KEYS)
-    invoices = duckdb_service.get_invoices(filters)
     filter_options = duckdb_service.get_filter_options()
-    total_amount = sum(float(inv.get('invoice_total', 0) or 0) for inv in invoices)
+
+    # Pagination
+    try:
+        page = max(1, int(request.GET.get('page', 1)))
+    except (ValueError, TypeError):
+        page = 1
+    per_page = 50
+
+    result = duckdb_service.get_invoices_paginated(filters, page=page, per_page=per_page)
+
+    # Build page range for pagination controls (show at most 7 page links)
+    total_pages = result['total_pages']
+    if total_pages <= 7:
+        page_range = list(range(1, total_pages + 1))
+    else:
+        if page <= 4:
+            page_range = list(range(1, 6)) + ["...", total_pages]
+        elif page >= total_pages - 3:
+            page_range = [1, "..."] + list(range(total_pages - 4, total_pages + 1))
+        else:
+            page_range = [1, "..."] + list(range(page - 1, page + 2)) + ["...", total_pages]
+
+    # Compute display range for "Showing X to Y of Z"
+    start_index = (page - 1) * per_page + 1 if result['total_count'] > 0 else 0
+    end_index = min(page * per_page, result['total_count'])
+
+    # Build query string for pagination links (preserve filters)
+    filter_query = urlencode(filters)
+
     return render(request, 'portal/invoices.html', {
-        'invoices': invoices,
+        'invoices': result['invoices'],
         'filter_options': filter_options,
         'active_filters': filters,
-        'total_amount': total_amount,
+        'total_amount': result['total_amount'],
+        'total_count': result['total_count'],
+        'current_page': result['page'],
+        'total_pages': total_pages,
+        'has_previous': result['has_previous'],
+        'has_next': result['has_next'],
+        'page_range': page_range,
+        'filter_query': filter_query,
+        'per_page': per_page,
+        'start_index': start_index,
+        'end_index': end_index,
         'page': 'invoices',
     })
 
