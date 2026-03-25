@@ -1,0 +1,592 @@
+{% extends "portal/base.html" %}
+{% load portal_filters %}
+{% load static %}
+
+{% block title %}Customer Portal - {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="p-6 lg:p-8 space-y-6">
+
+    <!-- Welcome Hero Section -->
+    <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-xl">
+        <div class="absolute inset-0 opacity-10">
+            <svg class="w-full h-full" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+                <circle cx="700" cy="100" r="200" fill="rgba(236,28,36,0.15)"/>
+                <circle cx="100" cy="300" r="150" fill="rgba(108,172,228,0.1)"/>
+            </svg>
+        </div>
+        <div class="relative px-8 py-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                        <i data-feather="briefcase" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Welcome back</p>
+                        <h1 class="text-2xl lg:text-3xl font-bold text-white">{{ customer.name }}</h1>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm mt-2 max-w-xl">Your wholesale settlement dashboard provides a consolidated view of all settlement activity, invoices, and account details across all contract types.</p>
+                <div class="flex flex-wrap gap-4 mt-5">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 text-xs font-medium text-gray-300">
+                        <i data-feather="hash" class="w-3 h-3"></i> {{ customer.id }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 text-xs font-medium text-gray-300">
+                        <i data-feather="file-text" class="w-3 h-3"></i> {{ customer.contract_type }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-xs font-medium text-emerald-300">
+                        <i data-feather="check-circle" class="w-3 h-3"></i> Active
+                    </span>
+                </div>
+            </div>
+            <div class="flex flex-col gap-3 lg:items-end">
+                <a href="{% url 'invoices' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 transition-all shadow-lg shadow-brand-500/25">
+                    <i data-feather="file-text" class="w-4 h-4"></i> View All Invoices
+                </a>
+                <span class="text-xs text-gray-500">Last login: {{ customer.last_login }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Stat Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="dashboard-card bg-white rounded-xl p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <i data-feather="dollar-sign" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+8.2% YoY</span>
+            </div>
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">YTD Settled</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ account_summary.total_settled_ytd|currency }}</p>
+            <div class="mt-3 h-1 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500 rounded-full" style="width: 72%"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">72% of annual budget</p>
+        </div>
+        <div class="dashboard-card bg-white rounded-xl p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                    <i data-feather="clock" class="w-5 h-5 text-amber-600"></i>
+                </div>
+                <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">3 pending</span>
+            </div>
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Outstanding</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ account_summary.outstanding_balance|currency }}</p>
+            <div class="mt-3 h-1 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-amber-400 rounded-full" style="width: 8%"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Due within 30 days</p>
+        </div>
+        <div class="dashboard-card bg-white rounded-xl p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <i data-feather="check-square" class="w-5 h-5 text-emerald-600"></i>
+                </div>
+                <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{{ account_summary.invoices_ytd }} total</span>
+            </div>
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">On-Time Rate</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ account_summary.on_time_payment_rate }}%</p>
+            <div class="mt-3 h-1 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 98.6%"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">47 of {{ account_summary.invoices_ytd }} invoices</p>
+        </div>
+        <div class="dashboard-card bg-white rounded-xl p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                    <i data-feather="target" class="w-5 h-5 text-purple-600"></i>
+                </div>
+                <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Excellent</span>
+            </div>
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Accuracy</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ account_summary.settlement_accuracy }}%</p>
+            <div class="mt-3 h-1 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-purple-500 rounded-full" style="width: 99.7%"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Settlement accuracy rate</p>
+        </div>
+    </div>
+
+    <!-- Charts Row: Settlement Trend + Settlement by Type -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Settlement Trend (wider) -->
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Settlement Trend</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Monthly settlement amounts vs budget (trailing 12 months)</p>
+                </div>
+                <div class="flex items-center gap-4 text-xs">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Actual</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span> Budget</span>
+                </div>
+            </div>
+            <div class="p-6">
+                <canvas id="settlementTrendChart" height="260"></canvas>
+            </div>
+        </div>
+
+        <!-- Settlement by Type (donut) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">By Contract Type</h2>
+                <p class="text-xs text-gray-500 mt-0.5">YTD settlement breakdown</p>
+            </div>
+            <div class="p-6 flex flex-col items-center">
+                <canvas id="settlementTypeChart" height="220"></canvas>
+                <div class="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 w-full">
+                    {% for label in settlement_by_type.labels %}
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: {{ settlement_by_type.colors|listget:forloop.counter0 }}"></span>
+                        <span class="text-xs text-gray-600">{{ label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Status + Energy Mix Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Invoices Table (wider) -->
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Recent Invoices</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Latest settlement invoices for your account</p>
+                </div>
+                <a href="{% url 'invoices' %}" class="text-sm text-brand-500 font-medium hover:text-brand-600 flex items-center gap-1">
+                    View all <i data-feather="arrow-right" class="w-3.5 h-3.5"></i>
+                </a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50/80">
+                            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Invoice</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for inv in recent_invoices %}
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <p class="text-sm font-semibold text-gray-900">{{ inv.invoice_no }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ inv.invoice_name }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium
+                                    {% if inv.source_type == 'WHOLESALE' %}bg-blue-50 text-blue-700
+                                    {% elif inv.source_type == 'PPA' %}bg-purple-50 text-purple-700
+                                    {% elif inv.source_type == 'SHORT_TERM' %}bg-amber-50 text-amber-700
+                                    {% else %}bg-gray-50 text-gray-700{% endif %}">
+                                    {{ inv.source_type }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ inv.invoice_date }}</td>
+                            <td class="px-6 py-4 text-sm font-semibold text-gray-900 text-right">{{ inv.invoice_total|currency }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
+                                    {% if inv.invoice_status == 'FINAL' %}bg-emerald-50 text-emerald-700
+                                    {% elif inv.invoice_status == 'PENDING' %}bg-amber-50 text-amber-700
+                                    {% elif inv.invoice_status == 'DRAFT' %}bg-gray-100 text-gray-600
+                                    {% else %}bg-red-50 text-red-700{% endif %}">
+                                    <span class="w-1.5 h-1.5 rounded-full
+                                        {% if inv.invoice_status == 'FINAL' %}bg-emerald-500
+                                        {% elif inv.invoice_status == 'PENDING' %}bg-amber-500
+                                        {% elif inv.invoice_status == 'DRAFT' %}bg-gray-400
+                                        {% else %}bg-red-500{% endif %}"></span>
+                                    {{ inv.invoice_status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Invoice Status Breakdown + Energy Mix -->
+        <div class="space-y-6">
+            <!-- Invoice Status Donut -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-900">Invoice Status</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">YTD invoice distribution</p>
+                </div>
+                <div class="p-6 flex flex-col items-center">
+                    <canvas id="invoiceStatusChart" height="180"></canvas>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 w-full">
+                        {% for label in invoice_status.labels %}
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: {{ invoice_status.colors|listget:forloop.counter0 }}"></span>
+                                <span class="text-xs text-gray-600">{{ label }}</span>
+                            </div>
+                            <span class="text-xs font-semibold text-gray-900">{{ invoice_status.counts|listget:forloop.counter0 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Energy Mix -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-900">Generation Mix</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Resource portfolio allocation</p>
+                </div>
+                <div class="p-5 space-y-3">
+                    {% for label in energy_mix.labels %}
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-medium text-gray-700">{{ label }}</span>
+                            <span class="text-xs font-bold text-gray-900">{{ energy_mix.values|listget:forloop.counter0 }}%</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-700" style="width: {{ energy_mix.values|listget:forloop.counter0 }}%; background: {{ energy_mix.colors|listget:forloop.counter0 }}"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Timeline + Account Details + Milestones -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Activity Timeline -->
+        <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Recent Activity</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Latest account activity</p>
+            </div>
+            <div class="p-6">
+                <div class="space-y-5">
+                    {% for item in activity_timeline %}
+                    <div class="flex gap-3 group">
+                        <div class="relative flex flex-col items-center">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
+                                {% if item.color == 'emerald' %}bg-emerald-100
+                                {% elif item.color == 'blue' %}bg-blue-100
+                                {% elif item.color == 'purple' %}bg-purple-100
+                                {% elif item.color == 'amber' %}bg-amber-100
+                                {% elif item.color == 'red' %}bg-red-100
+                                {% else %}bg-gray-100{% endif %}">
+                                <i data-feather="{{ item.icon }}" class="w-4 h-4
+                                    {% if item.color == 'emerald' %}text-emerald-600
+                                    {% elif item.color == 'blue' %}text-blue-600
+                                    {% elif item.color == 'purple' %}text-purple-600
+                                    {% elif item.color == 'amber' %}text-amber-600
+                                    {% elif item.color == 'red' %}text-red-600
+                                    {% else %}text-gray-600{% endif %}"></i>
+                            </div>
+                            {% if not forloop.last %}
+                            <div class="w-px h-full bg-gray-200 mt-2"></div>
+                            {% endif %}
+                        </div>
+                        <div class="pb-5">
+                            <p class="text-sm font-semibold text-gray-900">{{ item.title }}</p>
+                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">{{ item.description }}</p>
+                            <p class="text-xs text-gray-400 mt-1.5 font-medium">{{ item.time }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Details -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Account Details</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Your account information</p>
+            </div>
+            <div class="p-6 space-y-5">
+                <div class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                    <div class="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center border border-brand-100">
+                        <i data-feather="user" class="w-5 h-5 text-brand-500"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">{{ customer.account_manager }}</p>
+                        <p class="text-xs text-gray-500">Account Manager</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <i data-feather="mail" class="w-4 h-4 text-gray-400"></i>
+                        <div>
+                            <p class="text-xs text-gray-500">Email</p>
+                            <p class="text-sm text-gray-900">{{ customer.manager_email }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i data-feather="phone" class="w-4 h-4 text-gray-400"></i>
+                        <div>
+                            <p class="text-xs text-gray-500">Phone</p>
+                            <p class="text-sm text-gray-900">{{ customer.manager_phone }}</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-100 pt-4"></div>
+                    <div class="flex items-center gap-3">
+                        <i data-feather="file-text" class="w-4 h-4 text-gray-400"></i>
+                        <div>
+                            <p class="text-xs text-gray-500">Contract Type</p>
+                            <p class="text-sm text-gray-900">{{ customer.contract_type }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i data-feather="calendar" class="w-4 h-4 text-gray-400"></i>
+                        <div>
+                            <p class="text-xs text-gray-500">Contract Period</p>
+                            <p class="text-sm text-gray-900">{{ customer.contract_start }} &mdash; {{ customer.contract_end }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i data-feather="layers" class="w-4 h-4 text-gray-400"></i>
+                        <div>
+                            <p class="text-xs text-gray-500">Active Contracts</p>
+                            <p class="text-sm text-gray-900">{{ account_summary.active_contracts }} contracts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Milestones + Quick Actions -->
+        <div class="space-y-6">
+            <!-- Upcoming Milestones -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-900">Upcoming Milestones</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Key dates ahead</p>
+                </div>
+                <div class="p-5 space-y-3">
+                    {% for ms in milestones %}
+                    <div class="flex items-center gap-4 p-3 rounded-xl {% if ms.status == 'upcoming' %}bg-amber-50 border border-amber-100{% else %}bg-gray-50 border border-gray-100{% endif %} transition-all hover:shadow-sm">
+                        <div class="text-center flex-shrink-0 w-12">
+                            <p class="text-lg font-bold {% if ms.status == 'upcoming' %}text-amber-700{% else %}text-gray-500{% endif %}">{{ ms.date|truncatechars:6 }}</p>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900">{{ ms.title }}</p>
+                            <p class="text-xs {% if ms.status == 'upcoming' %}text-amber-600{% else %}text-gray-500{% endif %} font-medium capitalize">{{ ms.status }}</p>
+                        </div>
+                        {% if ms.status == 'upcoming' %}
+                        <div class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-900">Quick Actions</h2>
+                </div>
+                <div class="p-5 space-y-2">
+                    <a href="{% url 'invoices' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all group">
+                        <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                            <i data-feather="file-text" class="w-4 h-4 text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">View Invoices</p>
+                            <p class="text-xs text-gray-500">Browse all settlement invoices</p>
+                        </div>
+                        <i data-feather="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-gray-500"></i>
+                    </a>
+                    <a href="{% url 'export_invoices' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all group">
+                        <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                            <i data-feather="download" class="w-4 h-4 text-emerald-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">Export Data</p>
+                            <p class="text-xs text-gray-500">Download invoice CSV</p>
+                        </div>
+                        <i data-feather="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-gray-500"></i>
+                    </a>
+                    <a href="{% url 'capacity' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all group">
+                        <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                            <i data-feather="activity" class="w-4 h-4 text-purple-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">Capacity Factors</p>
+                            <p class="text-xs text-gray-500">Resource performance data</p>
+                        </div>
+                        <i data-feather="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-gray-500"></i>
+                    </a>
+                    <a href="{% url 'metrics' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all group">
+                        <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                            <i data-feather="bar-chart-2" class="w-4 h-4 text-amber-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">FCS Metrics</p>
+                            <p class="text-xs text-gray-500">Settlement quality metrics</p>
+                        </div>
+                        <i data-feather="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-gray-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Shared chart defaults
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.plugins.legend.display = false;
+
+    // 1. Settlement Trend Chart (area chart)
+    const trendCtx = document.getElementById('settlementTrendChart').getContext('2d');
+    const gradientBlue = trendCtx.createLinearGradient(0, 0, 0, 260);
+    gradientBlue.addColorStop(0, 'rgba(59, 130, 246, 0.15)');
+    gradientBlue.addColorStop(1, 'rgba(59, 130, 246, 0.01)');
+
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ settlement_trend.labels|safe }},
+            datasets: [
+                {
+                    label: 'Actual',
+                    data: {{ settlement_trend.settled|safe }},
+                    borderColor: '#3b82f6',
+                    backgroundColor: gradientBlue,
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#3b82f6',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2,
+                },
+                {
+                    label: 'Budget',
+                    data: {{ settlement_trend.budget|safe }},
+                    borderColor: '#d1d5db',
+                    borderWidth: 2,
+                    borderDash: [6, 4],
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: '#9ca3af',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af', font: { size: 11 }, maxRotation: 45 }
+                },
+                y: {
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    ticks: {
+                        color: '#9ca3af',
+                        font: { size: 11 },
+                        callback: function(val) { return '$' + (val / 1000000).toFixed(1) + 'M'; }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    titleColor: '#fff',
+                    bodyColor: '#d1d5db',
+                    padding: 12,
+                    cornerRadius: 10,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 2. Settlement by Type Donut
+    new Chart(document.getElementById('settlementTypeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ settlement_by_type.labels|safe }},
+            datasets: [{
+                data: {{ settlement_by_type.amounts|safe }},
+                backgroundColor: {{ settlement_by_type.colors|safe }},
+                borderWidth: 0,
+                hoverOffset: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: {
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    padding: 12,
+                    cornerRadius: 10,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.label + ': $' + ctx.parsed.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 3. Invoice Status Donut
+    new Chart(document.getElementById('invoiceStatusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ invoice_status.labels|safe }},
+            datasets: [{
+                data: {{ invoice_status.counts|safe }},
+                backgroundColor: {{ invoice_status.colors|safe }},
+                borderWidth: 0,
+                hoverOffset: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    padding: 12,
+                    cornerRadius: 10,
+                }
+            }
+        }
+    });
+
+    // Re-render feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}

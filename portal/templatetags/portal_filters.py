@@ -117,3 +117,12 @@ def floatsub(value, arg):
         return float(value) - float(arg)
     except (ValueError, TypeError):
         return 0
+
+
+@register.filter
+def listget(lst, index):
+    """Look up an index in a list. Usage: {{ mylist|listget:index }}"""
+    try:
+        return lst[int(index)]
+    except (IndexError, ValueError, TypeError):
+        return ''

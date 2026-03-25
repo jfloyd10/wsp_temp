@@ -442,6 +442,176 @@ TRADING_ANALYTICS_FILTER_KEYS = [
 
 
 @login_required
+def customer_landing_view(request):
+    """Customer landing page with sample data for demo purposes."""
+    from decimal import Decimal
+
+    # Sample customer profile
+    customer = {
+        'name': 'Georgia Power Company',
+        'id': 'GAPWR-001',
+        'account_manager': 'Sarah Mitchell',
+        'manager_email': 'sarah.mitchell@southernco.com',
+        'manager_phone': '(404) 506-2810',
+        'contract_type': 'Power Purchase Agreement',
+        'contract_start': 'Jan 2019',
+        'contract_end': 'Dec 2029',
+        'next_settlement': 'Apr 2026',
+        'last_login': 'Mar 24, 2026 at 3:42 PM',
+    }
+
+    # Account summary cards
+    account_summary = {
+        'total_settled_ytd': 48726340.50,
+        'outstanding_balance': 3841200.00,
+        'invoices_ytd': 47,
+        'pending_invoices': 3,
+        'avg_monthly_settlement': 5414037.83,
+        'on_time_payment_rate': 98.6,
+        'active_contracts': 12,
+        'settlement_accuracy': 99.7,
+    }
+
+    # Monthly settlement trend (last 12 months)
+    settlement_trend = {
+        'labels': ['Apr 2025', 'May 2025', 'Jun 2025', 'Jul 2025', 'Aug 2025',
+                   'Sep 2025', 'Oct 2025', 'Nov 2025', 'Dec 2025',
+                   'Jan 2026', 'Feb 2026', 'Mar 2026'],
+        'settled': [4210500, 4587300, 5912800, 6845200, 7123400,
+                    5634100, 4987600, 4523800, 4312700,
+                    4856900, 5123400, 5684100],
+        'budget': [4100000, 4500000, 5800000, 6700000, 7000000,
+                   5500000, 4900000, 4400000, 4200000,
+                   4700000, 5000000, 5500000],
+    }
+
+    # Invoice status breakdown
+    invoice_status = {
+        'labels': ['Final', 'Pending Review', 'Draft', 'Adjusted'],
+        'counts': [38, 3, 4, 2],
+        'colors': ['#10b981', '#f59e0b', '#6b7280', '#ef4444'],
+    }
+
+    # Recent invoices
+    recent_invoices = [
+        {
+            'invoice_no': 'INV-2026-03-0512',
+            'invoice_name': 'March 2026 Wholesale Settlement',
+            'invoice_date': 'Mar 2026',
+            'invoice_total': 5684100.00,
+            'invoice_status': 'FINAL',
+            'source_type': 'WHOLESALE',
+        },
+        {
+            'invoice_no': 'INV-2026-03-0498',
+            'invoice_name': 'March 2026 PPA - Solar Fleet',
+            'invoice_date': 'Mar 2026',
+            'invoice_total': 1245800.00,
+            'invoice_status': 'PENDING',
+            'source_type': 'PPA',
+        },
+        {
+            'invoice_no': 'INV-2026-03-0487',
+            'invoice_name': 'March 2026 Short-Term Bilateral',
+            'invoice_date': 'Mar 2026',
+            'invoice_total': 892350.00,
+            'invoice_status': 'DRAFT',
+            'source_type': 'SHORT_TERM',
+        },
+        {
+            'invoice_no': 'INV-2026-02-0453',
+            'invoice_name': 'February 2026 Wholesale Settlement',
+            'invoice_date': 'Feb 2026',
+            'invoice_total': 5123400.00,
+            'invoice_status': 'FINAL',
+            'source_type': 'WHOLESALE',
+        },
+        {
+            'invoice_no': 'INV-2026-02-0441',
+            'invoice_name': 'February 2026 Pool Bill Allocation',
+            'invoice_date': 'Feb 2026',
+            'invoice_total': 3876500.00,
+            'invoice_status': 'FINAL',
+            'source_type': 'WHOLESALE',
+        },
+    ]
+
+    # Settlement by source type (pie chart)
+    settlement_by_type = {
+        'labels': ['Wholesale', 'PPA', 'Short-Term', 'Pool Bill'],
+        'amounts': [28450200, 9876400, 4523100, 5876640],
+        'colors': ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981'],
+    }
+
+    # Activity timeline
+    activity_timeline = [
+        {
+            'icon': 'check-circle',
+            'color': 'emerald',
+            'title': 'Invoice #INV-2026-03-0512 finalized',
+            'description': 'March wholesale settlement has been approved and marked as FINAL.',
+            'time': '2 hours ago',
+        },
+        {
+            'icon': 'file-text',
+            'color': 'blue',
+            'title': 'New invoice generated',
+            'description': 'March 2026 PPA - Solar Fleet invoice for $1,245,800 is pending review.',
+            'time': '5 hours ago',
+        },
+        {
+            'icon': 'download',
+            'color': 'purple',
+            'title': 'Settlement report downloaded',
+            'description': 'Q1 2026 settlement summary report was downloaded by your team.',
+            'time': '1 day ago',
+        },
+        {
+            'icon': 'credit-card',
+            'color': 'amber',
+            'title': 'Payment received',
+            'description': 'Payment of $5,123,400.00 received for February wholesale settlement.',
+            'time': '3 days ago',
+        },
+        {
+            'icon': 'alert-circle',
+            'color': 'red',
+            'title': 'Adjustment posted',
+            'description': '$38,200 adjustment applied to January Pool Bill allocation.',
+            'time': '1 week ago',
+        },
+    ]
+
+    # Upcoming milestones
+    milestones = [
+        {'date': 'Apr 1', 'title': 'Q1 Settlement Close', 'status': 'upcoming'},
+        {'date': 'Apr 5', 'title': 'March Invoice Due', 'status': 'upcoming'},
+        {'date': 'Apr 15', 'title': 'FERC Filing Deadline', 'status': 'upcoming'},
+        {'date': 'May 1', 'title': 'April Settlement Preview', 'status': 'future'},
+    ]
+
+    # Energy mix data (donut chart)
+    energy_mix = {
+        'labels': ['Natural Gas', 'Nuclear', 'Coal', 'Solar', 'Hydro', 'Wind'],
+        'values': [42, 24, 15, 10, 6, 3],
+        'colors': ['#3b82f6', '#8b5cf6', '#6b7280', '#f59e0b', '#06b6d4', '#10b981'],
+    }
+
+    return render(request, 'portal/customer_landing.html', {
+        'customer': customer,
+        'account_summary': account_summary,
+        'settlement_trend': settlement_trend,
+        'invoice_status': invoice_status,
+        'recent_invoices': recent_invoices,
+        'settlement_by_type': settlement_by_type,
+        'activity_timeline': activity_timeline,
+        'milestones': milestones,
+        'energy_mix': energy_mix,
+        'page': 'customer_landing',
+    })
+
+
+@login_required
 def blank_view(request):
     return render(request, 'portal/blank.html', {'page': 'blank'})
 
