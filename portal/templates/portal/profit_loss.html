@@ -101,7 +101,7 @@
                     </div>
                     <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Operating</span>
                 </div>
-                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ operating_income|currency }}</p>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ net_income|currency }}</p>
                 <p class="text-sm mt-1 {% if operating_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
                     {{ operating_margin_pct|percentage }} margin
                 </p>
@@ -295,7 +295,7 @@
                                 Operating Income
                             </td>
                             <td class="px-6 py-3 text-sm text-right font-bold font-mono text-violet-900">
-                                {{ operating_income|currency }}
+                                {{ net_income|currency }}
                                 <span class="text-xs font-normal ml-1 {% if operating_margin_pct >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">({{ operating_margin_pct|percentage }})</span>
                             </td>
                         </tr>
