@@ -1,0 +1,203 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name|default:"Application Portal" }}{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'template_starter/css/app.css' %}">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50:  '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#EC1C24',
+                            600: '#d01920',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-gray-800 min-h-screen" style="font-family:'Inter',system-ui,sans-serif;">
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loader"></div>
+</div>
+
+<div class="flex min-h-screen">
+
+    <!-- Fixed Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="{% url 'dashboard' %}" class="sidebar-logo-link">
+                <img src="{% static 'template_starter/img/logo.png' %}" alt="{{ brand_name|default:'Brand' }}"
+                     class="sidebar-logo-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display:none;" class="sidebar-logo-fallback">{{ brand_initials|default:'AP' }}</div>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-nav-group">
+                <span class="sidebar-nav-label">Main</span>
+
+                <a href="{% url 'dashboard' %}"
+                   class="sidebar-link {% if page == 'dashboard' %}sidebar-link-active{% endif %}">
+                    <i data-feather="home" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Dashboard</span>
+                </a>
+                <a href="{% url 'detail' 'sample-1' %}"
+                   class="sidebar-link {% if page == 'detail' %}sidebar-link-active{% endif %}">
+                    <i data-feather="file-text" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Detail Page</span>
+                </a>
+
+                <span class="sidebar-nav-label" style="margin-top:18px;">More</span>
+                <a href="#" class="sidebar-link">
+                    <i data-feather="bar-chart-2" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Reports</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i data-feather="users" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Users</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i data-feather="settings" class="sidebar-link-icon"></i>
+                    <span class="sidebar-link-text">Settings</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar">
+                    <img src="{% static 'template_starter/img/avatar.png' %}"
+                         alt="{{ user.get_full_name|default:user.username }}"
+                         class="sidebar-avatar-img">
+                </div>
+                <div class="sidebar-user-info">
+                    <p class="sidebar-user-name">{{ user.get_full_name|default:user.username|default:"Demo User" }}</p>
+                    <p class="sidebar-user-role">{{ user_role|default:"Administrator" }}</p>
+                </div>
+                <a href="{% url 'logout' %}" class="sidebar-logout-btn" title="Logout">
+                    <i data-feather="log-out" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Top Header Bar -->
+        <header class="topbar">
+            <button id="mobileMenuBtn" class="topbar-mobile-btn">
+                <i data-feather="menu" class="w-5 h-5"></i>
+            </button>
+
+            <div class="topbar-left">
+                {% block topbar_left %}{% endblock %}
+            </div>
+
+            <div class="topbar-right">
+                <h1 class="topbar-title">{{ app_name|default:"Application Portal" }}</h1>
+                <div class="topbar-divider"></div>
+
+                <div class="relative">
+                    <button id="notificationBtn" class="topbar-icon-btn" title="Notifications">
+                        <i data-feather="bell" class="w-[18px] h-[18px]"></i>
+                        <span class="topbar-notification-dot"></span>
+                    </button>
+                    <div id="notificationDropdown" class="hidden absolute right-0 top-full mt-2 w-96 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <h3 class="font-semibold text-gray-900">Notifications</h3>
+                            <span class="px-2 py-0.5 bg-brand-100 text-brand-600 rounded-full text-xs font-semibold">{{ notifications|length|default:0 }} new</span>
+                        </div>
+                        <div class="max-h-96 overflow-y-auto divide-y divide-gray-50">
+                            {% for n in notifications %}
+                            <div class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-{{ n.color|default:'brand' }}-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <i data-feather="{{ n.icon|default:'bell' }}" class="w-4 h-4 text-{{ n.color|default:'brand' }}-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{ n.title }}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">{{ n.body }}</p>
+                                        <p class="text-xs text-brand-500 font-medium mt-1.5">{{ n.time }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="px-5 py-6 text-center text-sm text-gray-400">No notifications yet.</div>
+                            {% endfor %}
+                        </div>
+                        <div class="px-5 py-3 border-t border-gray-100 text-center">
+                            <span class="text-sm font-medium text-brand-500 hover:text-brand-600 cursor-pointer">View all notifications</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="topbar-icon-btn" title="Help">
+                    <i data-feather="help-circle" class="w-[18px] h-[18px]"></i>
+                </button>
+                <div class="topbar-divider"></div>
+
+                <div class="topbar-user" id="topbarUserBtn">
+                    <div class="topbar-user-avatar">
+                        <img src="{% static 'template_starter/img/avatar.png' %}"
+                             alt="{{ user.get_full_name|default:user.username }}"
+                             class="topbar-avatar-img">
+                    </div>
+                    <span class="topbar-user-name">{{ user.get_full_name|default:user.username|default:"Demo User" }}</span>
+                    <i data-feather="chevron-down" class="topbar-user-chevron"></i>
+                </div>
+
+                <div id="topbarUserDropdown" class="dropdown-menu topbar-user-dropdown">
+                    <div class="dropdown-header">
+                        <p class="dropdown-header-name">{{ user.get_full_name|default:user.username|default:"Demo User" }}</p>
+                        <p class="dropdown-header-email">{{ user.email|default:"demo@example.com" }}</p>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'logout' %}" class="dropdown-item dropdown-item-danger">
+                        <i data-feather="log-out" class="w-4 h-4"></i>
+                        <span>Sign out</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+
+        <footer class="border-t border-gray-200 bg-white py-6 text-center">
+            <p class="text-xs text-gray-400">{{ app_name|default:"Application Portal" }} &copy; {% now "Y" %}</p>
+        </footer>
+    </div>
+</div>
+
+<script src="{% static 'template_starter/js/app.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
