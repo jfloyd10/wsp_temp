@@ -1,0 +1,366 @@
+{% extends "template_starter/base.html" %}
+{% load template_filters %}
+
+{% block title %}{{ summary.name }} &mdash; Detail{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-white border-b border-gray-100">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <nav class="flex items-center gap-2 text-sm">
+                <a href="{% url 'dashboard' %}" class="text-brand-600 hover:text-brand-700 hover:underline font-medium">Dashboard</a>
+                <i data-feather="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                <span class="text-gray-500">{{ summary.name }}</span>
+            </nav>
+        </div>
+
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-8">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-xl bg-{{ summary.icon_color|default:'gray' }}-100 flex items-center justify-center">
+                        <i data-feather="{{ summary.icon|default:'database' }}"
+                           class="w-6 h-6 text-{{ summary.icon_color|default:'gray' }}-700"></i>
+                    </div>
+                    <span class="px-3 py-1 rounded-lg text-xs font-semibold uppercase
+                                 bg-{{ summary.icon_color|default:'gray' }}-100
+                                 text-{{ summary.icon_color|default:'gray' }}-700">
+                        {{ summary.category }}
+                    </span>
+                </div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">{{ summary.name }}</h1>
+                <p class="text-gray-500 text-lg">{{ summary.subtitle }} &middot; {{ summary.id }}</p>
+            </div>
+            <div class="mt-4 lg:mt-0">
+                <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 py-2.5 px-5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-all">
+                    <i data-feather="arrow-left" class="w-4 h-4"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            {% for s in summary.stats %}
+            <div class="stat-card bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-{{ s.color|default:'brand' }}-100 flex items-center justify-center">
+                        <i data-feather="{{ s.icon }}" class="w-4 h-4 text-{{ s.color|default:'brand' }}-500"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">{{ s.label }}</span>
+                </div>
+                <p class="text-2xl font-bold {% if s.value_color %}text-{{ s.value_color }}-600{% else %}text-gray-900{% endif %}">
+                    {{ s.value }}{% if s.unit %} <span class="text-sm font-normal text-gray-400">{{ s.unit }}</span>{% endif %}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Charts -->
+<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Performance Trend</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Monthly actual vs target</p>
+            </div>
+            <div class="p-6">
+                <div style="height: 320px;"><canvas id="trendChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Volume Output</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Monthly volume vs target</p>
+            </div>
+            <div class="p-6">
+                <div style="height: 320px;"><canvas id="volumeChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Variance</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Actual minus target</p>
+            </div>
+            <div class="p-6">
+                <div style="height: 320px;"><canvas id="varianceChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Annual Performance</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Average by year</p>
+            </div>
+            <div class="p-6">
+                <div style="height: 320px;"><canvas id="annualChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info & History -->
+    <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <!-- Info Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Details</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                {% for f in summary.fields %}
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">{{ f.label }}</p>
+                    <p class="text-sm font-semibold {% if f.value_color %}text-{{ f.value_color }}-600{% else %}text-gray-900{% endif %}">
+                        {{ f.value }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="xl:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Monthly History</h2>
+                    <p class="text-sm text-gray-500 mt-0.5">{{ history|length }} records</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto" style="max-height: 600px; overflow-y: auto;">
+                <table class="w-full min-w-[800px] table-fixed">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="bg-gray-50">
+                            <th class="w-[18%] px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                            <th class="w-[16%] px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Volume</th>
+                            <th class="w-[16%] px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Target</th>
+                            <th class="w-[16%] px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actual</th>
+                            <th class="w-[16%] px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Goal</th>
+                            <th class="w-[18%] px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for r in history %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3 text-sm text-gray-700 font-medium whitespace-nowrap">{{ r.month|month_name }} {{ r.year }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-700">{{ r.volume|format_number }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-500">{{ r.target_volume|format_number }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono font-semibold">{{ r.actual|capacity_pct }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-500">{{ r.target|capacity_pct }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono font-bold
+                                {% if r.variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                                {% if r.variance >= 0 %}+{% endif %}{{ r.variance|capacity_pct }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Annual Summary -->
+    {% if annual %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-900">Annual Summary</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[800px] table-fixed">
+                <thead>
+                    <tr class="bg-gray-50/50">
+                        <th class="w-[14%] px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Year</th>
+                        <th class="w-[18%] px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Actual</th>
+                        <th class="w-[18%] px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Target</th>
+                        <th class="w-[18%] px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Variance</th>
+                        <th class="w-[16%] px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Volume</th>
+                        <th class="w-[16%] px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Target</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for a in annual %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm text-gray-900 font-semibold">{{ a.year }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono font-semibold">{{ a.avg_actual|capacity_pct }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-500">{{ a.avg_target|capacity_pct }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono font-bold
+                            {% if a.avg_variance >= 0 %}text-emerald-600{% else %}text-red-600{% endif %}">
+                            {% if a.avg_variance >= 0 %}+{% endif %}{{ a.avg_variance|capacity_pct }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-700">{{ a.total_volume|format_number }}</td>
+                        <td class="px-6 py-4 text-sm text-right font-mono text-gray-500">{{ a.total_target|format_number }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ chart_data|json_script:"chart-data" }}
+{{ annual_chart|json_script:"annual-chart-data" }}
+<script>
+(function () {
+    const data = JSON.parse(document.getElementById('chart-data').textContent);
+    const annualData = JSON.parse(document.getElementById('annual-chart-data').textContent);
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#6b7280';
+
+    const pctCallback = v => (v * 100).toFixed(0) + '%';
+
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Actual',
+                    data: data.actual_values,
+                    borderColor: '#00205B',
+                    backgroundColor: 'rgba(0, 32, 91, 0.08)',
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#00205B',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Target',
+                    data: data.target_values,
+                    borderColor: '#6CACE4',
+                    backgroundColor: 'rgba(108, 172, 228, 0.08)',
+                    borderWidth: 2,
+                    borderDash: [6, 3],
+                    pointRadius: 2,
+                    pointBackgroundColor: '#6CACE4',
+                    tension: 0.3,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '%' } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 18 } },
+                y: { ticks: { callback: pctCallback }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('volumeChart'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Actual Volume',
+                    data: data.volume_values,
+                    backgroundColor: 'rgba(0, 32, 91, 0.7)',
+                    borderColor: '#00205B',
+                    borderWidth: 1,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Target Volume',
+                    data: data.target_volume_values,
+                    backgroundColor: 'rgba(108, 172, 228, 0.5)',
+                    borderColor: '#6CACE4',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 18 } },
+                y: { ticks: { callback: v => v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('varianceChart'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Variance',
+                data: data.variance_values,
+                backgroundColor: data.variance_values.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+                borderColor: data.variance_values.map(v => v >= 0 ? '#10b981' : '#ef4444'),
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                tooltip: { callbacks: { label: ctx => 'Variance: ' + (ctx.parsed.y * 100).toFixed(1) + '%' } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 18 } },
+                y: { ticks: { callback: pctCallback }, grid: { color: '#f3f4f6' } }
+            }
+        }
+    });
+
+    if (annualData.labels && annualData.labels.length > 0) {
+        new Chart(document.getElementById('annualChart'), {
+            type: 'bar',
+            data: {
+                labels: annualData.labels,
+                datasets: [
+                    {
+                        label: 'Avg Actual',
+                        data: annualData.avg_actual,
+                        backgroundColor: 'rgba(0, 32, 91, 0.7)',
+                        borderColor: '#00205B',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    },
+                    {
+                        label: 'Avg Target',
+                        data: annualData.avg_target,
+                        backgroundColor: 'rgba(108, 172, 228, 0.5)',
+                        borderColor: '#6CACE4',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                    tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '%' } }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { ticks: { callback: pctCallback }, grid: { color: '#f3f4f6' } }
+                }
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}
